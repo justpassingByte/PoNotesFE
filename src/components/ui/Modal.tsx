@@ -29,7 +29,7 @@ export function Modal({ isOpen, onClose, title, children, subtitle }: ModalProps
             onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
         >
-            <div className="bg-card w-full max-w-lg rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden border border-white/5 animate-in fade-in zoom-in-95 duration-200 relative">
+            <div className="bg-card w-full max-w-lg rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-visible border border-white/5 animate-in fade-in zoom-in-95 duration-200 relative">
                 {/* Top accent line */}
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-gold/50 to-transparent"></div>
 

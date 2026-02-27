@@ -46,4 +46,10 @@
     color: var(--foreground);
     @apply antialiased;
   }
+
+  /* Fix native <select> option elements on dark backgrounds */
+  select option {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
 }

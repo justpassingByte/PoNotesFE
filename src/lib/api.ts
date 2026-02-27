@@ -1,7 +1,7 @@
 // Centralized API configuration
 // All API calls should use this base URL instead of hardcoding localhost
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, '');
 
 export const API = {
     base: API_BASE_URL,
