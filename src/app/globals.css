@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  /* Casino Specific */
+  --color-felt-light: var(--felt-light);
+  --color-felt-default: var(--felt-default);
+  --color-felt-dark: var(--felt-dark);
+  --color-gold: var(--gold);
+  --color-gold-dim: var(--gold-dim);
+}
+
+@layer base {
+  :root {
+    /* Tesla Sleek Deep Blacks */
+    --background: #0a0a0a;
+    --foreground: #fafafa;
+
+    --card: #121814;
+    /* Very subtle green tint to the black card */
+    --card-foreground: #fafafa;
+
+    --border: #242424;
+    --ring: #ffc400;
+
+    /* Casino Neon Elegance */
+    --felt-light: #00994d;
+    --felt-default: #006633;
+    --felt-dark: #00331a;
+
+    --gold: #ffc400;
+    --gold-dim: #997500;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply antialiased;
+  }
+}
