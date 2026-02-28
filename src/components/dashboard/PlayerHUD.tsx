@@ -31,7 +31,7 @@ export function PlayerHUD({ id, name, playstyle, aggressionScore, notesCount, on
     };
 
     return (
-        <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden group hover:bg-card/60 transition-all hover:-translate-y-1">
+        <Link href={`/players/${id}`} className="block bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden group hover:bg-card/60 transition-all hover:-translate-y-1 cursor-pointer no-underline">
             {/* Decorative Card Background Element */}
             <div className="absolute -right-10 -top-10 w-32 h-32 bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-felt-light/20 to-transparent opacity-50 rounded-full pointer-events-none group-hover:opacity-80 transition-opacity"></div>
 
@@ -64,16 +64,16 @@ export function PlayerHUD({ id, name, playstyle, aggressionScore, notesCount, on
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center">
-                <Link href={`/players/${id}`} className="text-[10px] uppercase font-bold tracking-widest text-gold/70 hover:text-gold transition-colors">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-gold/70 group-hover:text-gold transition-colors">
                     VIEW PROFILE
-                </Link>
+                </span>
                 <button
-                    onClick={onAddNote}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddNote?.(); }}
                     className="bg-white/5 hover:bg-white/10 text-white text-xs px-4 py-1.5 rounded-full transition-all border border-white/10 hover:border-white/20 hover:shadow-[0_0_10px_rgba(255,255,255,0.1)] font-medium"
                 >
                     + Add Note
                 </button>
             </div>
-        </div>
+        </Link>
     );
 }
