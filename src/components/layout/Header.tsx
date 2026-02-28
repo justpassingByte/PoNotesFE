@@ -1,4 +1,4 @@
-import { Bell, User, Settings } from 'lucide-react';
+import { User, Settings } from 'lucide-react';
 
 export function Header({
     onSettingsClick
@@ -14,11 +14,6 @@ export function Header({
             </div>
 
             <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-2 text-sm text-gray-300 bg-background/50 px-4 py-1.5 rounded-full border border-white/5">
-                    <span className="w-2 h-2 rounded-full bg-felt-light shadow-[0_0_8px_#10b981] animate-pulse"></span>
-                    <span className="font-mono tracking-wider text-xs">WPT POKER</span>
-                </div>
-
                 <button
                     onClick={onSettingsClick}
                     className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all"

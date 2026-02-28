@@ -7,10 +7,11 @@ export interface PlayerHUDProps {
     playstyle: string;
     aggressionScore: number;
     notesCount: number;
+    platformName?: string;
     onAddNote?: () => void;
 }
 
-export function PlayerHUD({ id, name, playstyle, aggressionScore, notesCount, onAddNote }: PlayerHUDProps) {
+export function PlayerHUD({ id, name, playstyle, aggressionScore, notesCount, platformName, onAddNote }: PlayerHUDProps) {
 
     // Decide color logic based on playstyle
     const getPlaystyleColor = (style: string) => {
@@ -38,7 +39,7 @@ export function PlayerHUD({ id, name, playstyle, aggressionScore, notesCount, on
             <div className="flex justify-between items-start mb-4">
                 <div>
                     <h3 className="font-bold text-xl text-white tracking-wide">{name}</h3>
-                    <span className="text-xs text-gray-400 font-medium">WPT Poker</span>
+                    <span className="text-xs text-gray-400 font-medium">{platformName || 'Unknown Platform'}</span>
                 </div>
                 <div className={`px-2.5 py-1 text-xs font-bold rounded border ${getPlaystyleColor(playstyle)} transition-all`}>
                     {playstyle.toUpperCase()}

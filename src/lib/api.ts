@@ -14,6 +14,7 @@ export const API = {
     player: (id: string) => `${API_BASE_URL}/api/players/${id}`,
     note: (id: string) => `${API_BASE_URL}/api/notes/${id}`,
     template: (id: string) => `${API_BASE_URL}/api/templates/${id}`,
+    platform: (id: string) => `${API_BASE_URL}/api/platforms/${id}`,
     playerExport: `${API_BASE_URL}/api/players/export`,
     playerBulk: `${API_BASE_URL}/api/players/bulk`,
 } as const;
