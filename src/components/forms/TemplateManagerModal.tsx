@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Edit2, Plus, X, Globe } from 'lucide-react';
+import { Trash2, Edit2, Plus, X, Globe, Sparkles, Rocket } from 'lucide-react';
 import { API } from '@/lib/api';
+import { getAppSettings, updateAppSettings } from '@/app/actions';
+import { PricingSection } from '@/components/layout/PricingSection';
+import { FeatureSection } from '@/components/layout/FeatureSection';
 
 interface Template {
     id: string;
@@ -16,7 +19,7 @@ interface Platform {
 
 export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     // Tab state
-    const [activeTab, setActiveTab] = useState<'tags' | 'platforms'>('tags');
+    const [activeTab, setActiveTab] = useState<'tags' | 'platforms' | 'pro'>('tags');
 
     // Template state
     const [templates, setTemplates] = useState<Template[]>([]);
@@ -32,9 +35,16 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     const [isAddingPlatform, setIsAddingPlatform] = useState(false);
     const [platformError, setPlatformError] = useState('');
 
+    // AI Settings state
+    const [aiEnabled, setAiEnabled] = useState(false);
+    const [analysisMode, setAnalysisMode] = useState<'simple' | 'advanced'>('simple');
+    const [loadingAI, setLoadingAI] = useState(true);
+    const [aiSaving, setAiSaving] = useState(false);
+
     useEffect(() => {
         fetchTemplates();
         fetchPlatforms();
+        fetchAISettings();
     }, []);
 
     // --- Templates ---
@@ -146,6 +156,50 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
         }
     };
 
+    // --- AI Settings ---
+    const fetchAISettings = async () => {
+        try {
+            const data = await getAppSettings();
+            if (data) {
+                setAiEnabled(data.ai_enabled || false);
+                setAnalysisMode(data.analysis_mode || 'simple');
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingAI(false);
+        }
+    };
+
+    const handleToggleAI = async (enabled: boolean) => {
+        const previousState = aiEnabled;
+        setAiEnabled(enabled);
+        setAiSaving(true);
+        try {
+            const data = await updateAppSettings({ ai_enabled: enabled });
+            if (data) {
+                setAiEnabled(data.ai_enabled);
+            }
+        } catch (err) {
+            console.error("Toggle AI failed:", err);
+            setAiEnabled(previousState); // revert on error
+        } finally {
+            setAiSaving(false);
+        }
+    };
+
+    const handleModeChange = async (mode: 'simple' | 'advanced') => {
+        setAnalysisMode(mode);
+        setAiSaving(true);
+        try {
+            await updateAppSettings({ analysis_mode: mode });
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setAiSaving(false);
+        }
+    };
+
     return (
         <div className="space-y-4">
             {/* Tab Switcher */}
@@ -168,6 +222,16 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
                 >
                     <Globe className="w-3.5 h-3.5" />
                     Platforms
+                </button>
+                <button
+                    onClick={() => setActiveTab('pro')}
+                    className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5 ${activeTab === 'pro'
+                        ? 'text-gold border-gold'
+                        : 'text-gray-500 border-transparent hover:text-gray-300'
+                        }`}
+                >
+                    <Rocket className="w-3.5 h-3.5" />
+                    Pro Features
                 </button>
             </div>
 
@@ -226,29 +290,87 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
                     )}
 
                     {loadingTemplates ? (
-                        <div className="text-center text-gray-500 py-4 text-sm">Loading templates...</div>
+                        <div className="text-center text-gray-500 py-12 text-sm animate-pulse">Loading intelligence templates...</div>
                     ) : (
-                        <div className="max-h-64 overflow-y-auto pr-2 space-y-2">
-                            {templates.length === 0 && <p className="text-xs text-gray-500 text-center">No templates exist yet.</p>}
-                            {templates.map(t => (
-                                <div key={t.id} className="flex items-center justify-between p-2 bg-card border border-border rounded group hover:border-gray-500 transition-colors">
-                                    <div>
-                                        <span className="text-sm font-medium text-white block">{t.label}</span>
-                                        <span className="text-[10px] text-gray-400 uppercase tracking-wider">{t.category}</span>
-                                    </div>
-                                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => startEditTemplate(t)} className="p-1.5 text-gray-400 hover:text-white hover:bg-background rounded">
-                                            <Edit2 className="w-3.5 h-3.5" />
-                                        </button>
-                                        <button onClick={() => handleDeleteTemplate(t.id)} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-background rounded">
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    </div>
+                        <div className="space-y-8">
+                            {templates.length === 0 && (
+                                <div className="text-center py-12 border border-dashed border-white/5 rounded-2xl bg-white/5">
+                                    <p className="text-xs text-gray-500">No quick tags configured yet.</p>
                                 </div>
-                            ))}
+                            )}
+
+                            {/* Grouping by category */}
+                            {['Preflop', 'Flop', 'Turn', 'River', 'Postflop', 'General'].map(cat => {
+                                const catTemplates = templates.filter(t => t.category === cat);
+                                if (catTemplates.length === 0) return null;
+
+                                return (
+                                    <div key={cat} className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/5"></div>
+                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">{cat}</span>
+                                            <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/5"></div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {catTemplates.map(t => (
+                                                <div key={t.id} className="group flex items-center justify-between p-3 bg-white/[0.03] border border-white/5 rounded-xl hover:border-white/20 hover:bg-white/[0.05] transition-all">
+                                                    <span className="text-sm font-medium text-white/90">{t.label}</span>
+                                                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={() => startEditTemplate(t)} className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg">
+                                                            <Edit2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteTemplate(t.id)} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg">
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </>
+            )}
+
+            {/* ============ PRO FEATURES TAB (MERGED) ============ */}
+            {activeTab === 'pro' && (
+                <div className="space-y-12 pb-8">
+                    <div className="mt-4">
+                        <div className="flex items-center justify-between p-4 bg-purple-500/5 rounded-2xl border border-purple-500/20 shadow-xl">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-purple-400">
+                                    <Sparkles className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <span className="text-sm font-bold text-white block">Enable AI Analysis</span>
+                                    <span className="text-[10px] text-purple-300/60">Unlock Gemini insights (Trial/Pro)</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {aiSaving && <span className="text-[10px] text-purple-400 animate-pulse">Syncing...</span>}
+                                <button
+                                    onClick={() => handleToggleAI(!aiEnabled)}
+                                    disabled={aiSaving}
+                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${aiEnabled ? 'bg-purple-600' : 'bg-gray-700'}`}
+                                >
+                                    <span
+                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${aiEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <PricingSection isDashboard />
+
+                    <div className="border-t border-white/5 pt-8">
+                        <h4 className="text-[10px] font-bold text-gold uppercase tracking-widest text-center mb-8 opacity-50">Feature Overview</h4>
+                        <FeatureSection isDashboard />
+                    </div>
+                </div>
             )}
 
             {/* ============ PLATFORMS TAB ============ */}
@@ -293,23 +415,31 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
                     )}
 
                     {loadingPlatforms ? (
-                        <div className="text-center text-gray-500 py-4 text-sm">Loading platforms...</div>
+                        <div className="text-center text-gray-500 py-12 text-sm animate-pulse">Loading networks...</div>
                     ) : (
-                        <div className="max-h-64 overflow-y-auto pr-2 space-y-2">
-                            {platforms.length === 0 && <p className="text-xs text-gray-500 text-center">No platforms exist yet.</p>}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {platforms.length === 0 && (
+                                <div className="col-span-full text-center py-12 border border-dashed border-white/5 rounded-2xl bg-white/5">
+                                    <p className="text-xs text-gray-500">No platforms registered.</p>
+                                </div>
+                            )}
                             {platforms.map(p => (
-                                <div key={p.id} className="flex items-center justify-between p-2 bg-card border border-border rounded group hover:border-gray-500 transition-colors">
-                                    <div className="flex items-center gap-2">
-                                        <Globe className="w-3.5 h-3.5 text-felt-light" />
-                                        <span className="text-sm font-medium text-white">{p.name}</span>
+                                <div key={p.id} className="flex flex-col p-4 bg-white/[0.03] border border-white/5 rounded-2xl group hover:border-gold/30 hover:bg-gold/[0.02] transition-all relative overflow-hidden">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-8 h-8 bg-gold/10 rounded-lg flex items-center justify-center text-gold">
+                                            <Globe className="w-4 h-4" />
+                                        </div>
+                                        <span className="text-sm font-bold text-white/90">{p.name}</span>
                                     </div>
-                                    <button
-                                        onClick={() => handleDeletePlatform(p.id)}
-                                        className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-background rounded opacity-0 group-hover:opacity-100 transition-all"
-                                        title="Delete platform"
-                                    >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
+                                    <div className="flex justify-end pt-2 mt-auto border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => handleDeletePlatform(p.id)}
+                                            className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                            title="Delete platform"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -317,9 +447,10 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
                 </>
             )}
 
-            <div className="pt-4 flex justify-end">
-                <button onClick={onClose} className="px-4 py-2 bg-card border border-border text-sm text-white rounded hover:bg-background transition-colors">
-                    Done
+
+            <div className="pt-4 flex justify-end border-t border-white/5">
+                <button onClick={onClose} className="px-4 py-2 bg-card border border-white/5 text-sm text-white rounded-full hover:bg-white/5 transition-colors">
+                    Close
                 </button>
             </div>
         </div>

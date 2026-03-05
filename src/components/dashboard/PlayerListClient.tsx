@@ -121,7 +121,7 @@ export function PlayerListClient({ initialPlayers, initialMeta }: PlayerListClie
         <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0f2e1e] via-[#020202] to-black">
             <Header onSettingsClick={() => setSettingsOpen(true)} />
 
-            <div className="flex-1 overflow-y-auto pt-32 p-8 relative scrollbar-thin scrollbar-thumb-felt-light scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto pt-20 sm:pt-32 px-4 sm:px-8 pb-8 relative scrollbar-thin scrollbar-thumb-felt-light scrollbar-track-transparent">
                 {/* Decorative background */}
                 <div className="absolute inset-0 pointer-events-none opacity-5 flex items-center justify-center">
                     <div className="w-[500px] h-[500px] rounded-full bg-felt-light blur-3xl"></div>
@@ -151,8 +151,8 @@ export function PlayerListClient({ initialPlayers, initialMeta }: PlayerListClie
                     />
 
                     {/* Player Grid */}
-                    <div className="bg-gradient-to-b from-card/20 to-transparent border-x border-b border-white/5 rounded-b-2xl p-8 shadow-inner">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="bg-gradient-to-b from-card/20 to-transparent border-x border-b border-white/5 rounded-b-2xl p-4 sm:p-8 shadow-inner">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                             {filteredPlayers.length === 0 && !isLoading ? (
                                 <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-border rounded-lg bg-card/20">
                                     <p>No players found.</p>
@@ -225,7 +225,7 @@ export function PlayerListClient({ initialPlayers, initialMeta }: PlayerListClie
                 )}
             </Modal>
 
-            <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} title="Settings & Tags">
+            <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} title="Settings & Tags" size="xl">
                 <TemplateManagerModal onClose={() => setSettingsOpen(false)} />
             </Modal>
         </div>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, Users, Settings, Database, Crosshair } from 'lucide-react';
+import { Home, Users, Settings, Database, Crosshair, Target } from 'lucide-react';
 
 export function Sidebar() {
     return (
@@ -13,6 +13,7 @@ export function Sidebar() {
                 <NavItem href="/" icon={<Home />} label="Dashboard" active />
                 <NavItem href="/players" icon={<Users />} label="Players" />
                 <NavItem href="/database" icon={<Database />} label="Database Insights" />
+                <NavItem href="/solver" icon={<Target />} label="GTO Solver" />
                 <NavItem href="/settings" icon={<Settings />} label="Settings" />
             </nav>
 
@@ -34,8 +35,8 @@ function NavItem({ href, icon, label, active = false }: { href: string; icon: Re
         <Link
             href={href}
             className={`flex items-center px-3 py-2.5 rounded-md transition-colors ${active
-                    ? 'bg-felt-default text-white font-medium border border-felt-light shadow-sm'
-                    : 'text-gray-400 hover:bg-card hover:text-white'
+                ? 'bg-felt-default text-white font-medium border border-felt-light shadow-sm'
+                : 'text-gray-400 hover:bg-card hover:text-white'
                 }`}
         >
             <span className="w-5 h-5 mr-3">{icon}</span>

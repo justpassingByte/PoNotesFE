@@ -7,6 +7,10 @@ import { Header } from "@/components/layout/Header";
 import { StrategyGuide } from "@/components/dashboard/StrategyGuide";
 import { API } from "@/lib/api";
 import { fetchPlayerProfile } from "@/app/actions";
+import { fetchStrategy, HandStrategy, SolveRequest } from "@/lib/solverAPI";
+import { Modal } from "@/components/ui/Modal";
+import { TemplateManagerModal } from "@/components/forms/TemplateManagerModal";
+import { buildCategorizedBreakdown, emptyCategorizedBreakdown, type CategorizedBreakdown } from "@/lib/analysis/HandCategoryResolver";
 
 interface Note {
     id: string;
@@ -47,6 +51,13 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
     const [editName, setEditName] = useState('');
     const [editPlaystyle, setEditPlaystyle] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+    // Solver state
+    const [solveData, setSolveData] = useState<Record<string, HandStrategy> | null>(null);
+    const [solveActionBreakdown, setSolveActionBreakdown] = useState<CategorizedBreakdown>(emptyCategorizedBreakdown());
+    const [isSolving, setIsSolving] = useState(false);
+    const [solveError, setSolveError] = useState<string | null>(null);
+    const [isSettingsOpen, setSettingsOpen] = useState(false);
 
     // Refresh player data via Server Action
     const refreshPlayer = async () => {
@@ -138,11 +149,56 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
         }
     };
 
+    // SOLVE
+    const handleSolve = async (filterData: SolveRequest) => {
+        setIsSolving(true);
+        setSolveError(null);
+        try {
+            const requestPayload: SolveRequest = {
+                spot: filterData.spot,
+                stack: filterData.stack,
+                villainType: filterData.villainType || "NEUTRAL",
+                shapingMode: filterData.shapingMode || "balanced",
+                street: filterData.street,
+                board: filterData.board,
+            };
+
+            const response = await fetchStrategy(requestPayload);
+            console.log("PlayerProfileClient: fetchStrategy succeeded, returning data", response);
+
+            setSolveData(response ?? null);
+
+            const raiseRecord: Record<string, number> = {};
+            const callRecord: Record<string, number> = {};
+            const foldRecord: Record<string, number> = {};
+            for (const [hand, strat] of Object.entries(response || {})) {
+                raiseRecord[hand] = (strat?.raise ?? 0) * 100;
+                callRecord[hand] = (strat?.call ?? 0) * 100;
+                foldRecord[hand] = (strat?.fold ?? 0) * 100;
+            }
+
+            // Categorized action breakdown (post-processing)
+            const categorized = buildCategorizedBreakdown(
+                raiseRecord,
+                callRecord,
+                foldRecord,
+                filterData.board,
+            );
+            setSolveActionBreakdown(categorized);
+
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : "Failed to solve";
+            setSolveError(message);
+        } finally {
+            setIsSolving(false);
+        }
+    };
+
     return (
         <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0f2e1e] via-[#020202] to-black">
-            <Header />
+            <Header onSettingsClick={() => setSettingsOpen(true)} />
 
-            <div className="flex-1 overflow-y-auto pt-32 p-8 relative scrollbar-thin scrollbar-thumb-felt-light scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto pt-20 sm:pt-32 px-4 sm:px-8 pb-8 relative scrollbar-thin scrollbar-thumb-felt-light scrollbar-track-transparent">
                 <div className="max-w-7xl mx-auto relative z-10">
 
                     {/* Back Navigation Bar */}
@@ -154,9 +210,9 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
                         Back to Dashboard
                     </button>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                         {/* LEFT COLUMN: IDENTIFICATION & STRATEGY */}
-                        <div className="lg:col-span-1 space-y-8">
+                        <div className="lg:col-span-1 space-y-6 lg:space-y-8">
 
                             {/* Player ID Card */}
                             <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden">
@@ -235,9 +291,9 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
                                                 {/* Visual Gauge Bar */}
                                                 <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
                                                     <div
-                                                        className={`h-full rounded-full transition-all duration-700 ${player.aggression_score > 70 ? 'bg-gradient-to-r from-red-500 to-orange-400 shadow-[0_0_10px_rgba(239,68,68,0.4)]'
-                                                            : player.aggression_score > 40 ? 'bg-gradient-to-r from-yellow-500 to-amber-400 shadow-[0_0_10px_rgba(234,179,8,0.3)]'
-                                                                : 'bg-gradient-to-r from-green-500 to-emerald-400 shadow-[0_0_10px_rgba(34,197,94,0.3)]'
+                                                        className={`h-full rounded-full transition-all duration-700 ${player.aggression_score > 70 ? 'bg-gradient-to-r from-gold-dim to-gold shadow-[0_0_10px_rgba(255,196,0,0.4)]'
+                                                            : player.aggression_score > 40 ? 'bg-gradient-to-r from-felt-default to-felt-light shadow-[0_0_10px_rgba(0,153,77,0.3)]'
+                                                                : 'bg-gradient-to-r from-felt-dark to-felt-default shadow-[0_0_10px_rgba(0,51,26,0.3)]'
                                                             }`}
                                                         style={{ width: `${Math.min(player.aggression_score, 100)}%` }}
                                                     />
@@ -433,8 +489,27 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
                             </div>
                         </div>
                     </div>
+
+                    {/* FULL WIDTH BOTTOM ROW: EXPLOITATIVE STRATEGY ENGINE */}
+                    <div className="mt-8">
+                        <StrategyGuide
+                            playstyle={player.playstyle}
+                            aiRangeMatrix={solveData}
+                            aiActionBreakdown={solveActionBreakdown}
+                            aiEnabled={true}
+                            onSolve={handleSolve}
+                            isSolving={isSolving}
+                            solveError={solveError}
+                        />
+                    </div>
+
                 </div>
             </div>
+
+            {/* Modals */}
+            <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} title="Settings & Tags" size="xl">
+                <TemplateManagerModal onClose={() => setSettingsOpen(false)} />
+            </Modal>
         </div>
     );
 }

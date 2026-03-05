@@ -9,12 +9,15 @@ export const API = {
     notes: `${API_BASE_URL}/api/notes`,
     templates: `${API_BASE_URL}/api/templates`,
     platforms: `${API_BASE_URL}/api/platforms`,
+    settings: `${API_BASE_URL}/api/settings`,
 
     // Dynamic paths
     player: (id: string) => `${API_BASE_URL}/api/players/${id}`,
     note: (id: string) => `${API_BASE_URL}/api/notes/${id}`,
     template: (id: string) => `${API_BASE_URL}/api/templates/${id}`,
     platform: (id: string) => `${API_BASE_URL}/api/platforms/${id}`,
+    playerStats: (playerId: string) => `${API_BASE_URL}/api/players/${playerId}/stats`,
+    playerProfile: (playerId: string) => `${API_BASE_URL}/api/players/${playerId}/profile`,
     playerExport: `${API_BASE_URL}/api/players/export`,
     playerBulk: `${API_BASE_URL}/api/players/bulk`,
 } as const;

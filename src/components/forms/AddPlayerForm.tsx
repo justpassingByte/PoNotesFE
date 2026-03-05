@@ -186,7 +186,7 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
                 )}
             </div>
 
-            <div className="flex space-x-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <div className="flex-1">
                     <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Player Name <span className="text-red-400">*</span></label>
                     <input
