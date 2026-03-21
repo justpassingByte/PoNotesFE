@@ -3,7 +3,7 @@
 
 const IS_SERVER = typeof window === 'undefined';
 const API_BASE_URL = IS_SERVER 
-  ? 'http://notes_backend:3001' 
+  ? 'http://backend:3001' 
   : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, '');
 
 export const API = {
