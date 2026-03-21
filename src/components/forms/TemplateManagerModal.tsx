@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Edit2, Plus, X, Globe, Sparkles, Rocket } from 'lucide-react';
+import { Trash2, Edit2, Plus, X, Globe } from 'lucide-react';
 import { API } from '@/lib/api';
 import { getAppSettings, updateAppSettings } from '@/app/actions';
-import { PricingSection } from '@/components/layout/PricingSection';
-import { FeatureSection } from '@/components/layout/FeatureSection';
 
 interface Template {
     id: string;
@@ -19,7 +17,7 @@ interface Platform {
 
 export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     // Tab state
-    const [activeTab, setActiveTab] = useState<'tags' | 'platforms' | 'pro'>('tags');
+    const [activeTab, setActiveTab] = useState<'tags' | 'platforms'>('tags');
 
     // Template state
     const [templates, setTemplates] = useState<Template[]>([]);
@@ -50,7 +48,7 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     // --- Templates ---
     const fetchTemplates = async () => {
         try {
-            const res = await fetch(API.templates);
+            const res = await fetch(API.templates, { credentials: 'include' });
             if (res.ok) {
                 const json = await res.json();
                 setTemplates(json.data);
@@ -65,7 +63,10 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     const handleDeleteTemplate = async (id: string) => {
         if (!confirm('Are you sure you want to delete this template?')) return;
         try {
-            const res = await fetch(API.template(id), { method: 'DELETE' });
+            const res = await fetch(API.template(id), { 
+                method: 'DELETE',
+                credentials: 'include'
+            });
             if (res.ok) fetchTemplates();
         } catch (err) {
             console.error(err);
@@ -81,7 +82,8 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, weight: Number(formData.weight) })
+                body: JSON.stringify({ ...formData, weight: Number(formData.weight) }),
+                credentials: 'include'
             });
             if (res.ok) {
                 setIsAddingTemplate(false);
@@ -103,7 +105,7 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     // --- Platforms ---
     const fetchPlatforms = async () => {
         try {
-            const res = await fetch(API.platforms);
+            const res = await fetch(API.platforms, { credentials: 'include' });
             if (res.ok) {
                 const json = await res.json();
                 setPlatforms(json.data);
@@ -124,7 +126,8 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
             const res = await fetch(API.platforms, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newPlatformName.trim() })
+                body: JSON.stringify({ name: newPlatformName.trim() }),
+                credentials: 'include'
             });
             const json = await res.json();
             if (res.ok) {
@@ -143,7 +146,10 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     const handleDeletePlatform = async (id: string) => {
         setPlatformError('');
         try {
-            const res = await fetch(API.platform(id), { method: 'DELETE' });
+            const res = await fetch(API.platform(id), { 
+                method: 'DELETE',
+                credentials: 'include'
+            });
             const json = await res.json();
             if (res.ok) {
                 fetchPlatforms();
@@ -222,16 +228,6 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
                 >
                     <Globe className="w-3.5 h-3.5" />
                     Platforms
-                </button>
-                <button
-                    onClick={() => setActiveTab('pro')}
-                    className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5 ${activeTab === 'pro'
-                        ? 'text-gold border-gold'
-                        : 'text-gray-500 border-transparent hover:text-gray-300'
-                        }`}
-                >
-                    <Rocket className="w-3.5 h-3.5" />
-                    Pro Features
                 </button>
             </div>
 
@@ -333,44 +329,6 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
                         </div>
                     )}
                 </>
-            )}
-
-            {/* ============ PRO FEATURES TAB (MERGED) ============ */}
-            {activeTab === 'pro' && (
-                <div className="space-y-12 pb-8">
-                    <div className="mt-4">
-                        <div className="flex items-center justify-between p-4 bg-purple-500/5 rounded-2xl border border-purple-500/20 shadow-xl">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-purple-400">
-                                    <Sparkles className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <span className="text-sm font-bold text-white block">Enable AI Analysis</span>
-                                    <span className="text-[10px] text-purple-300/60">Unlock Gemini insights (Trial/Pro)</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                {aiSaving && <span className="text-[10px] text-purple-400 animate-pulse">Syncing...</span>}
-                                <button
-                                    onClick={() => handleToggleAI(!aiEnabled)}
-                                    disabled={aiSaving}
-                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${aiEnabled ? 'bg-purple-600' : 'bg-gray-700'}`}
-                                >
-                                    <span
-                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${aiEnabled ? 'translate-x-5' : 'translate-x-0'}`}
-                                    />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <PricingSection isDashboard />
-
-                    <div className="border-t border-white/5 pt-8">
-                        <h4 className="text-[10px] font-bold text-gold uppercase tracking-widest text-center mb-8 opacity-50">Feature Overview</h4>
-                        <FeatureSection isDashboard />
-                    </div>
-                </div>
             )}
 
             {/* ============ PLATFORMS TAB ============ */}

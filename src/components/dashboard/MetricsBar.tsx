@@ -1,7 +1,7 @@
 "use client";
 
 import { Upload, Plus, Download } from "lucide-react";
-import { API } from "@/lib/api";
+import { exportPlayersAction } from "@/app/actions";
 
 interface MetricsBarProps {
     totalCount: number;
@@ -66,10 +66,9 @@ export function MetricsBar({
                     <button
                         onClick={async () => {
                             try {
-                                const res = await fetch(API.playerExport);
-                                const json = await res.json();
-                                if (json.success && json.data) {
-                                    const blob = new Blob([JSON.stringify(json.data, null, 2)], { type: 'application/json' });
+                                const data = await exportPlayersAction();
+                                if (data) {
+                                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                                     const url = URL.createObjectURL(blob);
                                     const a = document.createElement('a');
                                     a.href = url;
@@ -77,7 +76,10 @@ export function MetricsBar({
                                     a.click();
                                     URL.revokeObjectURL(url);
                                 }
-                            } catch (e) { console.error("Export failed", e); }
+                            } catch (e) { 
+                                console.error("Export failed", e);
+                                alert("Export failed. Please check your session.");
+                            }
                         }}
                         className="flex items-center justify-center flex-1 md:flex-none px-3 sm:px-4 py-2 min-h-[44px] bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all font-medium"
                     >

@@ -17,34 +17,35 @@ export function HeroSection() {
             <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-gold text-xs font-bold uppercase tracking-widest mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
                     <Sparkles className="w-3 h-3" />
-                    Now with Gemini AI Analysis
+                    Now with AI Analysis
                 </div>
 
                 <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold text-white tracking-tight mb-8 leading-[1.1]">
-                    Master the Table with <br />
+                    Stop Guessing. <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold bg-[length:200%_auto] animate-gradient whitespace-nowrap">
-                        Limitless Intel.
+                        Start Exploiting.
                     </span>
                 </h1>
 
                 <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed">
-                    VillainVault is the tactical edge for professional poker players.
-                    AI-powered playstyle detection, OCR-automated note taking,
-                    and GTO-lite strategies—all in one premium command center.
+                    The ultimate AI command center for professional poker.
+                    Upload screenshots for <span className="text-white font-medium">instant hand analysis</span>,
+                    automate your notes with <span className="text-white font-medium">Vision OCR</span>,
+                    and build <span className="text-white font-medium">AI Player Profiles</span> that reveal every leak.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
                     <Link
-                        href="/dashboard"
+                        href="/analyzer"
                         className="w-full sm:w-auto px-8 py-4 bg-gold text-black font-bold rounded-2xl hover:bg-yellow-400 hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] transition-all flex items-center justify-center gap-2 text-lg"
                     >
-                        Launch Dashboard <ArrowRight className="w-5 h-5" />
+                        Analyze a Hand <ArrowRight className="w-5 h-5" />
                     </Link>
                     <Link
-                        href="#features"
+                        href="/dashboard"
                         className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl hover:bg-white/10 transition-all text-lg"
                     >
-                        See Features
+                        Launch Dashboard
                     </Link>
                 </div>
 

@@ -2,10 +2,52 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Eye, AlignLeft, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import {
+    ArrowLeft, Pencil, Trash2, Eye, Plus, X, Check, Search, Filter,
+    ChevronDown, Zap, Shield, Target, RefreshCw, AlignLeft
+} from 'lucide-react';
 import { Header } from "@/components/layout/Header";
 import { StrategyGuide } from "@/components/dashboard/StrategyGuide";
 import { API } from "@/lib/api";
+
+const STRATEGIES: Record<string, string[]> = {
+    "LAG": [
+        "Widen your value 3-betting range preflop to punish their wide opens.",
+        "Smooth call with strong draws and monsters on the flop to induce bluffs on later streets.",
+        "They will over-barrel; use your strong top-pairs as bluff catchers.",
+        "Do not try to bluff this player off top pair."
+    ],
+    "NIT": [
+        "Steal their blinds relentlessly preflop; they fold too often without a premium holding.",
+        "If they 3-bet you, fold unless you look down at QQ+ or AKs.",
+        "Float the flop and bet the turn if they check to you; they play 'fit-or-fold'.",
+        "Never pay off their river raises."
+    ],
+    "TAG": [
+        "Avoid tangling out of position without a solid range advantage.",
+        "Attack their c-bets on coordinated boards; they often have air when they check the turn.",
+        "Pay attention to sizing tells—they often bet larger with polarized value.",
+        "Do not run multi-street elaborate bluffs; TAGs have rigid calling ranges."
+    ],
+    "MANIAC": [
+        "Tighten up preflop and play exclusively for value.",
+        "Never slowplay your strong hands preflop.",
+        "Let them do the betting for you post-flop.",
+        "Prepare for high variance; buy-in full and do not tilt when they hit their 2-outers."
+    ],
+    "CALLING STATION": [
+        "Never bluff under any circumstances. Value bet thinly across all three streets.",
+        "Size your value bets larger on wet boards—they don't understand pot odds.",
+        "If you miss your draw, give up immediately.",
+        "Do not overthink hand reading; they are playing their cards face up."
+    ],
+    "FISH": [
+        "Isolate them preflop to play pots heads-up in position.",
+        "Extract maximum value. Size up dramatically when you hit Gin.",
+        "Watch for passive limping—punish it with large isolation raises.",
+    ],
+};
+
 import { fetchPlayerProfile } from "@/app/actions";
 import { fetchStrategy, HandStrategy, SolveRequest } from "@/lib/solverAPI";
 import { Modal } from "@/components/ui/Modal";
@@ -26,15 +68,28 @@ interface PlayerDetails {
     playstyle: string;
     aggression_score: number;
     notes: Note[];
+    ai_profile?: {
+        archetype: string;
+        confidence: number;
+        aggression_score: number;
+        looseness_score: number;
+        leaks: string[];
+        strategy: string;
+    } | null;
 }
 
 interface PlayerProfileClientProps {
     initialPlayer: PlayerDetails;
+    user?: { email: string; premium_tier: string } | null;
 }
 
-export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps) {
+export function PlayerProfileClient({ 
+    initialPlayer,
+    user: user
+}: PlayerProfileClientProps) {
     const router = useRouter();
     const [player, setPlayer] = useState<PlayerDetails>(initialPlayer);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     // Add Note state
     const [showAddNote, setShowAddNote] = useState(false);
@@ -45,6 +100,7 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
     // Edit Note state
     const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
     const [editContent, setEditContent] = useState('');
+    const [editStreet, setEditStreet] = useState('Preflop');
 
     // Edit Player state
     const [editingPlayer, setEditingPlayer] = useState(false);
@@ -62,7 +118,27 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
     // Refresh player data via Server Action
     const refreshPlayer = async () => {
         const updated = await fetchPlayerProfile(player.id);
-        if (updated) setPlayer(updated);
+        if (updated) setPlayer(updated as any);
+    };
+
+    // AI Profiling Trigger
+    const handleRunAIAnalyst = async () => {
+        setIsAnalyzing(true);
+        try {
+            const res = await fetch(API.refreshProfile, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerId: player.id })
+            });
+            const json = await res.json();
+            if (json.success) {
+                await refreshPlayer();
+            }
+        } catch (err) {
+            console.error("Failed to run AI analysis", err);
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
     // CREATE Note
@@ -99,7 +175,10 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
             const res = await fetch(API.note(noteId), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: editContent.trim() })
+                body: JSON.stringify({
+                    content: editContent.trim(),
+                    street: editStreet
+                })
             });
             if (res.ok) {
                 setEditingNoteId(null);
@@ -143,7 +222,7 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
     const handleDeletePlayer = async () => {
         try {
             const res = await fetch(API.player(player.id), { method: 'DELETE' });
-            if (res.ok) router.push('/');
+            if (res.ok) router.push('/players');
         } catch (err) {
             console.error("Failed to delete player", err);
         }
@@ -196,18 +275,18 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
 
     return (
         <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0f2e1e] via-[#020202] to-black">
-            <Header onSettingsClick={() => setSettingsOpen(true)} />
+            <Header user={user} onSettingsClick={() => setSettingsOpen(true)} />
 
             <div className="flex-1 overflow-y-auto pt-20 sm:pt-32 px-4 sm:px-8 pb-8 relative scrollbar-thin scrollbar-thumb-felt-light scrollbar-track-transparent">
                 <div className="max-w-7xl mx-auto relative z-10">
 
                     {/* Back Navigation Bar */}
                     <button
-                        onClick={() => router.push('/')}
+                        onClick={() => router.push('/players')}
                         className="flex items-center text-gray-400 hover:text-white transition-colors group mb-8"
                     >
                         <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                        Back to Dashboard
+                        Back to Players
                     </button>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -348,8 +427,150 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
                                 )}
                             </div>
 
-                            {/* EXPLOITATIVE STRATEGY ENGINE */}
-                            <StrategyGuide playstyle={player.playstyle} />
+                            {/* AI ANALYST PANEL (PREMIUM FEATURE) */}
+                            <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden p-8">
+                                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
+
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-2">
+                                        <Zap className="w-5 h-5 text-amber-400" />
+                                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Tactical Intelligence</h3>
+                                    </div>
+                                    <span className="text-[10px] text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 font-bold uppercase tracking-widest leading-none">
+                                        AI Analyst
+                                    </span>
+                                </div>
+
+                                {isAnalyzing ? (
+                                    <div className="py-12 flex flex-col items-center justify-center space-y-4">
+                                        <div className="relative">
+                                            <div className="w-16 h-16 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
+                                            <Zap className="w-6 h-6 text-amber-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-white font-bold text-sm tracking-widest uppercase">Processing Intel</p>
+                                            <p className="text-gray-500 text-[10px] mt-1">Aggregating structured tendencies...</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {/* ANALYSIS HEADER: Always visible, shows Playstyle or AI Archetype */}
+                                        <div className="flex items-center justify-between p-5 bg-amber-500/5 border border-amber-500/20 rounded-2xl shadow-inner group">
+                                            <div>
+                                                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-black block mb-1 px-1">Tactical Analysis</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-white/40 font-black text-lg">ANALYSIS:</span>
+                                                    <div className="text-amber-400 font-black text-2xl tracking-tighter uppercase group-hover:scale-105 transition-transform origin-left">
+                                                        {player.ai_profile?.archetype || player.playstyle || 'UNKNOWN'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {player.ai_profile && (
+                                                <div className="text-right bg-black/20 p-2 px-3 rounded-lg border border-white/5">
+                                                    <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold block mb-0.5">Confidence</span>
+                                                    <div className="text-amber-500 font-mono text-base font-black">
+                                                        {Math.round(player.ai_profile.confidence * 100)}%
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {player.ai_profile && (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="bg-white/5 p-3 rounded-lg border border-white/5">
+                                                    <span className="text-[10px] text-gray-500 uppercase tracking-widest block mb-2">Aggression</span>
+                                                    <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] transition-all duration-1000" style={{ width: `${player.ai_profile.aggression_score}%` }}></div>
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white/5 p-3 rounded-lg border border-white/5">
+                                                    <span className="text-[10px] text-gray-500 uppercase tracking-widest block mb-2">Looseness</span>
+                                                    <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-1000" style={{ width: `${player.ai_profile.looseness_score}%` }}></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {player.ai_profile && player.ai_profile.leaks.length > 0 && (
+                                            <div className="space-y-2">
+                                                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold block">Observed Intelligence Leaks</span>
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {player.ai_profile.leaks.map((leak, idx) => (
+                                                        <div key={idx} className="flex items-center gap-3 text-[11px] text-gray-300 bg-white/5 p-2.5 rounded-lg border border-white/5 hover:border-amber-500/20 transition-colors">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"></div>
+                                                            {leak}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="space-y-4 pt-2">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Target className="w-4 h-4 text-amber-500" />
+                                                <span className="text-[10px] text-amber-500 uppercase tracking-[0.2em] font-black">
+                                                    {player.ai_profile ? "Elite Exploit Directives" : "Standard Strategy Guide"}
+                                                </span>
+                                            </div>
+
+                                            <div className="bg-amber-500/5 p-5 rounded-2xl border border-amber-500/20 relative overflow-hidden backdrop-blur-sm">
+                                                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl"></div>
+
+                                                <div className="relative z-10 space-y-3">
+                                                    {player.ai_profile ? (
+                                                        /* AI STRATEGY DISPLAY */
+                                                        (player.ai_profile.strategy || "").split(/[.;\n]/).filter(s => s.trim().length > 3).map((sentence, idx) => (
+                                                            <div key={idx} className="flex gap-3 items-start group">
+                                                                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500/40 group-hover:bg-amber-500 transition-colors shrink-0"></div>
+                                                                <p className="text-xs text-gray-200 leading-relaxed font-medium">
+                                                                    {sentence.trim()}.
+                                                                </p>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        /* TEXTBOOK STRATEGY FALLBACK */
+                                                        (STRATEGIES[(player.playstyle || '').toUpperCase()] || [
+                                                            "Not enough intelligence gathered to formulate a specific exploitative strategy.",
+                                                            "Play default GTO ranges and observe their VPIP/PFR deviation."
+                                                        ]).map((heuristic: string, idx: number) => (
+                                                            <div key={idx} className="flex gap-3 items-start group">
+                                                                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500/20 group-hover:bg-amber-500 transition-colors shrink-0"></div>
+                                                                <p className="text-xs text-gray-400 leading-relaxed group-hover:text-gray-200 transition-colors">
+                                                                    {heuristic}
+                                                                </p>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-2">
+                                            {!player.ai_profile ? (
+                                                <button
+                                                    onClick={handleRunAIAnalyst}
+                                                    className="w-full py-4 bg-gradient-to-br from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-black text-sm uppercase tracking-[0.2em] rounded-xl shadow-[0_4px_15px_rgba(245,158,11,0.3)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
+                                                >
+                                                    <Zap className="w-5 h-5" />
+                                                    Run AI Deep Analyst
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={handleRunAIAnalyst}
+                                                    className="w-full py-3 bg-white/5 hover:bg-white/10 text-[10px] text-gray-500 hover:text-amber-400 font-bold uppercase tracking-[0.3em] rounded-xl transition-all border border-dashed border-white/10 hover:border-amber-500/40 group"
+                                                >
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-700" />
+                                                        Recalculate Elite Intel
+                                                    </div>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                         </div>
 
                         {/* RIGHT COLUMN: INTELLIGENCE FEED */}
@@ -430,6 +651,21 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
                                                 {editingNoteId === note.id ? (
                                                     /* EDIT MODE */
                                                     <div className="space-y-3">
+                                                        <div className="flex space-x-2">
+                                                            {['Preflop', 'Flop', 'Turn', 'River'].map((s) => (
+                                                                <button
+                                                                    key={s}
+                                                                    type="button"
+                                                                    onClick={() => setEditStreet(s)}
+                                                                    className={`px-3 py-1 text-[10px] font-bold rounded uppercase transition-colors border ${editStreet === s
+                                                                        ? 'bg-felt-default text-white border-felt-light'
+                                                                        : 'bg-card text-gray-400 border-border hover:text-gray-200'
+                                                                        }`}
+                                                                >
+                                                                    {s}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                         <textarea
                                                             value={editContent}
                                                             onChange={e => setEditContent(e.target.value)}
@@ -460,7 +696,11 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
                                                             </span>
                                                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                                 <button
-                                                                    onClick={() => { setEditingNoteId(note.id); setEditContent(note.content); }}
+                                                                    onClick={() => {
+                                                                        setEditingNoteId(note.id);
+                                                                        setEditContent(note.content);
+                                                                        setEditStreet(note.street);
+                                                                    }}
                                                                     className="p-1.5 text-gray-500 hover:text-gold hover:bg-white/5 rounded transition-all"
                                                                     title="Edit note"
                                                                 >
@@ -488,19 +728,6 @@ export function PlayerProfileClient({ initialPlayer }: PlayerProfileClientProps)
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* FULL WIDTH BOTTOM ROW: EXPLOITATIVE STRATEGY ENGINE */}
-                    <div className="mt-8">
-                        <StrategyGuide
-                            playstyle={player.playstyle}
-                            aiRangeMatrix={solveData}
-                            aiActionBreakdown={solveActionBreakdown}
-                            aiEnabled={true}
-                            onSolve={handleSolve}
-                            isSolving={isSolving}
-                            solveError={solveError}
-                        />
                     </div>
 
                 </div>

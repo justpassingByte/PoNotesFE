@@ -1,15 +1,16 @@
-'use client';
-
 import React from 'react';
 import { LandingHeader } from './LandingHeader';
+import { getAuthUser } from '@/lib/auth';
 
-export function LandingLayout({ children }: { children: React.ReactNode }) {
+export async function LandingLayout({ children }: { children: React.ReactNode }) {
+    const user = await getAuthUser();
+
     return (
         <div className="min-h-screen bg-black text-white selection:bg-gold selection:text-black">
             {/* Custom background pattern */}
             <div className="fixed inset-0 z-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
-            <LandingHeader />
+            <LandingHeader user={user} />
             <main className="relative z-10">
                 {children}
             </main>

@@ -10,11 +10,12 @@ interface FeatureProps {
     icon: React.ReactNode;
     imagePath?: string;
     reverse?: boolean;
+    id?: string;
 }
 
-function FeatureItem({ title, description, icon, imagePath, reverse }: FeatureProps) {
+function FeatureItem({ title, description, icon, imagePath, reverse, id }: FeatureProps) {
     return (
-        <div className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-12 py-16 sm:py-24`}>
+        <div id={id} className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-12 py-16 sm:py-24 scroll-mt-24`}>
             <div className="flex-1 space-y-6">
                 <div className="w-12 h-12 bg-gold/10 border border-gold/20 rounded-xl flex items-center justify-center text-gold">
                     {icon}
@@ -64,25 +65,28 @@ export function FeatureSection({ isDashboard = false }: { isDashboard?: boolean 
             )}
 
             <FeatureItem
-                title="Gemini-Powered Analysis"
-                description="Our AI doesn't just store notes—it analyzes them. Gemini automatically identifies player archetypes (LAG, TAG, Fish) and suggests specific exploitative lines based on your history."
+                id="analyzer"
+                title="AI Hand Analyzer"
+                description="Upload hand screenshots or paste text histories to get instant, deep-learning powered analysis. Identify mistakes in your lines, find hero-range errors, and see exactly where villains are leaking EV."
                 icon={<Brain className="w-6 h-6" />}
-                imagePath="/hero_poker_ai_1772732965411.png"
+                imagePath="/analyzer_preview.png"
             />
 
             <FeatureItem
-                title="Screenshot OCR Import"
-                description="Stop typing and start playing. Snap a screenshot of your HUD or note popup, and VillainVault automatically extracts player names, stats, and text to your database."
+                id="ocr"
+                title="Vision OCR + Automated Notes"
+                description="Capture player stats and historical notes directly from your HUD or note popups. Our specialized OCR pipeline digitizes everything instantly, so you never miss a sizing tell or timing leak."
                 icon={<Camera className="w-6 h-6" />}
                 imagePath="/ocr_feature_visualization_1772732984845.png"
                 reverse
             />
 
             <FeatureItem
-                title="GTO Lite Strategies"
-                description="Interactive 13x13 grids provide immediate tactical guidance. See exactly how a balanced range should play on any board, then adjust based on our AI's exploit recommendations."
+                id="profiles"
+                title="Smart AI Player Profiles"
+                description="Our AI synthesizes thousands of hands to build a behavioral profile for every opponent. See their frequencies, tendencies, and AI-generated exploit strategies at a glance."
                 icon={<Target className="w-6 h-6" />}
-                imagePath="/gto_strategy_grid_1772733004755.png"
+                imagePath="/profile_feature_preview.png"
             />
         </section>
     );

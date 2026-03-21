@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PlayerProfileClient } from "@/components/dashboard/PlayerProfileClient";
 import { PlayerProfileSkeleton } from "@/components/dashboard/PlayerProfileSkeleton";
 import { fetchPlayerProfile } from "@/app/actions";
+import { getAuthUser } from "@/lib/auth";
 
 interface PlayerProfilePageProps {
     params: Promise<{ id: string }>;
@@ -10,7 +11,10 @@ interface PlayerProfilePageProps {
 
 export default async function PlayerProfilePage({ params }: PlayerProfilePageProps) {
     const { id } = await params;
-    const player = await fetchPlayerProfile(id);
+    const [player, user] = await Promise.all([
+        fetchPlayerProfile(id),
+        getAuthUser()
+    ]);
 
     if (!player) {
         notFound();
@@ -18,7 +22,7 @@ export default async function PlayerProfilePage({ params }: PlayerProfilePagePro
 
     return (
         <Suspense fallback={<PlayerProfileSkeleton />}>
-            <PlayerProfileClient initialPlayer={player} />
+            <PlayerProfileClient initialPlayer={player} user={user} />
         </Suspense>
     );
 }

@@ -1,6 +1,8 @@
 "use server";
 
 import { API } from "@/lib/api";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const PAGE_SIZE = 10;
 
@@ -17,6 +19,7 @@ interface PlayerData {
     ai_stats_used?: string | null;
     ai_range_matrix?: any;
     ai_action_breakdown?: any;
+    ai_profile?: any;
 }
 
 interface PaginationMeta {
@@ -33,34 +36,80 @@ interface PaginatedResult {
 }
 
 /**
+ * Server Action: fetch dashboard stats and top players
+ */
+export async function fetchDashboard() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    try {
+        const res = await fetch(API.dashboard, { 
+            cache: "no-store",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        
+        if (!res.ok) {
+            return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {} }, topFish: [] };
+        }
+        const json = await res.json();
+        if (!json.success) {
+            return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {} }, topFish: [] };
+        }
+        return json.data;
+    } catch (err) {
+        console.error("fetchDashboard Action Error:", err);
+        return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {} }, topFish: [] };
+    }
+}
+
+/**
  * Server Action: fetch the first page of players.
  * Used for initial SSR load and reset-after-mutation.
  */
 export async function fetchFirstPage(): Promise<PaginatedResult> {
-    const res = await fetch(`${API.players}?limit=${PAGE_SIZE}`, { cache: "no-store" });
-    const json = await res.json();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
 
-    if (!json.success) {
-        throw new Error("Failed to fetch players");
+    try {
+        const res = await fetch(`${API.players}?limit=${PAGE_SIZE}`, { 
+            cache: "no-store",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        
+        if (!res.ok) {
+            console.error(`Backend returned ${res.status} for players`);
+            return { data: [], meta: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {}, hasMore: false, nextCursor: null } };
+        }
+
+        const json = await res.json();
+
+        if (!json.success) {
+            console.error("Fetch players failed:", json.error);
+            return { data: [], meta: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {}, hasMore: false, nextCursor: null } };
+        }
+
+        // Serialize dates for RSC boundary safety
+        const data = (json.data as any[]).map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            playstyle: p.playstyle || "UNKNOWN",
+            aggression_score: p.aggression_score ?? 0,
+            notesCount: p.notesCount ?? p._count?.notes ?? 0,
+            platform: p.platform ? { id: p.platform.id, name: p.platform.name } : undefined,
+            ai_playstyle: p.ai_playstyle || null,
+            ai_aggression_score: p.ai_aggression_score ?? null,
+            ai_exploit_strategy: p.ai_exploit_strategy || null,
+            ai_stats_used: p.ai_stats_used || null,
+            ai_range_matrix: p.ai_range_matrix || null,
+            ai_action_breakdown: p.ai_action_breakdown || null,
+            ai_profile: p.ai_profile || null,
+        }));
+
+        return { data, meta: json.meta };
+    } catch (err) {
+        console.error("fetchFirstPage Action Error:", err);
+        return { data: [], meta: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {}, hasMore: false, nextCursor: null } };
     }
-
-    // Serialize dates for RSC boundary safety
-    const data = (json.data as any[]).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        playstyle: p.playstyle || "UNKNOWN",
-        aggression_score: p.aggression_score ?? 0,
-        notesCount: p.notesCount ?? p._count?.notes ?? 0,
-        platform: p.platform ? { id: p.platform.id, name: p.platform.name } : undefined,
-        ai_playstyle: p.ai_playstyle || null,
-        ai_aggression_score: p.ai_aggression_score ?? null,
-        ai_exploit_strategy: p.ai_exploit_strategy || null,
-        ai_stats_used: p.ai_stats_used || null,
-        ai_range_matrix: p.ai_range_matrix || null,
-        ai_action_breakdown: p.ai_action_breakdown || null,
-    }));
-
-    return { data, meta: json.meta };
 }
 
 /**
@@ -68,8 +117,14 @@ export async function fetchFirstPage(): Promise<PaginatedResult> {
  * Called from the client when the IntersectionObserver triggers.
  */
 export async function loadMorePlayers(cursor: string): Promise<PaginatedResult> {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
     const params = new URLSearchParams({ limit: String(PAGE_SIZE), cursor });
-    const res = await fetch(`${API.players}?${params.toString()}`, { cache: "no-store" });
+    const res = await fetch(`${API.players}?${params.toString()}`, { 
+        cache: "no-store",
+        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+    });
     const json = await res.json();
 
     if (!json.success) {
@@ -90,6 +145,7 @@ export async function loadMorePlayers(cursor: string): Promise<PaginatedResult> 
         ai_stats_used: p.ai_stats_used || null,
         ai_range_matrix: p.ai_range_matrix || null,
         ai_action_breakdown: p.ai_action_breakdown || null,
+        ai_profile: p.ai_profile || null,
     }));
 
     return { data, meta: json.meta };
@@ -113,9 +169,16 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
     ai_stats_used?: string | null;
     ai_range_matrix?: any;
     ai_action_breakdown?: any;
+    ai_profile?: any;
     notes: { id: string; content: string; street: string; note_type: string; source?: string; created_at: string }[];
 } | null> {
-    const res = await fetch(`${API.players}/${playerId}`, { cache: "no-store" });
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    const res = await fetch(`${API.players}/${playerId}`, { 
+        cache: "no-store",
+        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+    });
     const json = await res.json();
 
     if (!json.success || !json.data) {
@@ -134,6 +197,7 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
         ai_stats_used: p.ai_stats_used || null,
         ai_range_matrix: p.ai_range_matrix || null,
         ai_action_breakdown: p.ai_action_breakdown || null,
+        ai_profile: p.ai_profile || null,
         notes: (p.notes || []).map((n: any) => ({
             id: n.id,
             content: n.content,
@@ -149,8 +213,13 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
  * Server Action: fetch app settings
  */
 export async function getAppSettings() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
     try {
-        const res = await fetch(API.settings, { cache: "no-store" });
+        const res = await fetch(API.settings, { 
+            cache: "no-store",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
         const json = await res.json();
         if (json.success) return json.data;
         return null;
@@ -164,11 +233,16 @@ export async function getAppSettings() {
  * Server Action: update app settings
  */
 export async function updateAppSettings(data: { ai_enabled?: boolean; analysis_mode?: string }) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
     console.log("Updating app settings:", data);
     try {
         const res = await fetch(API.settings, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
             body: JSON.stringify(data),
             cache: "no-store",
         });
@@ -181,7 +255,6 @@ export async function updateAppSettings(data: { ai_enabled?: boolean; analysis_m
 
         const json = await res.json();
         if (json.success) {
-            // Return a plain object to avoid serialization issues with Next.js Server Actions
             return JSON.parse(JSON.stringify(json.data));
         }
 
@@ -189,6 +262,57 @@ export async function updateAppSettings(data: { ai_enabled?: boolean; analysis_m
         throw new Error(json.error || "Failed to update settings");
     } catch (err) {
         console.error("Server Action Error (updateAppSettings):", err);
+        throw err;
+    }
+}
+/**
+ * Server Action: create a new note for a player.
+ */
+export async function createNote(data: {
+    player_id: string;
+    content: string;
+    street: string;
+    note_type: string;
+    hand_id?: string;
+}) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    try {
+        const res = await fetch(API.notes, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(data),
+            cache: "no-store",
+        });
+
+        const json = await res.json();
+        if (json.success) return json.data;
+        throw new Error(json.error || "Failed to create note");
+    } catch (err) {
+        console.error("Server Action Error (createNote):", err);
+        throw err;
+    }
+}
+
+/**
+ * Server Action: export all players and notes for backup.
+ */
+export async function exportPlayersAction() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    try {
+        const res = await fetch(API.playerExport, {
+            cache: "no-store",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (json.success) return json.data;
+        throw new Error(json.error || "Failed to export data");
+    } catch (err) {
+        console.error("Server Action Error (exportPlayersAction):", err);
         throw err;
     }
 }

@@ -61,8 +61,11 @@ export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => voi
 
             const payload = jsonData.map((p: any) => ({
                 name: p.name,
-                platform_id: p.platform_id || "989c631c-8347-46d6-8b94-02539b143c26",
+                // Support both export formats (platform_id flat vs nested platform object)
+                platform_id: p.platform_id || p.platform?.id,
+                platform_name: p.platform?.name,
                 playstyle: p.playstyle || "UNKNOWN",
+                ai_profile: p.ai_profile,
                 notes: Array.isArray(p.notes) ? p.notes.map((n: any) => ({
                     street: n.street || "Preflop",
                     note_type: n.note_type || "Custom",
@@ -72,7 +75,10 @@ export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => voi
 
             const res = await fetch(API.playerBulk, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include', // Automatically send the httpOnly token cookie
                 body: JSON.stringify(payload),
             });
 

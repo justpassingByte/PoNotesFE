@@ -36,7 +36,15 @@ interface PlayerListClientProps {
     initialMeta: PaginationMeta;
 }
 
-export function PlayerListClient({ initialPlayers, initialMeta }: PlayerListClientProps) {
+export function PlayerListClient({
+    initialPlayers,
+    initialMeta,
+    user: user
+}: {
+    initialPlayers: Player[];
+    initialMeta: PaginationMeta;
+    user?: { email: string; premium_tier: string } | null;
+}) {
     const [players, setPlayers] = useState<Player[]>(initialPlayers);
     const [meta, setMeta] = useState<PaginationMeta>(initialMeta);
     const [cursor, setCursor] = useState<string | null>(initialMeta.nextCursor);
@@ -119,7 +127,7 @@ export function PlayerListClient({ initialPlayers, initialMeta }: PlayerListClie
 
     return (
         <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0f2e1e] via-[#020202] to-black">
-            <Header onSettingsClick={() => setSettingsOpen(true)} />
+            <Header user={user} onSettingsClick={() => setSettingsOpen(true)} />
 
             <div className="flex-1 overflow-y-auto pt-20 sm:pt-32 px-4 sm:px-8 pb-8 relative scrollbar-thin scrollbar-thumb-felt-light scrollbar-track-transparent">
                 {/* Decorative background */}

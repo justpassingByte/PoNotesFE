@@ -1,108 +1,120 @@
 'use client';
 
 import React from 'react';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, Zap, Rocket, Shield } from 'lucide-react';
+import Link from 'next/link';
+
+const TIERS = [
+    {
+        name: "Trial",
+        price: "$0",
+        period: "/forever",
+        description: "See what AI can do.",
+        features: [
+            "2 AI Analysis / Day",
+            "5 Name OCR / Day",
+            "Basic Profiles",
+            "GPT-4o Mini Intelligence"
+        ],
+        cta: "Try for Free",
+        popular: false,
+        icon: Zap,
+        color: "text-blue-400",
+        bg: "bg-blue-500/10",
+        border: "border-border"
+    },
+    {
+        name: "Pro",
+        price: "$29",
+        period: "/month",
+        description: "For serious grinders.",
+        features: [
+            "100 AI Analysis / Month",
+            "100 Full OCR / Month",
+            "Leak Detection",
+            "Exploit Suggestions",
+            "Priority Support"
+        ],
+        cta: "Go Pro",
+        popular: true,
+        icon: Rocket,
+        color: "text-gold",
+        bg: "bg-gold/10",
+        border: "border-gold/30"
+    },
+    {
+        name: "Elite",
+        price: "$59",
+        period: "/month",
+        description: "Claude 3.5 Sonnet logic.",
+        features: [
+            "500 AI Analysis / Month",
+            "300 Full OCR / Month",
+            "GTO Baseline Comparison",
+            "Synthesis Profiling",
+            "Vision OCR+"
+        ],
+        cta: "Join Elite",
+        popular: false,
+        icon: Zap,
+        color: "text-purple-400",
+        bg: "bg-purple-500/10",
+        border: "border-border"
+    }
+];
 
 export function PricingSection({ isDashboard = false }: { isDashboard?: boolean }) {
     return (
         <section id="pricing" className={`${isDashboard ? '' : 'max-w-7xl mx-auto px-6 py-24 sm:py-32'}`}>
             {!isDashboard && (
                 <div className="text-center space-y-4 mb-20">
-                    <span className="text-gold font-bold tracking-widest text-sm uppercase">Transparent Pricing</span>
+                    <span className="text-gold font-bold tracking-widest text-sm uppercase text-glow">Pricing Plans</span>
                     <h2 className="text-4xl sm:text-6xl font-bold text-white">Choose Your Edge</h2>
                     <p className="text-gray-500 max-w-2xl mx-auto">
-                        Whether you are a casual crusher or a high-stakes professional, there is a vault for you.
+                        Flexible plans for every stage of your poker career.
                     </p>
                 </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                {/* Basic Tier */}
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col hover:bg-white/10 transition-colors">
-                    <div className="mb-6">
-                        <h3 className="text-lg font-bold text-white mb-2">Basic</h3>
-                        <p className="text-gray-500 text-xs">For hobbyists.</p>
-                    </div>
-                    <div className="mb-6">
-                        <span className="text-3xl font-bold text-white">$0</span>
-                        <span className="text-gray-500 text-xs ml-1">/mo</span>
-                    </div>
-                    <ul className="space-y-3 mb-8 flex-1">
-                        {[
-                            'Manual Notes',
-                            'Local Dashboard',
-                            'Basic Player Stats'
-                        ].map((item) => (
-                            <li key={item} className="flex items-center gap-2 text-xs text-gray-400">
-                                <Check className="w-3 h-3 text-green-500" /> {item}
-                            </li>
-                        ))}
-                    </ul>
-                    <button className="w-full py-3 rounded-xl bg-white/5 text-white text-sm font-bold border border-white/10 opacity-50 cursor-not-allowed">
-                        Current
-                    </button>
-                </div>
+                {TIERS.map((tier) => (
+                    <div
+                        key={tier.name}
+                        className={`flex flex-col rounded-3xl border p-8 transition-all duration-300 relative group ${tier.popular ? `${tier.border} bg-white/5 shadow-2xl` : `border-white/5 bg-card hover:border-white/10`}`}
+                    >
+                        {tier.popular && (
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-black text-[10px] font-bold px-3 py-1 rounded-full uppercase">
+                                Recommended
+                            </div>
+                        )}
+                        <div className="mb-8">
+                            <div className={`w-10 h-10 rounded-xl ${tier.bg} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
+                                <tier.icon className={`w-5 h-5 ${tier.color}`} />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-3xl font-black text-white">{tier.price}</span>
+                                <span className="text-gray-500 text-sm font-medium">{tier.period}</span>
+                            </div>
+                        </div>
 
-                {/* Trial Tier */}
-                <div className="bg-white/5 border border-felt-light/30 rounded-3xl p-6 flex flex-col hover:bg-white/10 transition-colors relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 bg-felt-light text-white text-[9px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">
-                        7 Days Free
-                    </div>
-                    <div className="mb-6">
-                        <h3 className="text-lg font-bold text-white mb-2">Pro Trial</h3>
-                        <p className="text-gray-500 text-xs">Test the full power.</p>
-                    </div>
-                    <div className="mb-6">
-                        <span className="text-3xl font-bold text-white">$0</span>
-                        <span className="text-felt-light text-xs font-bold ml-1">Trial</span>
-                    </div>
-                    <ul className="space-y-3 mb-8 flex-1">
-                        {[
-                            'Full AI Analysis',
-                            'OCR Imports (5/day)',
-                            'GTO Lite Access',
-                            'No Credit Card Required'
-                        ].map((item) => (
-                            <li key={item} className="flex items-center gap-2 text-xs text-gray-300">
-                                <Check className="w-3 h-3 text-felt-light" /> {item}
-                            </li>
-                        ))}
-                    </ul>
-                    <button className="w-full py-3 rounded-xl bg-felt-light text-white text-sm font-bold hover:bg-felt-default transition-all shadow-[0_4px_12px_rgba(16,185,129,0.2)]">
-                        Start Free Trial
-                    </button>
-                </div>
+                        <ul className="space-y-4 mb-8 flex-1">
+                            {tier.features.map((feature) => (
+                                <li key={feature} className="flex items-start gap-3">
+                                    <Check className={`w-4 h-4 mt-0.5 ${tier.color}`} />
+                                    <span className="text-sm text-gray-400">{feature}</span>
+                                </li>
+                            ))}
+                        </ul>
 
-                {/* Pro Tier */}
-                <div className="bg-gradient-to-b from-gold/10 to-transparent border border-gold/40 rounded-3xl p-6 flex flex-col relative overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.05)]">
-                    <div className="absolute top-0 right-0 bg-gold text-black text-[9px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">
-                        Unlimited
+                        <Link
+                            href="/pricing"
+                            className={`w-full py-4 rounded-2xl font-bold text-center transition-all ${tier.popular ? "bg-gold text-black hover:bg-yellow-400" : "bg-white/5 text-white hover:bg-white/10"}`}
+                        >
+                            {tier.cta}
+                        </Link>
                     </div>
-                    <div className="mb-6">
-                        <h3 className="text-lg font-bold text-white mb-2">Pro</h3>
-                        <p className="text-gold/60 text-xs">For high-stakes pros.</p>
-                    </div>
-                    <div className="mb-6">
-                        <span className="text-3xl font-bold text-white">$19.99</span>
-                        <span className="text-gray-500 text-xs ml-1">/mo</span>
-                    </div>
-                    <ul className="space-y-3 mb-8 flex-1">
-                        {[
-                            'Unlimited AI Analysis',
-                            'Unlimited OCR Imports',
-                            'Full GTO Lite Access',
-                            'Priority Solver Queue',
-                            'Cloud Backups'
-                        ].map((item) => (
-                            <li key={item} className="flex items-center gap-2 text-xs text-white">
-                                <Check className="w-3 h-3 text-gold" /> {item}
-                            </li>
-                        ))}
-                    </ul>
-                    <button className="w-full py-3 rounded-xl bg-gold text-black text-sm font-bold hover:bg-yellow-400 hover:shadow-[0_0_15px_rgba(250,204,21,0.3)] transition-all">
-                        Upgrade Now
-                    </button>
-                </div>
+                ))}
             </div>
         </section>
     );

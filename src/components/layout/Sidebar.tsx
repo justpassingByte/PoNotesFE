@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, Users, Settings, Database, Crosshair, Target } from 'lucide-react';
+import { Home, Users, Settings, Database, Crosshair, Target, Scan, Clock, CreditCard } from 'lucide-react';
 
 export function Sidebar() {
     return (
@@ -12,8 +12,11 @@ export function Sidebar() {
             <nav className="flex-1 px-4 py-6 space-y-2">
                 <NavItem href="/" icon={<Home />} label="Dashboard" active />
                 <NavItem href="/players" icon={<Users />} label="Players" />
+                <NavItem href="/analyzer" icon={<Scan />} label="Hand Analyzer" />
+                <NavItem href="/history" icon={<Clock />} label="Hand History" />
                 <NavItem href="/database" icon={<Database />} label="Database Insights" />
                 <NavItem href="/solver" icon={<Target />} label="GTO Solver" />
+                <NavItem href="/pricing" icon={<CreditCard />} label="Pricing" />
                 <NavItem href="/settings" icon={<Settings />} label="Settings" />
             </nav>
 
