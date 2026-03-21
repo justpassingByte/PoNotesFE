@@ -1,7 +1,10 @@
 // Centralized API configuration
 // All API calls should use this base URL instead of hardcoding localhost
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, '');
+const IS_SERVER = typeof window === 'undefined';
+const API_BASE_URL = IS_SERVER 
+  ? 'http://notes_backend:3001' 
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, '');
 
 export const API = {
     base: API_BASE_URL,

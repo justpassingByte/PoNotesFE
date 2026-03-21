@@ -25,10 +25,13 @@ export async function login(formData: FormData) {
 
         // Set cookie
         const cookieStore = await cookies();
+        const secure = process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === "production";
+        
         cookieStore.set("token", json.token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: secure,
             maxAge: 7 * 24 * 60 * 60, // 7 days
+            sameSite: "lax",
             path: "/",
         });
     } catch (err) {
@@ -59,10 +62,13 @@ export async function register(formData: FormData) {
 
         // Set cookie (since register auto-logs in)
         const cookieStore = await cookies();
+        const secure = process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === "production";
+
         cookieStore.set("token", json.token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: secure,
             maxAge: 7 * 24 * 60 * 60, // 7 days
+            sameSite: "lax",
             path: "/",
         });
     } catch (err) {

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ShieldAlert, Crosshair, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, Crosshair, AlertTriangle, Trash2 } from 'lucide-react';
 
 export interface PlayerHUDProps {
     id: string;
@@ -9,9 +9,10 @@ export interface PlayerHUDProps {
     notesCount: number;
     platformName?: string;
     onAddNote?: () => void;
+    onDelete?: () => void;
 }
 
-export function PlayerHUD({ id, name, playstyle, aggressionScore, notesCount, platformName, onAddNote }: PlayerHUDProps) {
+export function PlayerHUD({ id, name, playstyle, aggressionScore, notesCount, platformName, onAddNote, onDelete }: PlayerHUDProps) {
 
     // Decide color logic based on playstyle
     const getPlaystyleColor = (style: string) => {
@@ -41,8 +42,17 @@ export function PlayerHUD({ id, name, playstyle, aggressionScore, notesCount, pl
                     <h3 className="font-bold text-xl text-white tracking-wide">{name}</h3>
                     <span className="text-xs text-gray-400 font-medium">{platformName || 'Unknown Platform'}</span>
                 </div>
-                <div className={`px-2.5 py-1 text-xs font-bold rounded border ${getPlaystyleColor(playstyle)} transition-all`}>
-                    {playstyle.toUpperCase()}
+                <div className="flex items-center space-x-2">
+                    <div className={`px-2.5 py-1 text-xs font-bold rounded border ${getPlaystyleColor(playstyle)} transition-all`}>
+                        {playstyle.toUpperCase()}
+                    </div>
+                    <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(confirm(`Delete ${name}?`)) onDelete?.(); }}
+                        className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                        title="Delete Player"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
                 </div>
             </div>
 
@@ -78,3 +88,4 @@ export function PlayerHUD({ id, name, playstyle, aggressionScore, notesCount, pl
         </Link>
     );
 }
+

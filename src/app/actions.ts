@@ -316,3 +316,24 @@ export async function exportPlayersAction() {
         throw err;
     }
 }
+/**
+ * Server Action: delete a player and their associated data.
+ */
+export async function deletePlayerAction(playerId: string) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    try {
+        const res = await fetch(`${API.players}/${playerId}`, {
+            method: "DELETE",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {},
+            cache: "no-store",
+        });
+
+        const json = await res.json();
+        if (json.success) return { success: true };
+        throw new Error(json.error || "Failed to delete player");
+    } catch (err) {
+        console.error("Server Action Error (deletePlayerAction):", err);
+        throw err;
+    }
+}

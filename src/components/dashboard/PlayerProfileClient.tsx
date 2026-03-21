@@ -90,6 +90,7 @@ export function PlayerProfileClient({
     const router = useRouter();
     const [player, setPlayer] = useState<PlayerDetails>(initialPlayer);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [cooldown, setCooldown] = useState(0); // in seconds
 
     // Add Note state
     const [showAddNote, setShowAddNote] = useState(false);
@@ -123,6 +124,7 @@ export function PlayerProfileClient({
 
     // AI Profiling Trigger
     const handleRunAIAnalyst = async () => {
+        if (cooldown > 0) return;
         setIsAnalyzing(true);
         try {
             const res = await fetch(API.refreshProfile, {
@@ -130,9 +132,29 @@ export function PlayerProfileClient({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ playerId: player.id })
             });
+
+            if (res.status === 429) {
+                alert("Rate limit reached. Please wait a moment.");
+                setCooldown(60); // Set a default cooldown if backend rate limits
+                return;
+            }
+
             const json = await res.json();
             if (json.success) {
                 await refreshPlayer();
+                // Set a 60-second cooldown on success
+                setCooldown(60);
+                const timer = setInterval(() => {
+                    setCooldown(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+            } else {
+                alert(json.error || "Analysis failed");
             }
         } catch (err) {
             console.error("Failed to run AI analysis", err);
@@ -277,7 +299,7 @@ export function PlayerProfileClient({
         <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0f2e1e] via-[#020202] to-black">
             <Header user={user} onSettingsClick={() => setSettingsOpen(true)} />
 
-            <div className="flex-1 overflow-y-auto pt-20 sm:pt-32 px-4 sm:px-8 pb-8 relative scrollbar-thin scrollbar-thumb-felt-light scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto pt-20 sm:pt-32 px-4 sm:px-8 pb-8 relative scrollbar-hide">
                 <div className="max-w-7xl mx-auto relative z-10">
 
                     {/* Back Navigation Bar */}
@@ -550,19 +572,21 @@ export function PlayerProfileClient({
                                             {!player.ai_profile ? (
                                                 <button
                                                     onClick={handleRunAIAnalyst}
-                                                    className="w-full py-4 bg-gradient-to-br from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-black text-sm uppercase tracking-[0.2em] rounded-xl shadow-[0_4px_15px_rgba(245,158,11,0.3)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
+                                                    disabled={isAnalyzing || cooldown > 0}
+                                                    className="w-full py-4 bg-gradient-to-br from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-black text-sm uppercase tracking-[0.2em] rounded-xl shadow-[0_4px_15px_rgba(245,158,11,0.3)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 disabled:opacity-50 disabled:transform-none"
                                                 >
                                                     <Zap className="w-5 h-5" />
-                                                    Run AI Deep Analyst
+                                                    {cooldown > 0 ? `Wait ${cooldown}s` : 'Run AI Deep Analyst'}
                                                 </button>
                                             ) : (
                                                 <button
                                                     onClick={handleRunAIAnalyst}
-                                                    className="w-full py-3 bg-white/5 hover:bg-white/10 text-[10px] text-gray-500 hover:text-amber-400 font-bold uppercase tracking-[0.3em] rounded-xl transition-all border border-dashed border-white/10 hover:border-amber-500/40 group"
+                                                    disabled={isAnalyzing || cooldown > 0}
+                                                    className="w-full py-3 bg-white/5 hover:bg-white/10 text-[10px] text-gray-500 hover:text-amber-400 font-bold uppercase tracking-[0.3em] rounded-xl transition-all border border-dashed border-white/10 hover:border-amber-500/40 group disabled:opacity-50"
                                                 >
                                                     <div className="flex items-center justify-center gap-2">
-                                                        <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-700" />
-                                                        Recalculate Elite Intel
+                                                        <RefreshCw className={`w-3 h-3 ${isAnalyzing ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-700`} />
+                                                        {cooldown > 0 ? `Cooldown (${cooldown}s)` : 'Recalculate Elite Intel'}
                                                     </div>
                                                 </button>
                                             )}
