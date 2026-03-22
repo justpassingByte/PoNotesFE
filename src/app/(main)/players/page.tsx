@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function PlayersPage() {
     return (
-        <main className="flex-1 pt-12 sm:pt-16 px-4 sm:px-8 pb-12 overflow-y-auto w-full">
+        <main className="flex-1 pt-4 sm:pt-8 px-4 sm:px-8 pb-12 overflow-y-auto w-full">
             <div className="max-w-7xl mx-auto w-full">
                 <Suspense fallback={<PlayerListSkeleton />}>
                     <PlayersContent />

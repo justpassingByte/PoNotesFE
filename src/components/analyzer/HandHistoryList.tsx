@@ -82,7 +82,7 @@ export function HandHistoryList() {
         if (!confirm("Are you sure you want to delete this hand history?")) return;
         
         try {
-            const res = await fetch(`${API.handHistory}/${handId}`, {
+            const res = await fetch(API.hand(handId), {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" }
             });
@@ -90,6 +90,8 @@ export function HandHistoryList() {
             if (json.success) {
                 alert("Hand deleted successfully");
                 fetchHands();
+            } else {
+                alert("Delete failed: " + (json.error || "Unknown error"));
             }
         } catch (err) {
             console.error("Delete failed:", err);
