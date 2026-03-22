@@ -15,7 +15,8 @@ import {
     XCircle,
     Calendar,
     ArrowUpRight,
-    Zap
+    Zap,
+    Trash2
 } from "lucide-react";
 
 interface Stats {
@@ -110,6 +111,25 @@ export default function AdminDashboard() {
             }
         } catch (err) {
             console.error("Save failed:", err);
+        }
+    };
+
+    const handleDeletePlan = async (planId: string) => {
+        if (!confirm(`Are you sure you want to delete plan ${planId}? This cannot be undone.`)) return;
+        
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${baseUrl}/api/admin/pricing/${planId}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+            const json = await res.json();
+            if (json.success) {
+                alert("Plan deleted!");
+                fetchData();
+            }
+        } catch (err) {
+            console.error("Delete failed:", err);
         }
     };
 
@@ -244,7 +264,14 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-500">
                         {plans.map((plan: any) => (
                             <div key={plan.id} className="bg-card border border-white/10 rounded-2xl p-6 relative group overflow-hidden">
-                                <div className="absolute top-0 right-0 p-4">
+                                <div className="absolute top-0 right-0 p-4 flex gap-2">
+                                    <button 
+                                        onClick={() => handleDeletePlan(plan.id)}
+                                        className="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-gray-500 hover:text-red-500 transition-all"
+                                        title="Delete Plan"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
                                     <button 
                                         onClick={() => setEditingPlan({...plan})}
                                         className="p-2 rounded-lg bg-white/5 hover:bg-gold/20 text-gray-400 hover:text-gold transition-all"
@@ -254,26 +281,23 @@ export default function AdminDashboard() {
                                 </div>
                                 <h3 className="text-xl font-black text-white mb-1">{plan.name}</h3>
                                 <div className="text-2xl font-black text-gold mb-6">${plan.price}<span className="text-[10px] text-gray-500 ml-1">/mo</span></div>
-                                <div className="space-y-3 mb-6">
-                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                                        <span>AI Limit</span>
+                                <div className="space-y-2 mb-6">
+                                    <div className="flex justify-between text-[10px] font-bold uppercase text-gray-500">
+                                        <span>AI / Daily</span>
                                         <span className="text-white">{plan.ai_limit}</span>
                                     </div>
-                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                                        <span>OCR Limit</span>
-                                        <span className="text-white">{plan.ocr_limit}</span>
+                                    <div className="flex justify-between text-[10px] font-bold uppercase text-gray-500">
+                                        <span>Name OCR</span>
+                                        <span className="text-white">{plan.name_ocr_limit}</span>
                                     </div>
-                                </div>
-                                <div className="border-t border-white/5 pt-4">
-                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Features</h4>
-                                    <ul className="space-y-1">
-                                        {plan.features.slice(0, 4).map((f: string, idx: number) => (
-                                            <li key={idx} className="text-[10px] text-gray-500 flex items-center gap-2">
-                                                <div className="w-1 h-1 rounded-full bg-gold/50" />
-                                                {f}
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    <div className="flex justify-between text-[10px] font-bold uppercase text-gray-500">
+                                        <span>Hand OCR</span>
+                                        <span className="text-white">{plan.hand_ocr_limit}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[10px] font-bold uppercase text-gray-500">
+                                        <span>Devices</span>
+                                        <span className="text-white">{plan.max_devices}</span>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -283,7 +307,7 @@ export default function AdminDashboard() {
                 {/* Edit Plan Modal */}
                 {editingPlan && (
                     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+                        <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-2xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
                             <h2 className="text-xl font-black text-white mb-8 flex items-center gap-2 uppercase tracking-tighter">
                                 <Zap className="text-gold w-5 h-5" />
                                 Edit Plan {editingPlan.id}
@@ -308,40 +332,86 @@ export default function AdminDashboard() {
                                         />
                                     </div>
                                 </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">AI Limit</label>
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">AI Analyst / Day</label>
                                         <input 
                                             type="number"
                                             value={editingPlan.ai_limit}
                                             onChange={(e) => setEditingPlan({...editingPlan, ai_limit: parseInt(e.target.value)})}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm font-mono"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">OCR Limit</label>
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Name OCR / Day</label>
                                         <input 
                                             type="number"
-                                            value={editingPlan.ocr_limit}
-                                            onChange={(e) => setEditingPlan({...editingPlan, ocr_limit: parseInt(e.target.value)})}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm"
+                                            value={editingPlan.name_ocr_limit}
+                                            onChange={(e) => setEditingPlan({...editingPlan, name_ocr_limit: parseInt(e.target.value) || 0})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm font-mono"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Hand OCR / Day</label>
+                                        <input 
+                                            type="number"
+                                            value={editingPlan.hand_ocr_limit}
+                                            onChange={(e) => setEditingPlan({...editingPlan, hand_ocr_limit: parseInt(e.target.value) || 0})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm font-mono"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Max Devices</label>
+                                        <input 
+                                            type="number"
+                                            value={editingPlan.max_devices}
+                                            onChange={(e) => setEditingPlan({...editingPlan, max_devices: parseInt(e.target.value) || 1})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm font-mono"
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Features (comma separated)</label>
-                                    <textarea 
-                                        value={editingPlan.features.join(', ')}
-                                        onChange={(e) => setEditingPlan({...editingPlan, features: e.target.value.split(',').map(s => s.trim())})}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-xs h-24"
-                                    />
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Toggle Features</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[
+                                            { id: 'FULL_HAND_OCR', label: 'Full Table OCR' },
+                                            { id: 'LEAK_DETECTION', label: 'Leak Detection' },
+                                            { id: 'EXPLOIT_STRATEGY', label: 'Exploit Finder' },
+                                            { id: 'VGG_OCR', label: 'Premium VGG OCR' }
+                                        ].map(feat => {
+                                            const isActive = editingPlan.features.includes(feat.label);
+                                            return (
+                                                <button
+                                                    key={feat.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newFeatures = isActive 
+                                                            ? editingPlan.features.filter((f: string) => f !== feat.label)
+                                                            : [...editingPlan.features, feat.label];
+                                                        setEditingPlan({...editingPlan, features: newFeatures});
+                                                    }}
+                                                    className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                                                        isActive 
+                                                        ? 'bg-gold/10 border-gold/40 text-gold' 
+                                                        : 'bg-white/5 border-white/10 text-gray-500'
+                                                    }`}
+                                                >
+                                                    <span className="text-[10px] font-black uppercase tracking-tight">{feat.label}</span>
+                                                    <div className={`w-3 h-3 rounded-full ${isActive ? 'bg-gold' : 'bg-white/10'}`} />
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
                                 </div>
+
                                 <div className="flex gap-3 pt-4">
-                                    <button type="submit" className="flex-1 bg-gold text-black font-black py-3 rounded-xl uppercase text-xs tracking-widest hover:bg-yellow-500 transition-colors">
-                                        Save Changes
+                                    <button type="submit" className="flex-1 bg-gold text-black font-black py-4 rounded-xl uppercase text-xs tracking-widest hover:bg-yellow-500 transition-colors shadow-lg shadow-gold/20">
+                                        Deploy Configuration
                                     </button>
-                                    <button type="button" onClick={() => setEditingPlan(null)} className="px-6 bg-white/5 text-gray-400 font-bold rounded-xl text-xs uppercase tracking-widest">
-                                        Cancel
+                                    <button type="button" onClick={() => setEditingPlan(null)} className="px-8 bg-white/5 text-gray-400 font-bold rounded-xl text-xs uppercase tracking-widest border border-white/10">
+                                        Dismiss
                                     </button>
                                 </div>
                             </form>

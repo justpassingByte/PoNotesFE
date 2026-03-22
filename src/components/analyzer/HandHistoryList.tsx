@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, Search, Tag, ChevronRight, Sparkles, Trophy, Calendar } from "lucide-react";
+import { Clock, Search, Tag, ChevronRight, Sparkles, Trophy, Calendar, Trash2 } from "lucide-react";
 import { API } from "@/lib/api";
 
 interface HandSummary {
@@ -72,6 +72,25 @@ export function HandHistoryList() {
             setLoading(false);
         }
     }
+
+    const deleteHand = async (handId: string) => {
+        if (!confirm("Are you sure you want to delete this hand history?")) return;
+        
+        try {
+            const res = await fetch(`${API.handHistory}/${handId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
+            });
+            const json = await res.json();
+            if (json.success) {
+                alert("Hand deleted successfully");
+                fetchHands();
+            }
+        } catch (err) {
+            console.error("Delete failed:", err);
+            alert("Delete failed");
+        }
+    };
 
     const clearFilters = () => {
         setSearchTag("");
@@ -257,15 +276,27 @@ export function HandHistoryList() {
                                                 </div>
                                             </div>
                                             
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    window.location.href = `/analyzer?handId=${hand.id}`;
-                                                }}
-                                                className="w-full py-2 bg-felt-default hover:bg-felt-dark text-white text-xs font-bold rounded-lg transition-colors border border-white/10"
-                                            >
-                                                Open in Full Analyzer
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        window.location.href = `/analyzer?handId=${hand.id}`;
+                                                    }}
+                                                    className="flex-1 py-2 bg-felt-default hover:bg-felt-dark text-white text-xs font-bold rounded-lg transition-colors border border-white/10"
+                                                >
+                                                    Open in Full Analyzer
+                                                </button>
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        deleteHand(hand.id);
+                                                    }}
+                                                    className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-lg transition-all border border-red-500/10"
+                                                    title="Delete Hand"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

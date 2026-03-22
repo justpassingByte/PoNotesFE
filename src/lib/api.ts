@@ -41,4 +41,5 @@ export const API = {
   // Payments
   payments: `${API_BASE_URL}/api/payments`,
   paymentCreateInvoice: `${API_BASE_URL}/api/payments/create-invoice`,
+  pricingPublic: `${API_BASE_URL}/api/admin/pricing/public`,
 } as const;
