@@ -69,7 +69,7 @@ export function FeatureSection({ isDashboard = false }: { isDashboard?: boolean 
                 title="AI Hand Analyzer"
                 description="Upload hand screenshots or paste text histories to get instant, deep-learning powered analysis. Identify mistakes in your lines, find hero-range errors, and see exactly where villains are leaking EV."
                 icon={<Brain className="w-6 h-6" />}
-                imagePath="/analyzer_preview.png"
+                imagePath="/hero_poker_ai_1772732965411.png"
             />
 
             <FeatureItem
@@ -86,7 +86,7 @@ export function FeatureSection({ isDashboard = false }: { isDashboard?: boolean 
                 title="Smart AI Player Profiles"
                 description="Our AI synthesizes thousands of hands to build a behavioral profile for every opponent. See their frequencies, tendencies, and AI-generated exploit strategies at a glance."
                 icon={<Target className="w-6 h-6" />}
-                imagePath="/profile_feature_preview.png"
+                imagePath="/gto_strategy_grid_1772733004755.png"
             />
         </section>
     );

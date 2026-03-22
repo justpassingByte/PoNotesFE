@@ -11,7 +11,7 @@ export default async function PricingPage() {
     const user = await getAuthUser();
 
     return (
-        <main className="flex-1 pt-24 sm:pt-32 px-4 sm:px-8 pb-12 overflow-y-auto w-full bg-black">
+        <main className="flex-1 pt-24 sm:pt-32 px-4 sm:px-8 pb-12 overflow-y-auto w-full">
             <div className="max-w-6xl mx-auto w-full">
                 {/* Header */}
                 <div className="text-center mb-16">

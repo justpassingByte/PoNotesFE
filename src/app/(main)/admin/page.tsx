@@ -73,17 +73,8 @@ export default function AdminDashboard() {
         hand_ocr_limit: 0,
         max_devices: 1,
         is_popular: false,
-        color_theme: "blue"
+        color_theme: "gold"
     };
-
-    useEffect(() => {
-        fetchStats();
-        fetchPlans();
-    }, []);
-
-    useEffect(() => {
-        fetchUsers();
-    }, [searchTerm, tierFilter, statusFilter]);
 
     const fetchStats = async () => {
         try {
@@ -91,7 +82,25 @@ export default function AdminDashboard() {
             const res = await fetch(`${baseUrl}/api/admin/stats`, { credentials: "include" });
             const json = await res.json();
             if (json.success) setStats(json.data);
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error("Failed to fetch stats:", err);
+        }
+    };
+
+    const fetchUsers = async () => {
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const params = new URLSearchParams({
+                tier: tierFilter,
+                status: statusFilter,
+                search: searchTerm
+            });
+            const res = await fetch(`${baseUrl}/api/admin/users?${params}`, { credentials: "include" });
+            const json = await res.json();
+            if (json.success) setUsers(json.data);
+        } catch (err) {
+            console.error("Failed to fetch users:", err);
+        }
     };
 
     const fetchPlans = async () => {
@@ -100,22 +109,19 @@ export default function AdminDashboard() {
             const res = await fetch(`${baseUrl}/api/admin/pricing`, { credentials: "include" });
             const json = await res.json();
             if (json.success) setPlans(json.data);
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error("Failed to fetch plans:", err);
+        }
     };
 
-    const fetchUsers = async () => {
-        try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const query = new URLSearchParams({
-                search: searchTerm,
-                tier: tierFilter,
-                status: statusFilter
-            }).toString();
-            const res = await fetch(`${baseUrl}/api/admin/users?${query}`, { credentials: "include" });
-            const json = await res.json();
-            if (json.success) setUsers(json.data);
-        } catch (err) { console.error(err); } finally { setLoading(false); }
-    };
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            await Promise.all([fetchStats(), fetchUsers(), fetchPlans()]);
+            setLoading(false);
+        };
+        load();
+    }, [tierFilter, statusFilter, searchTerm]);
 
     const handleUpdateUser = async (userId: string, tier: string, days: number) => {
         try {
@@ -130,7 +136,7 @@ export default function AdminDashboard() {
         } catch (err) { console.error(err); }
     };
 
-    const handleSavePlan = async (e: any) => {
+    const handleSavePlan = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -142,7 +148,7 @@ export default function AdminDashboard() {
             });
             const json = await res.json();
             if (json.success) {
-                alert("Plan updated success!");
+                alert("Plan saved!");
                 setEditingPlan(null);
                 fetchPlans();
             }
@@ -152,8 +158,7 @@ export default function AdminDashboard() {
     };
 
     const handleDeletePlan = async (planId: string) => {
-        if (!confirm(`Are you sure you want to delete plan ${planId}? This cannot be undone.`)) return;
-        
+        if (!confirm("Are you sure? This will affect all current subscribers to this plan.")) return;
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
             const res = await fetch(`${baseUrl}/api/admin/pricing/${planId}`, {
@@ -174,7 +179,7 @@ export default function AdminDashboard() {
         alert("Database backup started. A snapshot will be sent to your admin email.");
     };
 
-    if (loading) return <div className="flex items-center justify-center min-h-screen bg-black text-gold">Loading Admin...</div>;
+    if (loading) return <div className="flex items-center justify-center min-h-screen text-gold">Loading Admin...</div>;
 
     const availableFeatures = [
         { id: 'ai_analysis', label: 'AI Analysis' },
@@ -185,7 +190,7 @@ export default function AdminDashboard() {
     ];
 
     return (
-        <main className="flex-1 pt-24 px-4 sm:px-8 pb-12 bg-black min-h-screen relative overflow-hidden">
+        <main className="flex-1 pt-24 px-4 sm:px-8 pb-12 min-h-screen relative overflow-hidden">
             {/* Background Aesthetics */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold/5 blur-[120px] rounded-full" />

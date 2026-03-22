@@ -62,7 +62,6 @@ export async function register(formData: FormData) {
 
         // Set cookie (since register auto-logs in)
         const cookieStore = await cookies();
-        // const secure = process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === "production";
         const secure = process.env.NEXT_PUBLIC_API_URL?.startsWith('https');
         cookieStore.set("token", json.token, {
             httpOnly: true,
