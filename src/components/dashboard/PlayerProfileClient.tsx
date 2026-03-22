@@ -400,12 +400,9 @@ export function PlayerProfileClient({
                                     <div className="space-y-4">
                                         {(player.ai_profile?.range_adjustments && player.ai_profile.range_adjustments.length > 0) ? (
                                             player.ai_profile.range_adjustments.map((adj, idx) => (
-                                                <div key={idx} className="flex justify-between items-center text-xs group">
-                                                    <span className="text-gray-500 uppercase tracking-widest font-black flex items-center gap-2">
-                                                        <div className="w-1 h-1 rounded-full bg-gold/50 group-hover:bg-gold transition-colors"></div>
-                                                        ADJUSTMENT {idx + 1}
-                                                    </span>
-                                                    <span className="text-white font-mono font-bold">{adj}</span>
+                                                <div key={idx} className="flex items-center gap-3 group bg-white/5 p-3 rounded-xl border border-white/5 hover:border-gold/20 transition-all">
+                                                    <Brain className="w-4 h-4 text-gold/60 shrink-0" />
+                                                    <span className="text-xs text-gray-200 font-bold leading-relaxed">{adj}</span>
                                                 </div>
                                             ))
                                         ) : (
@@ -418,9 +415,26 @@ export function PlayerProfileClient({
                             <button
                                 onClick={handleRunAIAnalyst}
                                 disabled={isAnalyzing || cooldown > 0}
-                                className="w-full py-5 bg-gold text-black font-black text-xs uppercase tracking-[0.3em] rounded-2xl hover:bg-yellow-400 transition-all shadow-[0_10px_30px_rgba(255,215,0,0.1)] active:scale-95 disabled:opacity-50"
+                                className="w-full py-5 bg-gold text-black font-black text-sm uppercase tracking-[0.4em] rounded-2xl hover:bg-yellow-400 transition-all shadow-[0_10px_40px_rgba(255,215,0,0.2)] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-4"
                             >
-                                {isAnalyzing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : (cooldown > 0 ? `Analyst Cooldown: ${cooldown}s` : 'Request Neural Profile Update')}
+                                {isAnalyzing ? (
+                                    <>
+                                        <RefreshCw className="w-5 h-5 animate-spin" />
+                                        <span>SYSTEM ANALYZING...</span>
+                                    </>
+                                ) : (
+                                    cooldown > 0 ? (
+                                        <>
+                                            <RefreshCw className="w-4 h-4 opacity-50" />
+                                            <span>COOLDOWN: {cooldown}S</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Brain className="w-5 h-5" />
+                                            <span>AI ANALYST</span>
+                                        </>
+                                    )
+                                )}
                             </button>
                         </div>
 

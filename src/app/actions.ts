@@ -55,6 +55,7 @@ export async function fetchDashboard() {
         if (!json.success) {
             return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {}, aiUsage: null, ocrUsage: null }, topWhales: [], topRegs: [] };
         }
+        console.log("Debug fetchDashboard API output first whale:", json.data.topWhales?.[0]?.name, json.data.topWhales?.[0]?.ai_profile);
         return json.data;
     } catch (err) {
         console.error("fetchDashboard Action Error:", err);
@@ -109,6 +110,8 @@ export async function fetchFirstPage(options?: { query?: string; playstyle?: str
             ai_action_breakdown: p.ai_action_breakdown || null,
             ai_profile: p.ai_profile || null,
         }));
+
+        console.log("Debug fetchFirstPage raw API output data[0]:", data[0]?.name, data[0]?.ai_profile);
 
         return { data, meta: json.meta };
     } catch (err) {

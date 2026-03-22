@@ -62,42 +62,8 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 <AITuningModal onClose={() => setIsAITuningOpen(false)} />
             </Modal>
 
-            {/* 1. Quick Operations (Moved to Top) */}
-            <div className="pt-2">
-                <div className="flex items-center justify-between px-2 mb-4">
-                    <h2 className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Neural & Quick Operations</h2>
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent ml-4"></div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                    <ActionButton 
-                        icon={<Users className="w-5 h-5" />} 
-                        title="Players" 
-                        desc="Browse all targets" 
-                        href="/players" 
-                    />
-                    <ActionButton 
-                        icon={<History className="w-5 h-5" />} 
-                        title="History" 
-                        desc="Review past sessions" 
-                        href="/history" 
-                    />
-                    <ActionButton 
-                        icon={<Brain className="w-5 h-5" />} 
-                        title="AI Tuning" 
-                        desc="Adjust logic prompts" 
-                        onClick={() => setIsAITuningOpen(true)}
-                    />
-                    <ActionButton 
-                        icon={<Plus className="w-5 h-5" />} 
-                        title="New Note" 
-                        desc="Manual player intel" 
-                        href="/players" 
-                    />
-                </div>
-            </div>
-
-            {/* 2. Welcome & Primary Action (Shrunken, Search Removed) */}
-            <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-card/60 to-card/30 border border-white/5 p-6 sm:p-8 shadow-xl">
+            {/* 1. Welcome & Primary Action (Compact) */}
+            <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-card/60 to-card/30 border border-white/5 p-6 sm:p-8 shadow-xl mb-4">
                 <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold/5 blur-[80px] rounded-full"></div>
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-4 flex-1">
@@ -110,15 +76,26 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                                 Hero <span className="text-gold">{displayName}</span>
                             </h1>
                             <p className="text-gray-400 max-w-md leading-relaxed text-xs sm:text-sm">
-                                Ready for analysis. Upload hands to sharpen your edge and exploit opponent patterns.
+                                Radial scan complete. High-priority targets identified for exploitation.
                             </p>
                         </div>
                     </div>
                     
-                    <div className="flex flex-col items-end gap-3">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <button 
+                            onClick={() => setIsAITuningOpen(true)}
+                            className="group flex-1 sm:flex-none flex items-center justify-center gap-4 px-8 py-4 bg-white/5 border border-white/10 text-white font-black rounded-2xl hover:bg-white/10 hover:border-gold/30 transition-all hover:scale-[1.02] active:scale-95 shadow-xl"
+                        >
+                            <div className="bg-gold/20 p-1.5 rounded-lg group-hover:scale-110 transition-transform">
+                                <Brain className="w-5 h-5 text-gold" />
+                            </div>
+                            <span className="text-sm uppercase tracking-wider">AI NEURAL TUNING</span>
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform opacity-0 group-hover:opacity-100" />
+                        </button>
+
                         <Link 
                             href="/analyzer"
-                            className="group flex items-center justify-center gap-4 px-8 py-4 bg-gold text-black font-black rounded-2xl hover:bg-yellow-400 transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
+                            className="group flex-1 sm:flex-none flex items-center justify-center gap-4 px-8 py-4 bg-gold text-black font-black rounded-2xl hover:bg-yellow-400 transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
                         >
                             <div className="bg-black/10 p-1.5 rounded-lg group-hover:scale-110 transition-transform">
                                 <Zap className="w-5 h-5 fill-current" />
@@ -126,80 +103,66 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                             <span className="text-sm uppercase tracking-wider">NEW HAND SCAN</span>
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Link>
-                        {stats.aiUsage && (
-                            <div className="flex items-center gap-2">
-                                <div className="h-1 w-24 bg-white/10 rounded-full overflow-hidden">
-                                    <div 
-                                        className={`h-full transition-all ${stats.aiUsage.remaining === 0 ? 'bg-red-500' : 'bg-gold'}`}
-                                        style={{ width: `${(stats.aiUsage.remaining / stats.aiUsage.limit) * 100}%` }}
-                                    ></div>
-                                </div>
-                                <span className={`text-[10px] font-bold tracking-wider ${
-                                    stats.aiUsage.remaining === 0 ? 'text-red-500' : 'text-gray-500'
-                                }`}>
-                                    {stats.aiUsage.remaining} / {stats.aiUsage.limit}
-                                </span>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+                {/* Top WHALE Targets */}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center gap-2">
+                            <ShieldAlert className="w-5 h-5 text-gold animate-pulse" />
+                            <h2 className="text-sm font-black text-white uppercase tracking-[0.2em]">High Value: TOP WHALES</h2>
+                        </div>
+                        <div className="h-[1px] flex-1 bg-gradient-to-r from-gold/30 to-transparent ml-4"></div>
+                    </div>
+                    
+                    <div className="space-y-6">
+                        {topWhales.length > 0 ? (
+                            topWhales.map(player => (
+                                <PlayerCard key={player.id} player={player} />
+                            ))
+                        ) : (
+                            <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-[2rem] opacity-50">
+                                <p className="text-[10px] font-mono uppercase tracking-widest text-gray-500">No Whale Targets Detected</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Top REG Targets */}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center gap-2">
+                            <Target className="w-5 h-5 text-blue-400" />
+                            <h2 className="text-sm font-black text-white uppercase tracking-[0.2em]">Opponents: TOP REGS</h2>
+                        </div>
+                        <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent ml-4"></div>
+                    </div>
+
+                    <div className="space-y-6">
+                        {topRegs.length > 0 ? (
+                            topRegs.map(player => (
+                                <PlayerCard key={player.id} player={player} isStrong />
+                            ))
+                        ) : (
+                            <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-[2rem] opacity-50">
+                                <p className="text-[10px] font-mono uppercase tracking-widest text-gray-500">No Regular Targets Detected</p>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* 3. Key Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                <StatCard 
-                    title="Total Targets" 
-                    value={stats.totalCount} 
-                    icon={<Users className="w-5 h-5" />} 
-                    color="blue"
-                    href="/players"
-                />
-                <StatCard 
-                    title="Total Notes" 
-                    value={stats.totalNotesCount} 
-                    icon={<FileText className="w-5 h-5" />} 
-                    color="gold"
-                    href="/players"
-                />
-                <StatCard 
-                    title="Hands Analyzed" 
-                    value={stats.totalNotesCount > 0 ? Math.floor(stats.totalNotesCount / 3) : 0} 
-                    icon={<Activity className="w-5 h-5" />} 
-                    color="green"
-                    href="/history"
-                />
-                <StatCard 
-                    title="Active Sessions" 
-                    value={1} 
-                    icon={<TrendingDown className="w-5 h-5" />} 
-                    color="red"
-                    href="/dashboard"
-                />
-            </div>
-
-            <div className="space-y-6">
-                <div className="flex items-center justify-between px-2">
-                    <h2 className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Neural Network: Targets Found</h2>
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent ml-4"></div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 sm:gap-8">
-                    {[...topWhales, ...topRegs].length > 0 ? (
-                        [...topWhales, ...topRegs].map(player => (
-                            <PlayerCard key={player.id} player={player} />
-                        ))
-                    ) : (
-                        <div className="py-20 text-center bg-card/20 border border-dashed border-white/5 rounded-[2rem]">
-                            <p className="text-sm text-gray-500 font-medium font-mono uppercase tracking-widest opacity-50">Radial search yield: 0 targets</p>
-                        </div>
-                    )}
-                </div>
-            </div>
         </div>
     );
 }
 
 function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: boolean }) {
+    console.log("Debug PlayerCard DashboardHome:", { id: player.id, name: player.name, ai_profile: player.ai_profile });
     return (
         <Link 
             href={`/players/${player.id}`} 

@@ -179,15 +179,18 @@ export function PlayerListClient({
                     />
 
                     {/* Player Grid */}
-                    <div className="bg-gradient-to-b from-card/20 to-transparent border-x border-b border-white/5 rounded-b-2xl p-4 sm:p-8 shadow-inner">
-                        <div className="grid grid-cols-1 gap-6 sm:gap-10">
+                    <div className="bg-gradient-to-b from-card/20 to-transparent border-x border-b border-white/5 rounded-b-2xl p-4 sm:p-8 shadow-inner overflow-hidden">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+
                             {players.length === 0 && !isLoading ? (
                                 <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-border rounded-lg bg-card/20">
                                     <p>No players found.</p>
                                     {(searchQuery || filterPlaystyle !== 'All' || filterPlatform !== 'All') && <p className="text-xs mt-1">Try different filters.</p>}
                                 </div>
                             ) : (
-                                players.map((player) => (
+                                players.map((player) => {
+                                    console.log("Debug PlayerListClient:", { id: player.id, name: player.name, ai_profile: player.ai_profile });
+                                    return (
                                     <PlayerHUD
                                         key={player.id}
                                         id={player.id}
@@ -206,7 +209,8 @@ export function PlayerListClient({
                                         }}
                                         onDelete={() => handleDeletePlayer(player.id)}
                                     />
-                                ))
+                                    );
+                                })
                             )}
                         </div>
 
