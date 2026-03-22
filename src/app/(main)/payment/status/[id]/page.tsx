@@ -27,6 +27,7 @@ interface PaymentStatusData {
     created_at: string;
     updated_at: string;
     ui_message: string;
+    is_admin?: boolean;
 }
 
 const STATUS_CONFIG: Record<InvoiceStatus, {
@@ -131,6 +132,26 @@ export default function PaymentStatusPage() {
             setLastChecked(new Date());
         }
     }, [invoiceId]);
+
+    const handleSimulate = async () => {
+        if (!invoiceId) return;
+        if (!confirm("Admin: Force this payment to success? (Only for Sandbox testing)")) return;
+        
+        try {
+            const res = await fetch(`/api/payments/${invoiceId}/simulate-success`, {
+                method: "POST",
+                credentials: "include",
+            });
+            const json = await res.json();
+            if (json.success) {
+                fetchStatus();
+            } else {
+                alert(json.error || "Simulate failed");
+            }
+        } catch {
+            alert("Network error simulating success");
+        }
+    };
 
     // Initial fetch
     useEffect(() => {
@@ -265,6 +286,16 @@ export default function PaymentStatusPage() {
                         >
                             <RefreshCw className="w-4 h-4" /> Refresh Status
                         </button>
+
+                        {/* Admin Bypass Tool */}
+                        {data.is_admin && (data.status === "PENDING" || data.status === "CONFIRMING") && (
+                            <button
+                                onClick={handleSimulate}
+                                className="w-full py-2.5 mt-4 text-[11px] uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500 hover:text-white transition-all font-black"
+                            >
+                                Admin: Simulate Success
+                            </button>
+                        )}
                     </div>
                 </div>
 
