@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Clock, Search, Tag, ChevronRight, Sparkles, Trophy, Calendar, Trash2, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Clock, Search, Tag, ChevronRight, Sparkles, Trophy, Calendar, Trash2, Image as ImageIcon, Loader2, FileText, AlertCircle } from "lucide-react";
 import Tesseract from 'tesseract.js';
 import { API } from "@/lib/api";
 
@@ -315,14 +315,57 @@ export function HandHistoryList() {
 
                             {/* Expanded Detail */}
                             {isOpen && (
-                                <div className="px-4 pb-4 border-t border-border pt-4 animate-in slide-in-from-top-1 duration-200">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-3">
-                                            <h4 className="text-[11px] uppercase font-bold text-gray-500 tracking-wider">AI Analysis Summary</h4>
-                                            <p className="text-sm text-gray-300 leading-relaxed bg-white/[0.02] p-3 rounded-lg border border-white/5">
-                                                {analysis?.summary || "No summary available for this hand."}
-                                            </p>
-                                            <div className="flex flex-wrap gap-2">
+                                <div className="px-5 pb-6 border-t border-border pt-5 animate-in slide-in-from-top-2 duration-300">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                        {/* Left: Summary & Tags */}
+                                        <div className="lg:col-span-2 space-y-5">
+                                            <div className="bg-white/[0.03] p-4 rounded-xl border border-white/5 shadow-inner">
+                                                <h4 className="text-[10px] uppercase font-black text-gray-500 tracking-widest mb-3 flex items-center gap-2">
+                                                    <FileText className="w-3 h-3 text-gold" />
+                                                    Strategic Analysis
+                                                </h4>
+                                                <p className="text-sm text-gray-200 leading-relaxed italic border-l-2 border-gold/30 pl-4 py-1">
+                                                    {analysis?.summary || "No automated summary available for this hand history."}
+                                                </p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                {/* Hero Mistakes Bulletin */}
+                                                <div className="space-y-2">
+                                                    <h4 className="text-[10px] uppercase font-black text-red-500/70 tracking-widest flex items-center gap-2">
+                                                        <AlertCircle className="w-3 h-3" />
+                                                        Hero Corrections
+                                                    </h4>
+                                                    <div className="space-y-1.5">
+                                                        {analysis?.heroMistakes && analysis.heroMistakes.length > 0 ? (
+                                                            analysis.heroMistakes.slice(0, 2).map((m, i) => (
+                                                                <p key={i} className="text-[11px] text-gray-400 leading-snug">• {m.description}</p>
+                                                            ))
+                                                        ) : (
+                                                            <p className="text-[11px] text-gray-600 italic">No significant errors in Hero's line.</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Villain Leaks Bulletin */}
+                                                <div className="space-y-2">
+                                                    <h4 className="text-[10px] uppercase font-black text-amber-500/70 tracking-widest flex items-center gap-2">
+                                                        <Tag className="w-3 h-3" />
+                                                        Villain Exploits
+                                                    </h4>
+                                                    <div className="space-y-1.5">
+                                                        {analysis?.villainMistakes && analysis.villainMistakes.length > 0 ? (
+                                                            analysis.villainMistakes.slice(0, 2).map((m, i) => (
+                                                                <p key={i} className="text-[11px] text-gray-400 leading-snug">• {m.description}</p>
+                                                            ))
+                                                        ) : (
+                                                            <p className="text-[11px] text-gray-600 italic">No obvious leaks detected for this line.</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-wrap gap-2 pt-2">
                                                 {hand.tags.map((t, i) => (
                                                     <span key={i} className="text-[10px] bg-gold/10 text-gold px-2 py-0.5 rounded border border-gold/20 flex items-center gap-1">
                                                         <Tag className="w-2.5 h-2.5" /> {t}
@@ -331,40 +374,40 @@ export function HandHistoryList() {
                                             </div>
                                         </div>
                                         
-                                        <div className="space-y-4">
-                                            <h4 className="text-[11px] uppercase font-bold text-gray-500 tracking-wider">Quick Result</h4>
-                                            <div className="flex items-center gap-4">
-                                                <div className="bg-black/40 rounded-xl p-3 border border-border flex-1">
-                                                    <span className="text-[10px] text-gray-500 block mb-1">Final Pot</span>
-                                                    <span className="text-lg font-bold text-gold">{parsed?.pot || 0} BB</span>
+                                        {/* Right: Quick Stats & Actions */}
+                                        <div className="space-y-5 bg-black/20 p-5 rounded-2xl border border-white/5">
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="bg-black/40 rounded-xl p-3 border border-border">
+                                                    <span className="text-[10px] text-gray-600 block mb-1 uppercase tracking-tighter">Final Pot</span>
+                                                    <span className="text-lg font-bold text-gold">{parsed?.pot || 0} <span className="text-[10px] text-amber-700">BB</span></span>
                                                 </div>
-                                                <div className="bg-black/40 rounded-xl p-3 border border-border flex-1">
-                                                    <span className="text-[10px] text-gray-500 block mb-1">Winner</span>
-                                                    <span className="text-sm font-bold text-emerald-400 truncate block">
-                                                        {parsed?.winner ? `🏆 ${parsed.winner}` : "Unknown"}
+                                                <div className="bg-black/40 rounded-xl p-3 border border-border">
+                                                    <span className="text-[10px] text-gray-600 block mb-1 uppercase tracking-tighter">Winner</span>
+                                                    <span className="text-xs font-bold text-emerald-400 truncate block pt-1">
+                                                        {parsed?.winner ? `🏆 ${parsed.winner}` : "N/A"}
                                                     </span>
                                                 </div>
                                             </div>
                                             
-                                            <div className="flex gap-2">
+                                            <div className="flex flex-col gap-2">
                                                 <button 
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         window.location.href = `/analyzer?handId=${hand.id}`;
                                                     }}
-                                                    className="flex-1 py-2 bg-felt-default hover:bg-felt-dark text-white text-xs font-bold rounded-lg transition-colors border border-white/10"
+                                                    className="w-full py-3 bg-gold hover:bg-amber-500 text-black text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-gold/10"
                                                 >
-                                                    Open in Full Analyzer
+                                                    Step-By-Step Analysis
                                                 </button>
                                                 <button 
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         deleteHand(hand.id);
                                                     }}
-                                                    className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-lg transition-all border border-red-500/10"
-                                                    title="Delete Hand"
+                                                    className="w-full py-3 bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-400 text-[10px] font-bold rounded-xl transition-all border border-white/5 flex items-center justify-center gap-2"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    Erase History
                                                 </button>
                                             </div>
                                         </div>

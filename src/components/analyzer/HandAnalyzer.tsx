@@ -35,12 +35,20 @@ interface Hand {
     parsed_data?: ParsedHandData;
 }
 
+interface OCRResult {
+    confidence: number;
+    decision: 'auto_accept' | 'confirm' | 'force_correct';
+    decision_reason: string[];
+    needs_confirmation?: boolean;
+}
+
 interface HandAnalysis {
     heroMistakes: { street: string; description: string; severity?: string }[];
     villainMistakes: { street: string; playerName?: string; description: string; severity?: string }[];
     betterLine?: string;
     exploitSuggestion?: string;
     summary?: string;
+    notesCreated?: string[];
 }
 
 // ─── Card Rendering Helpers ──────────────────────────────────────────────────
@@ -99,10 +107,74 @@ function SeverityBadge({ severity }: { severity?: string }) {
     );
 }
 
+// ─── Phase 4.2: Premium Card Picker ──────────────────────────────────────────
+const RANKS = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"];
+const SUITS = ["h", "d", "c", "s"];
+
+function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (val: string) => void, onCancel: () => void, currentVal?: string }) {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-[#1a1a1a] border border-gold/20 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-gold" />
+                        Select Card
+                    </h3>
+                    <button onClick={onCancel} className="text-gray-500 hover:text-white transition-colors">
+                        <XCircle className="w-6 h-6" />
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-4 gap-2 mb-6">
+                    {SUITS.map(s => (
+                        <button
+                            key={s}
+                            onClick={() => {}} // Suits are selected via common grid
+                            className={`h-12 flex items-center justify-center rounded-xl text-2xl border ${SUIT_COLORS[s]} bg-white/5 border-white/5`}
+                        >
+                            {SUIT_SYMBOLS[s]}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-4 gap-2">
+                    {RANKS.flatMap(r => SUITS.map(s => {
+                        const val = `${r}${s}`;
+                        const isCurrent = currentVal === val;
+                        return (
+                            <button
+                                key={val}
+                                onClick={() => onSelect(val)}
+                                className={`h-10 rounded border text-xs font-bold transition-all flex items-center justify-center gap-1
+                                    ${isCurrent ? 'bg-gold text-black border-gold shadow-[0_0_15px_rgba(234,179,8,0.3)]' : 'bg-white/5 border-white/10 text-gray-400 hover:border-gold/50 hover:text-white'}`}
+                            >
+                                {r}{SUIT_SYMBOLS[s]}
+                            </button>
+                        );
+                    }))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─── OCR Feedback Components ──────────────────────────────────────────────────
+function OCRConfidenceBadge({ score }: { score: number }) {
+    let color = "text-red-400 bg-red-500/10 border-red-500/20";
+    if (score >= 0.9) color = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+    else if (score >= 0.7) color = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+
+    return (
+        <div className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-widest ${color}`}>
+            OCP: {(score * 100).toFixed(0)}%
+        </div>
+    );
+}
+
 // ─── Save Note Button ────────────────────────────────────────────────────────
-function SaveNoteButton({ noteData }: { noteData: any }) {
+function SaveNoteButton({ noteData, isAutosaved }: { noteData: any; isAutosaved?: boolean }) {
     const [isSaving, setIsSaving] = useState(false);
-    const [saved, setSaved] = useState(false);
+    const [saved, setSaved] = useState(isAutosaved || false);
 
     const handleSave = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -143,6 +215,11 @@ export function HandAnalyzer() {
     const [analysis, setAnalysis] = useState<HandAnalysis | null>(null);
     const [fromCache, setFromCache] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    // Phase 4 UI state
+    const [editingCard, setEditingCard] = useState<{ type: 'board' | 'hole', index: number, pIdx?: number } | null>(null);
+    const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // clipboard paste support
@@ -197,7 +274,13 @@ export function HandAnalyzer() {
             });
 
             const json = await res.json();
-            if (!json.success) throw new Error(json.error || "Parsing failed");
+            if (!json.success) {
+                // If quota exceeded, include reset date in error message
+                const resetInfo = json.usage?.resetsAt 
+                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}` 
+                    : '';
+                throw new Error((json.error || "Parsing failed") + resetInfo);
+            }
 
             setParsedHand(json.data.hand || null);
             setFromCache(json.data.fromCache || false);
@@ -224,7 +307,12 @@ export function HandAnalyzer() {
             });
 
             const json = await res.json();
-            if (!json.success) throw new Error(json.error || "Analysis failed");
+            if (!json.success) {
+                const resetInfo = json.usage?.resetsAt 
+                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}` 
+                    : '';
+                throw new Error((json.error || "Analysis failed") + resetInfo);
+            }
 
             setAnalysis(json.data.analysis);
             setIsReviewing(false);
@@ -343,29 +431,80 @@ export function HandAnalyzer() {
                         )}
                     </div>
 
+                    {/* Phase 4.1: OCR Decision Banner */}
+                    {handData.ocr_result && (
+                        <div className={`mb-6 p-4 rounded-xl border flex items-center justify-between
+                            ${handData.ocr_result.decision === 'auto_accept' 
+                                ? 'bg-emerald-500/5 border-emerald-500/20' 
+                                : handData.ocr_result.decision === 'confirm'
+                                ? 'bg-amber-500/5 border-amber-500/20'
+                                : 'bg-red-500/5 border-red-500/20'}`}>
+                            <div className="flex items-center gap-4">
+                                <OCRConfidenceBadge score={handData.ocr_result.confidence} />
+                                <div>
+                                    <p className="text-sm font-bold text-white capitalize">
+                                        {handData.ocr_result.decision.replace('_', ' ')}
+                                    </p>
+                                    <p className="text-[11px] text-gray-500">
+                                        {handData.ocr_result.decision_reason.join(' · ')}
+                                    </p>
+                                </div>
+                            </div>
+                            {handData.ocr_result.decision !== 'auto_accept' && (
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => handleFeedback('confirm')}
+                                        disabled={isSubmittingFeedback}
+                                        className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all"
+                                    >
+                                        Confirm Detection
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         {/* Board & Pot */}
                         <div className="space-y-4">
                             <div>
-                                <span className="text-xs text-gray-500 uppercase tracking-wider block mb-2">Community Cards</span>
+                                <span className="text-xs text-gray-500 uppercase tracking-wider block mb-2">Community Cards (Click to edit)</span>
                                 <div className="flex gap-1.5 flex-wrap">
                                     {handData.board.length > 0 ? (
-                                        handData.board.map((c: string, i: number) => <CardChip key={i} card={c} />)
+                                        handData.board.map((c: string, i: number) => (
+                                            <button 
+                                                key={i} 
+                                                onClick={() => setEditingCard({ type: 'board', index: i })}
+                                            >
+                                                <CardChip card={c} />
+                                            </button>
+                                        ))
                                     ) : (
-                                        <span className="text-gray-500 text-sm italic">No cards matched</span>
+                                        <button 
+                                            onClick={() => setEditingCard({ type: 'board', index: 0 })}
+                                            className="text-gold text-xs border border-gold/30 px-2 py-1 rounded bg-gold/5 hover:bg-gold/10 transition-colors"
+                                        >
+                                            + Add Board
+                                        </button>
                                     )}
                                 </div>
                             </div>
                             <div>
                                 <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1">Total Pot</span>
-                                <div className="text-xl font-bold text-gold flex items-baseline gap-1">
-                                    {handData.pot || 0}
-                                    <span className="text-xs text-amber-600">BB</span>
-                                </div>
+                                <input 
+                                    type="number"
+                                    value={handData.pot || 0}
+                                    onChange={(e) => setParsedHand({ ...parsedHand!, parsed_data: { ...handData, pot: parseFloat(e.target.value) } })}
+                                    className="bg-transparent text-xl font-bold text-gold flex items-baseline gap-1 border-none focus:ring-0 w-24 p-0"
+                                />
                                 {handData.winner && (
-                                    <div className="mt-1 flex items-center gap-1.5">
-                                        <span className="text-xs text-gray-400">Winner:</span>
-                                        <span className="text-emerald-400 text-sm font-medium">🏆 {handData.winner}</span>
+                                    <div className="mt-1 flex items-center gap-1.5 text-xs">
+                                        <span className="text-gray-400">Winner:</span>
+                                        <input 
+                                            value={handData.winner}
+                                            onChange={(e) => setParsedHand({ ...parsedHand!, parsed_data: { ...handData, winner: e.target.value } })}
+                                            className="bg-transparent text-emerald-400 font-medium border-none focus:ring-0 p-0 text-sm"
+                                        />
                                     </div>
                                 )}
                             </div>
@@ -373,19 +512,48 @@ export function HandAnalyzer() {
 
                         {/* Players */}
                         <div className="lg:col-span-2">
-                            <span className="text-xs text-gray-500 uppercase tracking-wider block mb-2">Detected Players</span>
+                            <span className="text-xs text-gray-500 uppercase tracking-wider block mb-2">Detected Players (Edit names if wrong)</span>
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
                                 {handData.players?.map((p: any, i: number) => (
-                                    <div key={i} className="bg-black/30 rounded-lg px-3 py-2 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
-                                        <div>
-                                            <span className="text-white text-sm font-medium">{p.name}</span>
+                                    <div key={i} className="bg-black/30 rounded-lg px-3 py-2 border border-white/5 flex items-center justify-between group hover:border-gold/30 transition-colors">
+                                        <div className="flex-1">
+                                            <input 
+                                                value={p.name}
+                                                onChange={(e) => {
+                                                    const newPlayers = [...handData.players];
+                                                    newPlayers[i] = { ...p, name: e.target.value };
+                                                    setParsedHand({ ...parsedHand!, parsed_data: { ...handData, players: newPlayers } });
+                                                }}
+                                                className="bg-transparent text-white text-sm font-medium border-none focus:ring-0 p-0 w-full"
+                                            />
                                             {p.position && (
-                                                <span className="ml-1.5 text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-1 py-0.5 rounded uppercase font-bold">{p.position}</span>
+                                                <span className="text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-1 py-0.5 rounded uppercase font-bold">{p.position}</span>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            {p.hole_cards?.map((c: string, j: number) => <CardChip key={j} card={c} />)}
-                                            {p.stack != null && <span className="text-gold text-xs ml-1 font-mono font-bold">{p.stack} BB</span>}
+                                        <div className="flex items-center gap-1 ml-2">
+                                            {p.hole_cards?.map((c: string, j: number) => (
+                                                <button 
+                                                    key={j}
+                                                    onClick={() => setEditingCard({ type: 'hole', index: j, pIdx: i })}
+                                                >
+                                                    <CardChip card={c} />
+                                                </button>
+                                            ))}
+                                            {p.stack != null && (
+                                                <div className="flex items-center gap-0.5">
+                                                    <input 
+                                                        type="number"
+                                                        value={p.stack}
+                                                        onChange={(e) => {
+                                                            const newPlayers = [...handData.players];
+                                                            newPlayers[i] = { ...p, stack: parseFloat(e.target.value) };
+                                                            setParsedHand({ ...parsedHand!, parsed_data: { ...handData, players: newPlayers } });
+                                                        }}
+                                                        className="bg-transparent text-gold text-xs font-mono font-bold border-none focus:ring-0 p-0 w-12 text-right"
+                                                    />
+                                                    <span className="text-[10px] text-amber-700 font-bold">BB</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -511,6 +679,7 @@ export function HandAnalyzer() {
                                                 </div>
                                                 {m.playerName && (
                                                     <SaveNoteButton
+                                                        isAutosaved={true}
                                                         noteData={{
                                                             player_name: m.playerName,
                                                             content: m.description,
@@ -545,7 +714,6 @@ export function HandAnalyzer() {
                                 <p className="text-sm text-gray-300 leading-relaxed sm:text-base italic">"{analysis.betterLine}"</p>
                             </div>
                         )}
-
                         {analysis.exploitSuggestion && (
                             <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-6 shadow-xl group">
                                 <h3 className="text-lg font-bold text-purple-400 mb-3 flex items-center gap-3">
@@ -560,6 +728,75 @@ export function HandAnalyzer() {
                     </div>
                 </div>
             )}
+
+            {/* Premium Card Picker Overlay */}
+            {editingCard && (
+                <CardPicker 
+                    currentVal={
+                        editingCard.type === 'board' 
+                            ? handData.board[editingCard.index] 
+                            : handData.players[editingCard.pIdx!].hole_cards![editingCard.index]
+                    }
+                    onSelect={(val) => {
+                        handleCardEdit(val);
+                        setEditingCard(null);
+                    }}
+                    onCancel={() => setEditingCard(null)}
+                />
+            )}
         </div>
     );
+
+    // ── Logic Helpers ────────────────────────────────────────────────────────
+    async function handleFeedback(action: 'confirm' | 'edit' | 'reject', corrected?: { name: string, revised: string }) {
+        setIsSubmittingFeedback(true);
+        try {
+            // Forward to backend which forwards to OCR service
+            await fetch(`/api/ocr/feedback`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageHex: imagePreview, // ideally this would be the crop, but passing preview for now
+                    cardName: corrected?.name || 'all_board', 
+                    action: action,
+                    correctedName: corrected?.revised || ''
+                })
+            });
+            if (action === 'confirm') {
+                // visually mark as confirmed
+                setParsedHand({ 
+                    ...parsedHand!, 
+                    parsed_data: { 
+                        ...handData, 
+                        ocr_result: { ...handData.ocr_result, decision: 'auto_accept' } 
+                    } 
+                });
+            }
+        } catch (err) {
+            console.error("Feedback failed:", err);
+        } finally {
+            setIsSubmittingFeedback(false);
+        }
+    }
+
+    function handleCardEdit(newVal: string) {
+        if (!editingCard || !parsedHand) return;
+
+        if (editingCard.type === 'board') {
+            const newBoard = [...handData.board];
+            const oldName = newBoard[editingCard.index];
+            newBoard[editingCard.index] = newVal;
+            setParsedHand({ ...parsedHand, parsed_data: { ...handData, board: newBoard } });
+            handleFeedback('edit', { name: oldName, revised: newVal });
+        } else {
+            const newPlayers = [...handData.players];
+            const p = newPlayers[editingCard.pIdx!];
+            const newCards = [...(p.hole_cards || [])];
+            const oldName = newCards[editingCard.index];
+            newCards[editingCard.index] = newVal;
+            newPlayers[editingCard.pIdx!] = { ...p, hole_cards: newCards };
+            setParsedHand({ ...parsedHand, parsed_data: { ...handData, players: newPlayers } });
+            handleFeedback('edit', { name: oldName, revised: newVal });
+        }
+    }
 }

@@ -21,6 +21,9 @@ export interface Player {
     aggression_score: number;
     notesCount?: number;
     platform?: { id: string; name: string };
+    ai_playstyle?: string | null;
+    ai_aggression_score?: number | null;
+    ai_exploit_strategy?: string | null;
 }
 
 export interface PaginationMeta {
@@ -192,6 +195,9 @@ export function PlayerListClient({
                                         aggressionScore={player.aggression_score}
                                         notesCount={player.notesCount || 0}
                                         platformName={player.platform?.name}
+                                        ai_playstyle={player.ai_playstyle}
+                                        ai_aggression_score={player.ai_aggression_score}
+                                        ai_exploit_strategy={player.ai_exploit_strategy}
                                         onAddNote={() => {
                                             setActivePlayerForNote(player);
                                             setNoteModalOpen(true);

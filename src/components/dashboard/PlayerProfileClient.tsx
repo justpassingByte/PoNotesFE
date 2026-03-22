@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     ArrowLeft, Pencil, Trash2, Eye, Plus, X, Check, Search, Filter,
@@ -60,6 +60,7 @@ interface Note {
     street: string;
     note_type: string;
     created_at: string;
+    is_ai_generated?: boolean;
 }
 
 interface PlayerDetails {
@@ -76,6 +77,13 @@ interface PlayerDetails {
         leaks: string[];
         strategy: string;
     } | null;
+    usage?: {
+        allowed: boolean;
+        used: number;
+        limit: number;
+        remaining: number;
+        resetsAt: string;
+    };
 }
 
 interface PlayerProfileClientProps {
@@ -91,6 +99,7 @@ export function PlayerProfileClient({
     const [player, setPlayer] = useState<PlayerDetails>(initialPlayer);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [cooldown, setCooldown] = useState(0); // in seconds
+    const [usage, setUsage] = useState<PlayerDetails['usage']>(initialPlayer.usage);
 
     // Add Note state
     const [showAddNote, setShowAddNote] = useState(false);
@@ -119,12 +128,33 @@ export function PlayerProfileClient({
     // Refresh player data via Server Action
     const refreshPlayer = async () => {
         const updated = await fetchPlayerProfile(player.id);
-        if (updated) setPlayer(updated as any);
+        if (updated) {
+            setPlayer(updated as any);
+            if ((updated as any).usage) setUsage((updated as any).usage);
+        }
     };
+
+    // Fetch current usage on mount if not pre-populated by SSR
+    useEffect(() => {
+        if (usage !== undefined) return; // Already loaded
+        fetch(`${API.usage}?action=AI_ANALYZE`)
+            .then(r => r.json())
+            .then(json => { if (json.success && json.data) setUsage(json.data); })
+            .catch(() => { /* quota display optional — fail silently */ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // AI Profiling Trigger
     const handleRunAIAnalyst = async () => {
         if (cooldown > 0) return;
+        if (usage && !usage.allowed) {
+            const resetTime = usage.resetsAt 
+                ? new Date(usage.resetsAt).toLocaleString() 
+                : 'next period';
+            alert(`You have reached your ${user?.premium_tier || 'FREE'} plan AI limit. Resets at ${resetTime}.`);
+            return;
+        }
+
         setIsAnalyzing(true);
         try {
             const res = await fetch(API.refreshProfile, {
@@ -133,13 +163,12 @@ export function PlayerProfileClient({
                 body: JSON.stringify({ playerId: player.id })
             });
 
-            if (res.status === 429) {
-                alert("Rate limit reached. Please wait a moment.");
-                setCooldown(60); // Set a default cooldown if backend rate limits
-                return;
+            const json = await res.json();
+            
+            if (json.usage) {
+                setUsage(json.usage);
             }
 
-            const json = await res.json();
             if (json.success) {
                 await refreshPlayer();
                 // Set a 60-second cooldown on success
@@ -154,7 +183,11 @@ export function PlayerProfileClient({
                     });
                 }, 1000);
             } else {
-                alert(json.error || "Analysis failed");
+                if (res.status === 403) {
+                    alert(json.error || "Monthly/Daily AI quota exceeded");
+                } else {
+                    alert(json.error || "Analysis failed");
+                }
             }
         } catch (err) {
             console.error("Failed to run AI analysis", err);
@@ -375,7 +408,11 @@ export function PlayerProfileClient({
                                             {/* Playstyle Badge — Full Width */}
                                             <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5">
                                                 <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Classified As</span>
-                                                <span className="px-4 py-1.5 bg-gold/10 text-gold font-black text-xs rounded-full border border-gold/30 tracking-wider shadow-[0_0_12px_rgba(212,175,55,0.1)]">
+                                                <span className={`px-4 py-1.5 font-black text-xs rounded-full border tracking-wider shadow-[0_0_12px_rgba(212,175,55,0.1)] ${
+                                                    player.playstyle === 'WHALE' 
+                                                        ? 'bg-gold/20 text-gold border-gold animate-pulse shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-110' 
+                                                        : 'bg-gold/10 text-gold border-gold/30'
+                                                }`}>
                                                     {player.playstyle || "UNKNOWN"}
                                                 </span>
                                             </div>
@@ -568,27 +605,39 @@ export function PlayerProfileClient({
                                             </div>
                                         </div>
 
-                                        <div className="pt-2">
+                                        <div className="pt-2 space-y-3">
                                             {!player.ai_profile ? (
                                                 <button
                                                     onClick={handleRunAIAnalyst}
-                                                    disabled={isAnalyzing || cooldown > 0}
-                                                    className="w-full py-4 bg-gradient-to-br from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-black text-sm uppercase tracking-[0.2em] rounded-xl shadow-[0_4px_15px_rgba(245,158,11,0.3)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 disabled:opacity-50 disabled:transform-none"
+                                                    disabled={isAnalyzing || cooldown > 0 || (usage && !usage.allowed)}
+                                                    className="w-full py-4 bg-gradient-to-br from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-black text-sm uppercase tracking-[0.2em] rounded-xl shadow-[0_4px_15px_rgba(245,158,11,0.3)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 disabled:opacity-50 disabled:transform-none disabled:grayscale"
                                                 >
                                                     <Zap className="w-5 h-5" />
-                                                    {cooldown > 0 ? `Wait ${cooldown}s` : 'Run AI Deep Analyst'}
+                                                    {cooldown > 0 ? `Wait ${cooldown}s` : (usage && !usage.allowed ? 'OUT OF TURNS' : 'Run AI Deep Analyst')}
                                                 </button>
                                             ) : (
                                                 <button
                                                     onClick={handleRunAIAnalyst}
-                                                    disabled={isAnalyzing || cooldown > 0}
+                                                    disabled={isAnalyzing || cooldown > 0 || (usage && !usage.allowed)}
                                                     className="w-full py-3 bg-white/5 hover:bg-white/10 text-[10px] text-gray-500 hover:text-amber-400 font-bold uppercase tracking-[0.3em] rounded-xl transition-all border border-dashed border-white/10 hover:border-amber-500/40 group disabled:opacity-50"
                                                 >
                                                     <div className="flex items-center justify-center gap-2">
                                                         <RefreshCw className={`w-3 h-3 ${isAnalyzing ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-700`} />
-                                                        {cooldown > 0 ? `Cooldown (${cooldown}s)` : 'Recalculate Elite Intel'}
+                                                        {cooldown > 0 ? `Cooldown (${cooldown}s)` : (usage && !usage.allowed ? 'NO TURNS LEFT' : 'Recalculate Elite Intel')}
                                                     </div>
                                                 </button>
+                                            )}
+
+                                            {/* Simple quota hint */}
+                                            {usage && (
+                                                <p className={`text-center text-[10px] font-bold tracking-wider ${
+                                                    usage.remaining === 0 ? 'text-red-500' : 'text-gray-600'
+                                                }`}>
+                                                    {usage.remaining === 0
+                                                        ? `Resets ${new Date(usage.resetsAt).toLocaleDateString()}`
+                                                        : `${usage.remaining} AI turn${usage.remaining !== 1 ? 's' : ''} left`
+                                                    }
+                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -715,9 +764,16 @@ export function PlayerProfileClient({
                                                     /* VIEW MODE */
                                                     <>
                                                         <div className="flex justify-between items-start mb-3">
-                                                            <span className="text-[10px] text-gray-500 uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded border border-white/10 font-mono">
-                                                                {note.street || 'General'}
-                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] text-gray-500 uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded border border-white/10 font-mono">
+                                                                    {note.street || 'General'}
+                                                                </span>
+                                                                {note.is_ai_generated && (
+                                                                    <span className="text-[9px] bg-gold/10 text-gold px-1.5 py-0.5 rounded border border-gold/20 font-black uppercase tracking-[0.2em] flex items-center gap-1">
+                                                                        <Zap className="w-2.5 h-2.5" /> AI
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                                 <button
                                                                     onClick={() => {
@@ -739,10 +795,13 @@ export function PlayerProfileClient({
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                        <p className="text-gray-300 leading-relaxed mb-3">{note.content}</p>
+                                                        <p className={`leading-relaxed mb-3 ${note.is_ai_generated ? 'text-amber-200/90 italic font-medium' : 'text-gray-300'}`}>
+                                                            {note.content}
+                                                        </p>
                                                         <div className="text-[10px] text-gray-500 font-mono flex items-center">
                                                             <Eye className="w-3 h-3 mr-1" />
-                                                            Logged: {new Date(note.created_at).toLocaleDateString()} at {new Date(note.created_at).toLocaleTimeString()}
+                                                            {note.is_ai_generated ? 'Auto-Extracted: ' : 'Logged: '}
+                                                            {new Date(note.created_at).toLocaleDateString()} at {new Date(note.created_at).toLocaleTimeString()}
                                                         </div>
                                                     </>
                                                 )}

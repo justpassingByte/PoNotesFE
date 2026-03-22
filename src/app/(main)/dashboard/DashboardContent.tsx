@@ -7,17 +7,21 @@ export async function DashboardContent() {
     let stats = {
         totalCount: 0,
         totalNotesCount: 0,
-        playstyleCounts: {} as Record<string, number>
+        playstyleCounts: {} as Record<string, number>,
+        aiUsage: undefined as { remaining: number; limit: number; resetsAt: string } | undefined,
+        ocrUsage: undefined as { remaining: number; limit: number; resetsAt: string } | undefined
     };
-    let topFish = [];
+    let topWhales = [];
+    let topRegs = [];
 
     try {
         const dashboardData = await fetchDashboard();
-        stats = dashboardData.stats;
-        topFish = dashboardData.topFish;
+        if (dashboardData.stats) stats = { ...stats, ...dashboardData.stats };
+        topWhales = dashboardData.topWhales || [];
+        topRegs = dashboardData.topRegs || [];
     } catch (err) {
         console.error("Dashboard fetch error:", err);
     }
 
-    return <DashboardHome user={user} stats={stats} topFish={topFish} />;
+    return <DashboardHome user={user} stats={stats} topWhales={topWhales} topRegs={topRegs} />;
 }

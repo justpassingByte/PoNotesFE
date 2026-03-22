@@ -49,16 +49,16 @@ export async function fetchDashboard() {
         });
         
         if (!res.ok) {
-            return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {} }, topFish: [] };
+            return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {}, aiUsage: null, ocrUsage: null }, topWhales: [], topRegs: [] };
         }
         const json = await res.json();
         if (!json.success) {
-            return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {} }, topFish: [] };
+            return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {}, aiUsage: null, ocrUsage: null }, topWhales: [], topRegs: [] };
         }
         return json.data;
     } catch (err) {
         console.error("fetchDashboard Action Error:", err);
-        return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {} }, topFish: [] };
+        return { stats: { totalCount: 0, totalNotesCount: 0, playstyleCounts: {}, aiUsage: null, ocrUsage: null }, topWhales: [], topRegs: [] };
     }
 }
 
@@ -179,20 +179,37 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
     ai_range_matrix?: any;
     ai_action_breakdown?: any;
     ai_profile?: any;
-    notes: { id: string; content: string; street: string; note_type: string; source?: string; created_at: string }[];
+    usage?: any;
+    notes: { 
+        id: string; 
+        content: string; 
+        street: string; 
+        note_type: string; 
+        source?: string; 
+        created_at: string;
+        is_ai_generated?: boolean;
+    }[];
 } | null> {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
+    const headers: Record<string, string> = token ? { "Authorization": `Bearer ${token}` } : {};
 
-    const res = await fetch(`${API.players}/${playerId}`, { 
-        cache: "no-store",
-        headers: token ? { "Authorization": `Bearer ${token}` } : {}
-    });
+    // Fetch player data AND current AI quota in parallel
+    const [res, usageRes] = await Promise.all([
+        fetch(`${API.players}/${playerId}`, { cache: "no-store", headers }),
+        fetch(`${API.usage}?action=AI_ANALYZE`, { cache: "no-store", headers })
+    ]);
     const json = await res.json();
 
     if (!json.success || !json.data) {
         return null;
     }
+
+    let usage = null;
+    try {
+        const usageJson = await usageRes.json();
+        if (usageJson.success && usageJson.data) usage = usageJson.data;
+    } catch { /* usage is optional */ }
 
     const p = json.data;
     return {
@@ -207,12 +224,14 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
         ai_range_matrix: p.ai_range_matrix || null,
         ai_action_breakdown: p.ai_action_breakdown || null,
         ai_profile: p.ai_profile || null,
+        usage,
         notes: (p.notes || []).map((n: any) => ({
             id: n.id,
             content: n.content,
             street: n.street || "General",
             note_type: n.note_type || "Custom",
             source: n.source || "custom",
+            is_ai_generated: n.is_ai_generated ?? false,
             created_at: typeof n.created_at === "string" ? n.created_at : new Date(n.created_at).toISOString(),
         })),
     };
@@ -363,5 +382,47 @@ export async function deletePlayerAction(playerId: string) {
     } catch (err) {
         console.error("Server Action Error (deletePlayerAction):", err);
         throw err;
+    }
+}
+
+/**
+ * Server Action: fetch AI tuning settings.
+ */
+export async function getAISettings(): Promise<any> {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    try {
+        const res = await fetch(`${API.settings}/ai`, { 
+            cache: "no-store",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        return json.success ? json.data : null;
+    } catch (err) {
+        console.error("Failed to fetch AI settings", err);
+        return null;
+    }
+}
+
+/**
+ * Server Action: update AI tuning settings.
+ */
+export async function updateAISettings(data: any): Promise<any> {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    try {
+        const res = await fetch(`${API.settings}/ai`, { 
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        return json;
+    } catch (err) {
+        console.error("Failed to update AI settings", err);
+        return { success: false, error: String(err) };
     }
 }

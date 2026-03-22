@@ -23,6 +23,7 @@ export const API = {
   playerExport: `${API_BASE_URL}/api/players/export`,
   playerBulk: `${API_BASE_URL}/api/players/bulk`,
   refreshProfile: `${API_BASE_URL}/api/players/profile/refresh`,
+  usage: `${API_BASE_URL}/api/usage`,
 
   // Hand Analysis
   hands: `${API_BASE_URL}/api/hands`,
