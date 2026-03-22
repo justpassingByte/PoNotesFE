@@ -62,10 +62,10 @@ export function PlayerHUD({
             {/* AI HUD Section - HIGHLIGHTED */}
             {(ai_archetype || (ai_profile?.range_adjustments && ai_profile.range_adjustments.length > 0)) && (
                 <div className="bg-gold/5 border border-gold/10 rounded-2xl p-4 mb-6 shadow-inner">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse shadow-[0_0_5px_rgba(250,204,21,0.5)]"></span>
-                            <Brain className="w-3 h-3 text-gold/80" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
+                            <span className="text-[10px] text-gold font-black uppercase tracking-widest">Range Adjustments</span>
                         </div>
                         {ai_archetype && (
                             <span className={`px-1.5 py-0.5 text-[8px] font-black rounded border ${getPlaystyleColor(ai_archetype)}`}>
@@ -76,39 +76,38 @@ export function PlayerHUD({
 
                     {/* Range Adjustments - High Value Info for HUD */}
                     {ai_profile?.range_adjustments && ai_profile.range_adjustments.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-1.5">
+                        <div className="grid grid-cols-1 gap-2">
                             {ai_profile.range_adjustments.slice(0, 3).map((adj: string, i: number) => (
-                                <div key={i} className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-xl px-3 py-2 hover:border-gold/20 transition-all">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-gold/80"></div>
-                                    <span className="text-[12px] text-gray-100 font-black tracking-tight leading-none">{adj}</span>
+                                <div key={i} className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-xl px-3 py-2">
+                                    <Brain className="w-3 h-3 text-gold/60 flex-shrink-0" />
+                                    <span className="text-[11px] text-gray-100 font-bold leading-tight">{adj}</span>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-[10px] text-gray-600 italic uppercase tracking-widest text-center py-2">Calibrating Range Strategy...</div>
+                        <div className="text-[10px] text-gray-600 italic uppercase tracking-widest text-center py-2">Calculating exploits...</div>
                     )}
                 </div>
             )}
 
-            {/* 3. Metrics Row (No Labels) */}
-            <div className="grid grid-cols-3 gap-3 mt-auto pt-4 border-t border-white/5">
-                <div className="flex flex-col items-center justify-center bg-white/5 py-3 rounded-2xl border border-white/10 group/stat hover:bg-white/10 transition-all">
-                    <div className="mb-1">{getAggressionIcon(ai_aggression_score ?? aggressionScore)}</div>
-                    <span className="text-xl font-black font-mono text-white tracking-tighter">
+            {/* Reverted Metrics (with Labels) */}
+            <div className="space-y-3 mt-auto pt-4 border-t border-white/5">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        {getAggressionIcon(ai_aggression_score ?? aggressionScore)}
+                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Aggression</span>
+                    </div>
+                    <span className="text-sm font-black font-mono text-white">
                         {ai_aggression_score ?? aggressionScore}%
                     </span>
                 </div>
 
-                <div className="flex flex-col items-center justify-center bg-white/5 py-3 rounded-2xl border border-white/10 group/stat hover:bg-white/10 transition-all">
-                    <div className="w-2 h-2 rounded-full bg-gold shadow-[0_0_10px_rgba(250,204,21,0.3)] mb-2"></div>
-                    <span className="text-xl font-black font-mono text-white tracking-tighter">{notesCount}</span>
-                </div>
-
-                <div className="flex flex-col items-center justify-center bg-white/5 py-3 rounded-2xl border border-white/10 group/stat hover:bg-white/10 transition-all">
-                    <div className="p-1 bg-gold/10 rounded-lg mb-1">
-                        <FileText className="w-3.5 h-3.5 text-gold" />
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <FileText className="w-3.5 h-3.5 text-gray-500" />
+                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Data Depth</span>
                     </div>
-                    <span className="text-xl font-black font-mono text-white tracking-tighter">{notesCount}</span>
+                    <span className="text-sm font-black font-mono text-white">{notesCount} Notes</span>
                 </div>
             </div>
 

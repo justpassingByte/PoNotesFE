@@ -177,25 +177,25 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-10">
                 {/* 4. Top Whales (Weak Targets) */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                            <Target className="w-5 h-5 text-gold" />
-                            Top Whales
+                    <div className="flex items-center justify-between px-2 text-gold">
+                        <h2 className="text-xl font-black flex items-center gap-3 uppercase tracking-tighter">
+                            <Target className="w-5 h-5" />
+                            Target Priority: High
                         </h2>
-                        <Link href="/players" className="text-[10px] text-gray-500 hover:text-gold uppercase tracking-widest font-bold transition-colors">View All</Link>
+                        <Link href="/players" className="text-[10px] text-gray-500 hover:text-gold uppercase tracking-widest font-bold font-mono transition-colors italic">Analyze More &gt;</Link>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6">
                         {topWhales.length > 0 ? (
                             topWhales.map(player => (
                                 <PlayerCard key={player.id} player={player} />
                             ))
                         ) : (
                             <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-2xl">
-                                <p className="text-sm text-gray-500 font-medium">No weak targets identified yet.</p>
+                                <p className="text-sm text-gray-500 font-medium font-mono uppercase tracking-widest opacity-50">Radial search yield: 0 targets</p>
                             </div>
                         )}
                     </div>
@@ -203,22 +203,22 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
 
                 {/* 5. Top Regulars (Strong Targets) */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                            <ShieldAlert className="w-5 h-5 text-red-500" />
-                            Top Regulars
+                    <div className="flex items-center justify-between px-2 text-rose-500">
+                        <h2 className="text-xl font-black flex items-center gap-3 uppercase tracking-tighter">
+                            <ShieldAlert className="w-5 h-5" />
+                            Strategic Threats
                         </h2>
-                        <Link href="/players" className="text-[10px] text-gray-500 hover:text-gold uppercase tracking-widest font-bold transition-colors">View All</Link>
+                        <Link href="/players" className="text-[10px] text-gray-500 hover:text-rose-400 uppercase tracking-widest font-bold font-mono transition-colors italic">Deep Scan &gt;</Link>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6">
                         {topRegs.length > 0 ? (
                             topRegs.map(player => (
                                 <PlayerCard key={player.id} player={player} isStrong />
                             ))
                         ) : (
                             <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-2xl">
-                                <p className="text-sm text-gray-500 font-medium">No strong regs detected yet.</p>
+                                <p className="text-sm text-gray-500 font-medium font-mono uppercase tracking-widest opacity-50">No high-risk entities detected</p>
                             </div>
                         )}
                     </div>
@@ -256,8 +256,9 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
                         )}
                     </div>
                 </div>
-                <div className="text-right">
-                    <div className={`text-xl font-black ${isStrong ? 'text-red-400' : 'text-white'}`}>
+                <div className="text-right flex flex-col items-end">
+                    <span className="text-[8px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">AGGRESSION</span>
+                    <div className={`text-xl font-black font-mono tracking-tighter ${isStrong ? 'text-red-400' : 'text-white'}`}>
                         {player.ai_aggression_score ?? player.aggression_score}%
                     </div>
                 </div>
