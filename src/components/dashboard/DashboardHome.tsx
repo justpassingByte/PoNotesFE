@@ -56,7 +56,8 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
             <Modal 
                 isOpen={isAITuningOpen} 
                 onClose={() => setIsAITuningOpen(false)}
-                title="AI Neural Tuning"
+                title="AI Neural Tuning Engine"
+                size="xl"
             >
                 <AITuningModal onClose={() => setIsAITuningOpen(false)} />
             </Modal>
@@ -67,7 +68,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                     <h2 className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Neural & Quick Operations</h2>
                     <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent ml-4"></div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     <ActionButton 
                         icon={<Users className="w-5 h-5" />} 
                         title="Players" 
@@ -263,14 +264,22 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
                 </div>
             </div>
 
-            {player.ai_exploit_strategy || player.ai_profile?.strategy ? (
+            {player.ai_profile?.range_adjustments && player.ai_profile.range_adjustments.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                    {player.ai_profile.range_adjustments.slice(0, 2).map((adj: string, i: number) => (
+                        <div key={i} className="px-2.5 py-1 bg-gold/10 border border-gold/20 rounded-lg text-[10px] text-gold font-black uppercase tracking-tighter">
+                            {adj}
+                        </div>
+                    ))}
+                </div>
+            ) : player.ai_exploit_strategy ? (
                 <div className={`mt-4 p-2 bg-black/40 rounded-lg border-l-2 ${isStrong ? 'border-red-500/50' : 'border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]'}`}>
                     <div className="flex items-center gap-1.5 mb-1">
                         <Brain className="w-2.5 h-2.5 text-gold" />
                         <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Exploit Strategy</span>
                     </div>
                     <p className="text-[10px] text-gray-300 italic font-medium line-clamp-2 leading-tight">
-                        "{player.ai_exploit_strategy || player.ai_profile?.strategy}"
+                        "{player.ai_exploit_strategy}"
                     </p>
                 </div>
             ) : null}

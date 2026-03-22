@@ -49,25 +49,25 @@ export function PlayerHUD({
             {/* Decorative Card Background Element */}
             <div className="absolute -right-10 -top-10 w-32 h-32 bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-felt-light/20 to-transparent opacity-50 rounded-full pointer-events-none group-hover:opacity-80 transition-opacity"></div>
 
-            <div className="flex justify-between items-start mb-4">
-                <div>
-                    <h3 className="font-bold text-xl text-white tracking-wide truncate max-w-[150px]">{name}</h3>
-                    <span className="text-xs text-gray-400 font-medium">{platformName || 'Unknown Platform'}</span>
+            <div className="flex justify-between items-start mb-6">
+                <div className="space-y-1">
+                    <h3 className="font-black text-2xl text-white tracking-tight truncate max-w-[200px]">{name}</h3>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] block">{platformName || 'Unknown Platform'}</span>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                    <div className={`px-2.5 py-1 text-[10px] font-black rounded border ${getPlaystyleColor(playstyle)} transition-all uppercase tracking-tighter`}>
+                    <div className={`px-3 py-1.5 text-[11px] font-black rounded-lg border ${getPlaystyleColor(playstyle)} transition-all uppercase tracking-tighter shadow-sm`}>
                         {playstyle}
                     </div>
                 </div>
             </div>
 
             {/* AI HUD Section - HIGHLIGHTED */}
-            {(ai_archetype || strategy) && (
-                <div className="bg-gold/5 border border-gold/20 rounded-xl p-3 mb-4 animate-in fade-in slide-in-from-top-2 duration-700">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
-                            <span className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">AI HUD</span>
+            {(ai_archetype || (ai_profile?.range_adjustments && ai_profile.range_adjustments.length > 0)) && (
+                <div className="bg-gold/5 border border-gold/10 rounded-2xl p-4 mb-6 shadow-inner">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-gold animate-pulse shadow-[0_0_8px_rgba(250,204,21,0.5)]"></span>
+                            <span className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">Neural Intelligence</span>
                         </div>
                         {ai_archetype && (
                             <span className={`px-2 py-0.5 text-[9px] font-black rounded border ${getPlaystyleColor(ai_archetype)}`}>
@@ -76,44 +76,38 @@ export function PlayerHUD({
                         )}
                     </div>
 
-                    {/* Leaks - Prioritized in HUD */}
-                    {ai_profile?.leaks && ai_profile.leaks.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                            {ai_profile.leaks.slice(0, 3).map((leak: string, i: number) => (
-                                <span key={i} className="text-[9px] bg-red-500/10 text-red-500 border border-red-500/20 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tighter">
-                                    {leak}
-                                </span>
+                    {/* Range Adjustments - High Value Info for HUD */}
+                    {ai_profile?.range_adjustments && ai_profile.range_adjustments.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-1.5">
+                            {ai_profile.range_adjustments.slice(0, 3).map((adj: string, i: number) => (
+                                <div key={i} className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-xl px-3 py-2 hover:border-gold/20 transition-all">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-gold/80"></div>
+                                    <span className="text-[12px] text-gray-100 font-black tracking-tight leading-none">{adj}</span>
+                                </div>
                             ))}
                         </div>
-                    )}
-
-                    {strategy && (
-                        <div className="p-2 bg-black/40 rounded-lg border-l-2 border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]">
-                            <span className="text-[8px] font-bold text-gray-500 uppercase tracking-tighter block mb-1">Counter-Strategy:</span>
-                            <p className="text-[10px] text-gray-200 font-medium italic leading-tight">
-                                "{strategy.length > 85 ? strategy.substring(0, 85) + '...' : strategy}"
-                            </p>
-                        </div>
+                    ) : (
+                        <div className="text-[10px] text-gray-600 italic uppercase tracking-widest text-center py-2">Calibrating Range Strategy...</div>
                     )}
                 </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4 mt-auto">
+            <div className="grid grid-cols-2 gap-6 mt-auto">
                 <div className="flex flex-col">
-                    <span className="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Aggression</span>
-                    <div className="flex items-center space-x-2">
+                    <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1.5 ml-1">Aggression</span>
+                    <div className="flex items-center space-x-3 bg-white/5 p-3 rounded-2xl border border-white/5">
                         {getAggressionIcon(ai_aggression_score ?? aggressionScore)}
-                        <span className="text-xl font-black font-mono text-gray-200">
+                        <span className="text-2xl font-black font-mono text-white tracking-tighter">
                             {ai_aggression_score ?? aggressionScore}%
                         </span>
                     </div>
                 </div>
 
                 <div className="flex flex-col">
-                    <span className="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Total Notes</span>
-                    <div className="flex items-center space-x-2">
-                        <span className="w-2 h-2 rounded-full bg-gold"></span>
-                        <span className="text-xl font-black font-mono text-gray-200">{notesCount}</span>
+                    <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1.5 ml-1">Data Depth</span>
+                    <div className="flex items-center space-x-3 bg-white/5 p-3 rounded-2xl border border-white/5">
+                        <div className="w-2 h-2 rounded-full bg-gold shadow-[0_0_10px_rgba(250,204,21,0.3)]"></div>
+                        <span className="text-2xl font-black font-mono text-white tracking-tighter">{notesCount}</span>
                     </div>
                 </div>
             </div>
