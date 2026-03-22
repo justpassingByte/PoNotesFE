@@ -11,13 +11,14 @@ export interface PlayerHUDProps {
     ai_playstyle?: string | null;
     ai_aggression_score?: number | null;
     ai_exploit_strategy?: string | null;
+    ai_profile?: any;
     onAddNote?: () => void;
     onDelete?: () => void;
 }
 
 export function PlayerHUD({ 
     id, name, playstyle, aggressionScore, notesCount, platformName, 
-    ai_playstyle, ai_aggression_score, ai_exploit_strategy,
+    ai_playstyle, ai_aggression_score, ai_exploit_strategy, ai_profile,
     onAddNote, onDelete 
 }: PlayerHUDProps) {
 
@@ -40,8 +41,11 @@ export function PlayerHUD({
         return <ShieldAlert className="w-4 h-4 text-green-500" />;
     };
 
+    const strategy = ai_exploit_strategy || ai_profile?.strategy;
+    const ai_archetype = ai_playstyle || ai_profile?.archetype;
+
     return (
-        <Link href={`/players/${id}`} className="block bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden group hover:bg-card/60 transition-all hover:-translate-y-1 cursor-pointer no-underline min-h-[280px] flex flex-col">
+        <Link href={`/players/${id}`} className="block bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden group hover:bg-card/60 transition-all hover:-translate-y-1 cursor-pointer no-underline min-h-[300px] flex flex-col">
             {/* Decorative Card Background Element */}
             <div className="absolute -right-10 -top-10 w-32 h-32 bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-felt-light/20 to-transparent opacity-50 rounded-full pointer-events-none group-hover:opacity-80 transition-opacity"></div>
 
@@ -50,7 +54,7 @@ export function PlayerHUD({
                     <h3 className="font-bold text-xl text-white tracking-wide truncate max-w-[150px]">{name}</h3>
                     <span className="text-xs text-gray-400 font-medium">{platformName || 'Unknown Platform'}</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col items-end gap-1">
                     <div className={`px-2.5 py-1 text-[10px] font-black rounded border ${getPlaystyleColor(playstyle)} transition-all uppercase tracking-tighter`}>
                         {playstyle}
                     </div>
@@ -58,22 +62,24 @@ export function PlayerHUD({
             </div>
 
             {/* AI HUD Section - HIGHLIGHTED */}
-            {ai_playstyle && (
+            {(ai_archetype || strategy) && (
                 <div className="bg-gold/5 border border-gold/20 rounded-xl p-3 mb-4 animate-in fade-in slide-in-from-top-2 duration-700">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
-                            <span className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">AI ANALYSIS</span>
+                            <span className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">AI HUD</span>
                         </div>
-                        <span className={`px-2 py-0.5 text-[9px] font-black rounded border ${getPlaystyleColor(ai_playstyle)}`}>
-                            {ai_playstyle}
-                        </span>
+                        {ai_archetype && (
+                            <span className={`px-2 py-0.5 text-[9px] font-black rounded border ${getPlaystyleColor(ai_archetype)}`}>
+                                {ai_archetype}
+                            </span>
+                        )}
                     </div>
-                    {ai_exploit_strategy && (
-                        <div className="mt-2 space-y-1">
-                            <span className="text-[8px] font-bold text-gray-500 uppercase tracking-tighter block">Exploit Strategy:</span>
-                            <p className="text-[10px] text-gray-300 italic line-clamp-2 leading-relaxed border-l-2 border-gold/30 pl-2">
-                                {ai_exploit_strategy}
+                    {strategy && (
+                        <div className="mt-2 p-2 bg-black/40 rounded-lg border-l-2 border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]">
+                            <span className="text-[8px] font-bold text-gray-500 uppercase tracking-tighter block mb-1">Counter-Strategy:</span>
+                            <p className="text-[11px] text-gray-200 font-medium italic leading-relaxed">
+                                "{strategy}"
                             </p>
                         </div>
                     )}

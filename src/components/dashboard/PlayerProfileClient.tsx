@@ -4,10 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     ArrowLeft, Pencil, Trash2, Eye, Plus, X, Check, Search, Filter,
-    ChevronDown, Zap, Shield, Target, RefreshCw, AlignLeft
+    ChevronDown, Zap, Shield, Target, RefreshCw, AlignLeft, Brain
 } from 'lucide-react';
 import { Header } from "@/components/layout/Header";
-import { StrategyGuide } from "@/components/dashboard/StrategyGuide";
 import { API } from "@/lib/api";
 
 const STRATEGIES: Record<string, string[]> = {
@@ -15,36 +14,36 @@ const STRATEGIES: Record<string, string[]> = {
         "Widen your value 3-betting range preflop to punish their wide opens.",
         "Smooth call with strong draws and monsters on the flop to induce bluffs on later streets.",
         "They will over-barrel; use your strong top-pairs as bluff catchers.",
-        "Do not try to bluff this player off top pair."
+        "Do not try to find bluffs on this player."
     ],
     "NIT": [
         "Steal their blinds relentlessly preflop; they fold too often without a premium holding.",
         "If they 3-bet you, fold unless you look down at QQ+ or AKs.",
-        "Float the flop and bet the turn if they check to you; they play 'fit-or-fold'.",
+        "Float the flop and bet the turn if they check to you.",
         "Never pay off their river raises."
     ],
     "TAG": [
         "Avoid tangling out of position without a solid range advantage.",
-        "Attack their c-bets on coordinated boards; they often have air when they check the turn.",
+        "Attack their c-bets on coordinated boards.",
         "Pay attention to sizing tells—they often bet larger with polarized value.",
-        "Do not run multi-street elaborate bluffs; TAGs have rigid calling ranges."
+        "Do not run multi-street elaborate bluffs."
     ],
     "MANIAC": [
         "Tighten up preflop and play exclusively for value.",
         "Never slowplay your strong hands preflop.",
         "Let them do the betting for you post-flop.",
-        "Prepare for high variance; buy-in full and do not tilt when they hit their 2-outers."
+        "Prepare for high variance."
     ],
     "CALLING STATION": [
         "Never bluff under any circumstances. Value bet thinly across all three streets.",
-        "Size your value bets larger on wet boards—they don't understand pot odds.",
+        "Size your value bets larger on wet boards.",
         "If you miss your draw, give up immediately.",
-        "Do not overthink hand reading; they are playing their cards face up."
+        "They are playing their cards face up."
     ],
     "FISH": [
         "Isolate them preflop to play pots heads-up in position.",
         "Extract maximum value. Size up dramatically when you hit Gin.",
-        "Watch for passive limping—punish it with large isolation raises.",
+        "Watch for passive limping—punish it with isolation raises."
     ],
 };
 
@@ -69,6 +68,10 @@ interface PlayerDetails {
     playstyle: string;
     aggression_score: number;
     notes: Note[];
+    platform: {
+        id: string;
+        name: string;
+    };
     ai_profile?: {
         archetype: string;
         confidence: number;
@@ -77,6 +80,7 @@ interface PlayerDetails {
         leaks: string[];
         strategy: string;
     } | null;
+    ai_exploit_strategy?: string | null;
     usage?: {
         allowed: boolean;
         used: number;
@@ -98,7 +102,7 @@ export function PlayerProfileClient({
     const router = useRouter();
     const [player, setPlayer] = useState<PlayerDetails>(initialPlayer);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [cooldown, setCooldown] = useState(0); // in seconds
+    const [cooldown, setCooldown] = useState(0); 
     const [usage, setUsage] = useState<PlayerDetails['usage']>(initialPlayer.usage);
 
     // Add Note state
@@ -114,8 +118,8 @@ export function PlayerProfileClient({
 
     // Edit Player state
     const [editingPlayer, setEditingPlayer] = useState(false);
-    const [editName, setEditName] = useState('');
-    const [editPlaystyle, setEditPlaystyle] = useState('');
+    const [editName, setEditName] = useState(initialPlayer.name);
+    const [editPlaystyle, setEditPlaystyle] = useState(initialPlayer.playstyle || 'UNKNOWN');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Solver state
@@ -136,12 +140,11 @@ export function PlayerProfileClient({
 
     // Fetch current usage on mount if not pre-populated by SSR
     useEffect(() => {
-        if (usage !== undefined) return; // Already loaded
+        if (usage !== undefined) return; 
         fetch(`${API.usage}?action=AI_ANALYZE`)
             .then(r => r.json())
             .then(json => { if (json.success && json.data) setUsage(json.data); })
-            .catch(() => { /* quota display optional — fail silently */ });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+            .catch(() => { });
     }, []);
 
     // AI Profiling Trigger
@@ -165,13 +168,10 @@ export function PlayerProfileClient({
 
             const json = await res.json();
             
-            if (json.usage) {
-                setUsage(json.usage);
-            }
+            if (json.usage) setUsage(json.usage);
 
             if (json.success) {
                 await refreshPlayer();
-                // Set a 60-second cooldown on success
                 setCooldown(60);
                 const timer = setInterval(() => {
                     setCooldown(prev => {
@@ -183,11 +183,7 @@ export function PlayerProfileClient({
                     });
                 }, 1000);
             } else {
-                if (res.status === 403) {
-                    alert(json.error || "Monthly/Daily AI quota exceeded");
-                } else {
-                    alert(json.error || "Analysis failed");
-                }
+                alert(json.error || "Analysis failed");
             }
         } catch (err) {
             console.error("Failed to run AI analysis", err);
@@ -283,51 +279,6 @@ export function PlayerProfileClient({
         }
     };
 
-    // SOLVE
-    const handleSolve = async (filterData: SolveRequest) => {
-        setIsSolving(true);
-        setSolveError(null);
-        try {
-            const requestPayload: SolveRequest = {
-                spot: filterData.spot,
-                stack: filterData.stack,
-                villainType: filterData.villainType || "NEUTRAL",
-                shapingMode: filterData.shapingMode || "balanced",
-                street: filterData.street,
-                board: filterData.board,
-            };
-
-            const response = await fetchStrategy(requestPayload);
-            console.log("PlayerProfileClient: fetchStrategy succeeded, returning data", response);
-
-            setSolveData(response ?? null);
-
-            const raiseRecord: Record<string, number> = {};
-            const callRecord: Record<string, number> = {};
-            const foldRecord: Record<string, number> = {};
-            for (const [hand, strat] of Object.entries(response || {})) {
-                raiseRecord[hand] = (strat?.raise ?? 0) * 100;
-                callRecord[hand] = (strat?.call ?? 0) * 100;
-                foldRecord[hand] = (strat?.fold ?? 0) * 100;
-            }
-
-            // Categorized action breakdown (post-processing)
-            const categorized = buildCategorizedBreakdown(
-                raiseRecord,
-                callRecord,
-                foldRecord,
-                filterData.board,
-            );
-            setSolveActionBreakdown(categorized);
-
-        } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : "Failed to solve";
-            setSolveError(message);
-        } finally {
-            setIsSolving(false);
-        }
-    };
-
     return (
         <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0f2e1e] via-[#020202] to-black">
             <Header user={user} onSettingsClick={() => setSettingsOpen(true)} />
@@ -344,342 +295,262 @@ export function PlayerProfileClient({
                         Back to Players
                     </button>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-                        {/* LEFT COLUMN: IDENTIFICATION & STRATEGY */}
-                        <div className="lg:col-span-1 space-y-6 lg:space-y-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                        {/* LEFT COLUMN: TACTICAL INTELLIGENCE (WIDE 2/3) */}
+                        <div className="lg:col-span-2 space-y-8 order-2 lg:order-1">
+                            {/* ANALYSIS HEADER */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-gold/10 rounded-xl border border-gold/20">
+                                        <Brain className="w-5 h-5 text-gold" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-sm font-black text-white tracking-[0.2em] uppercase">Tactical AI Analysis</h2>
+                                        <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">Active Exploitive Engine v4.2</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] text-emerald-500 font-black uppercase tracking-widest bg-emerald-500/5 px-3 py-1 rounded-full border border-emerald-500/10">Live Feed</span>
+                                    <button onClick={refreshPlayer} className="p-2 text-gray-500 hover:text-white transition-colors">
+                                        <RefreshCw className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
 
-                            {/* Player ID Card */}
-                            <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden">
-                                {/* Top accent line */}
-                                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-gold/50 to-transparent"></div>
+                            {/* ELITE STRATEGY DISPLAY */}
+                            <div className="bg-card/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 blur-[100px] -mr-32 -mt-32 rounded-full"></div>
+                                
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-2 mb-8">
+                                        <div className="h-0.5 w-8 bg-gold"></div>
+                                        <span className="text-[10px] text-gold font-black uppercase tracking-[0.3em]">Core Exploit Strategy</span>
+                                    </div>
+                                    
+                                    {isAnalyzing ? (
+                                        <div className="py-20 flex flex-col items-center justify-center space-y-4">
+                                            <RefreshCw className="w-8 h-8 text-gold animate-spin" />
+                                            <p className="text-xs text-gray-500 uppercase tracking-widest font-black">Neural Calibration in progress...</p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <blockquote className="text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight mb-10">
+                                                &quot;{player.ai_profile?.strategy || player.ai_exploit_strategy || "Gathering more data for neural mapping..."}&quot;
+                                            </blockquote>
 
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-white/5">
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Archetype</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-2 h-2 rounded-full bg-gold"></div>
+                                                        <span className="text-lg font-bold text-white uppercase tracking-tighter">{player.ai_profile?.archetype || player.playstyle || 'Analyzing'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Aggression</p>
+                                                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                                        <div 
+                                                            className="h-full bg-gold shadow-[0_0_10px_rgba(255,215,0,0.5)]" 
+                                                            style={{ width: `${player.ai_profile?.aggression_score || player.aggression_score || 50}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Analysis Mode</p>
+                                                    <div className="text-xs font-bold text-emerald-500 uppercase flex items-center gap-1.5">
+                                                        <Zap className="w-3 h-3" /> GTO-Exploit Hybrid
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* DETAILED STATS GRID */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-card/30 backdrop-blur-xl border border-white/5 rounded-3xl p-6 hover:border-white/10 transition-all">
+                                    <h3 className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-6 flex items-center justify-between">
+                                        Positional Leaks
+                                        <Shield className="w-3 h-3 text-gold" />
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {(player.ai_profile?.leaks && player.ai_profile.leaks.length > 0) ? (
+                                            player.ai_profile.leaks.map((leak, idx) => (
+                                                <div key={idx} className="flex items-center gap-3 group">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500/50 group-hover:bg-red-500 transition-colors"></div>
+                                                    <span className="text-xs text-gray-300 font-medium">{leak}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-[10px] text-gray-600 italic uppercase">No critical leaks detected in current sample.</div>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-card/30 backdrop-blur-xl border border-white/5 rounded-3xl p-6 hover:border-white/10 transition-all">
+                                    <h3 className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-6 flex items-center justify-between">
+                                        Range Adjustments
+                                        <Target className="w-3 h-3 text-gold" />
+                                    </h3>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-gray-500 uppercase tracking-widest font-bold">Open-Raise</span>
+                                            <span className="text-white font-mono">Tight-Aggressive</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-gray-500 uppercase tracking-widest font-bold">Cold-Call</span>
+                                            <span className="text-white font-mono">Under-Defending</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-gray-500 uppercase tracking-widest font-bold">3-Bet</span>
+                                            <span className="text-white font-mono">Polarized</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleRunAIAnalyst}
+                                disabled={isAnalyzing || cooldown > 0}
+                                className="w-full py-5 bg-gold text-black font-black text-xs uppercase tracking-[0.3em] rounded-2xl hover:bg-yellow-400 transition-all shadow-[0_10px_30px_rgba(255,215,0,0.1)] active:scale-95 disabled:opacity-50"
+                            >
+                                {isAnalyzing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : (cooldown > 0 ? `Analyst Cooldown: ${cooldown}s` : 'Request Neural Profile Update')}
+                            </button>
+                        </div>
+
+                        {/* RIGHT COLUMN: PLAYER ID & FEED (NARROW 1/3) */}
+                        <div className="space-y-8 order-1 lg:order-2">
+                            {/* PLAYER IDENTITY CARD */}
+                            <div className="bg-gradient-to-b from-card to-black border border-white/10 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold to-transparent opacity-50"></div>
+                                
                                 {editingPlayer ? (
-                                    /* EDIT MODE */
-                                    <div className="p-8 space-y-4">
-                                        <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Edit Profile</h2>
-                                        <div>
-                                            <label className="block text-[10px] text-gray-500 uppercase tracking-wider mb-1">Name</label>
+                                    <div className="space-y-6 pt-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] text-gold font-black uppercase tracking-widest">Codename</label>
                                             <input
                                                 type="text"
                                                 value={editName}
                                                 onChange={e => setEditName(e.target.value)}
-                                                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold text-lg focus:outline-none focus:border-gold transition-all"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="block text-[10px] text-gray-500 uppercase tracking-wider mb-1">Playstyle</label>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] text-gold font-black uppercase tracking-widest">Basic Style</label>
                                             <select
                                                 value={editPlaystyle}
                                                 onChange={e => setEditPlaystyle(e.target.value)}
-                                                className="w-full bg-background border border-border text-sm rounded-md px-3 py-2 text-white focus:outline-none focus:border-gold"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold transition-all"
                                             >
                                                 <option value="UNKNOWN">Unknown</option>
-                                                <option value="LAG">LAG</option>
-                                                <option value="TAG">TAG</option>
-                                                <option value="NIT">NIT</option>
-                                                <option value="FISH">FISH</option>
+                                                <option value="LAG">LAG (Loose Aggressive)</option>
+                                                <option value="TAG">TAG (Tight Aggressive)</option>
+                                                <option value="NIT">NIT (Super Tight)</option>
+                                                <option value="FISH">FISH (Recreational)</option>
+                                                <option value="WHALE">WHALE (Donor)</option>
                                                 <option value="MANIAC">MANIAC</option>
-                                                <option value="CALLING STATION">CALLING STATION</option>
+                                                <option value="CALLING STATION">STATION</option>
                                             </select>
                                         </div>
-                                        <div className="flex gap-2 pt-2">
-                                            <button onClick={() => setEditingPlayer(false)} className="flex-1 text-xs text-gray-400 hover:text-white py-2 border border-border rounded-md transition-colors">Cancel</button>
-                                            <button onClick={handleUpdatePlayer} className="flex-1 text-xs text-white bg-felt-light py-2 rounded-md font-semibold hover:bg-felt-default transition-colors">Save Changes</button>
+                                        <div className="flex gap-2">
+                                            <button onClick={handleUpdatePlayer} className="flex-1 py-3 bg-gold text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-yellow-400 transition-all">Save Changes</button>
+                                            <button onClick={() => setEditingPlayer(false)} className="px-4 py-3 bg-white/5 text-gray-500 font-black text-[10px] uppercase tracking-widest rounded-xl border border-white/5">Cancel</button>
                                         </div>
                                     </div>
                                 ) : (
-                                    /* VIEW MODE */
                                     <>
-                                        {/* Hero Section */}
-                                        <div className="relative px-8 pt-8 pb-6">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-felt-light/15 to-transparent rounded-bl-full pointer-events-none"></div>
-
-                                            {/* Avatar + Name */}
-                                            <div className="flex items-center gap-4 mb-6">
-                                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/30 to-gold/5 border-2 border-gold/40 flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.15)]">
-                                                    <span className="text-xl font-bold text-gold">{player.name.charAt(0).toUpperCase()}</span>
+                                        <div className="flex justify-between items-start mb-8">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                                    <span className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">Target Lock</span>
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h1 className="text-2xl font-bold text-white truncate">{player.name}</h1>
-                                                    <span className="text-[10px] text-gray-500 font-medium uppercase tracking-[0.2em]">Opponent Profile</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Playstyle Badge — Full Width */}
-                                            <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5">
-                                                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Classified As</span>
-                                                <span className={`px-4 py-1.5 font-black text-xs rounded-full border tracking-wider shadow-[0_0_12px_rgba(212,175,55,0.1)] ${
-                                                    player.playstyle === 'WHALE' 
-                                                        ? 'bg-gold/20 text-gold border-gold animate-pulse shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-110' 
-                                                        : 'bg-gold/10 text-gold border-gold/30'
-                                                }`}>
-                                                    {player.playstyle || "UNKNOWN"}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* Stats Grid */}
-                                        <div className="px-8 pb-6 space-y-4">
-                                            {/* Aggression Gauge */}
-                                            <div className="bg-black/40 p-4 rounded-xl border border-white/5">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Aggression Level</span>
-                                                    <span className="text-lg font-mono text-white font-bold">{player.aggression_score}<span className="text-gray-600 text-xs">/100</span></span>
-                                                </div>
-                                                {/* Visual Gauge Bar */}
-                                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                                    <div
-                                                        className={`h-full rounded-full transition-all duration-700 ${player.aggression_score > 70 ? 'bg-gradient-to-r from-gold-dim to-gold shadow-[0_0_10px_rgba(255,196,0,0.4)]'
-                                                            : player.aggression_score > 40 ? 'bg-gradient-to-r from-felt-default to-felt-light shadow-[0_0_10px_rgba(0,153,77,0.3)]'
-                                                                : 'bg-gradient-to-r from-felt-dark to-felt-default shadow-[0_0_10px_rgba(0,51,26,0.3)]'
-                                                            }`}
-                                                        style={{ width: `${Math.min(player.aggression_score, 100)}%` }}
-                                                    />
-                                                </div>
-                                                <div className="flex justify-between mt-1.5">
-                                                    <span className="text-[9px] text-gray-600">PASSIVE</span>
-                                                    <span className="text-[9px] text-gray-600">AGGRESSIVE</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Notes Counter */}
-                                            <div className="flex items-center justify-between bg-black/40 p-4 rounded-xl border border-white/5">
-                                                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Intel Records</span>
+                                                <h1 className="text-4xl font-black text-white tracking-tighter mb-1 truncate max-w-[200px]">{player.name}</h1>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
-                                                    <span className="text-lg font-mono text-gold font-bold">{player.notes.length}</span>
+                                                    <span className="text-[9px] text-gray-400 uppercase font-bold tracking-widest bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                                                        {player.platform.name}
+                                                    </span>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        {/* Action Toolbar */}
-                                        <div className="border-t border-white/5 px-8 py-3 flex justify-end gap-1">
                                             <button
                                                 onClick={() => { setEditingPlayer(true); setEditName(player.name); setEditPlaystyle(player.playstyle || 'UNKNOWN'); }}
-                                                className="flex items-center gap-1.5 text-[10px] text-gray-500 hover:text-gold px-3 py-1.5 rounded-md hover:bg-white/5 transition-all uppercase tracking-wider font-semibold"
+                                                className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all group"
                                             >
-                                                <Pencil className="w-3 h-3" /> Edit
+                                                <Pencil className="w-4 h-4 text-gray-400 group-hover:text-gold transition-colors" />
                                             </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 mb-8">
+                                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                                <p className="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em] mb-1">Playstyle</p>
+                                                <p className="text-sm font-bold text-white uppercase tracking-tight">{player.playstyle || 'No Data'}</p>
+                                            </div>
+                                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                                <p className="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em] mb-1">Aggression</p>
+                                                <p className="text-sm font-bold text-white tracking-tight">{player.aggression_score}%</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                                            <div className="flex -space-x-2">
+                                                {[1, 2, 3].map(i => (
+                                                    <div key={i} className="w-6 h-6 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-gold/50"></div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                             <button
                                                 onClick={() => setShowDeleteConfirm(true)}
-                                                className="flex items-center gap-1.5 text-[10px] text-gray-500 hover:text-red-400 px-3 py-1.5 rounded-md hover:bg-white/5 transition-all uppercase tracking-wider font-semibold"
+                                                className="flex items-center gap-2 text-[10px] text-gray-600 hover:text-red-500 transition-colors uppercase tracking-widest font-black"
                                             >
-                                                <Trash2 className="w-3 h-3" /> Remove
+                                                <Trash2 className="w-3 h-3" /> Delete
                                             </button>
                                         </div>
                                     </>
                                 )}
 
-                                {/* Delete Confirmation Overlay */}
                                 {showDeleteConfirm && (
-                                    <div className="absolute inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-20 p-6">
-                                        <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-4">
-                                            <Trash2 className="w-5 h-5 text-red-400" />
+                                    <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center rounded-3xl z-20 p-6 text-center">
+                                        <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+                                            <Trash2 className="w-6 h-6 text-red-500" />
                                         </div>
-                                        <p className="text-white font-semibold text-sm mb-1">Delete {player.name}?</p>
-                                        <p className="text-gray-400 text-xs mb-5 text-center">All notes and intel will be permanently removed.</p>
-                                        <div className="flex gap-2 w-full max-w-xs">
-                                            <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 text-xs text-gray-300 py-2.5 border border-border rounded-lg hover:bg-white/5 transition-colors font-medium">Cancel</button>
-                                            <button onClick={handleDeletePlayer} className="flex-1 text-xs text-white bg-red-500/80 py-2.5 rounded-lg font-semibold hover:bg-red-500 transition-colors">Confirm Delete</button>
+                                        <p className="text-white font-black text-sm uppercase tracking-wider mb-1">Confirm Termination</p>
+                                        <p className="text-gray-500 text-[10px] mb-6 uppercase tracking-widest font-bold">Wipe all intelligence on {player.name}?</p>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <button onClick={handleDeletePlayer} className="w-full py-3 bg-red-500 text-white font-black text-xs uppercase tracking-[.2em] rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-500/20">Wipe Data</button>
+                                            <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-3 text-[10px] text-gray-500 font-black uppercase tracking-widest">Keep Intel</button>
                                         </div>
                                     </div>
                                 )}
                             </div>
-
-                            {/* AI ANALYST PANEL (PREMIUM FEATURE) */}
-                            <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden p-8">
-                                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
-
+                            
+                            {/* INTELLIGENCE FEED (NOTES) (IN COLUMN) */}
+                            <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 shadow-2xl overflow-hidden flex flex-col max-h-[600px]">
                                 <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-2">
-                                        <Zap className="w-5 h-5 text-amber-400" />
-                                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Tactical Intelligence</h3>
-                                    </div>
-                                    <span className="text-[10px] text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 font-bold uppercase tracking-widest leading-none">
-                                        AI Analyst
-                                    </span>
-                                </div>
-
-                                {isAnalyzing ? (
-                                    <div className="py-12 flex flex-col items-center justify-center space-y-4">
-                                        <div className="relative">
-                                            <div className="w-16 h-16 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
-                                            <Zap className="w-6 h-6 text-amber-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-white font-bold text-sm tracking-widest uppercase">Processing Intel</p>
-                                            <p className="text-gray-500 text-[10px] mt-1">Aggregating structured tendencies...</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-6">
-                                        {/* ANALYSIS HEADER: Always visible, shows Playstyle or AI Archetype */}
-                                        <div className="flex items-center justify-between p-5 bg-amber-500/5 border border-amber-500/20 rounded-2xl shadow-inner group">
-                                            <div>
-                                                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-black block mb-1 px-1">Tactical Analysis</span>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-white/40 font-black text-lg">ANALYSIS:</span>
-                                                    <div className="text-amber-400 font-black text-2xl tracking-tighter uppercase group-hover:scale-105 transition-transform origin-left">
-                                                        {player.ai_profile?.archetype || player.playstyle || 'UNKNOWN'}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {player.ai_profile && (
-                                                <div className="text-right bg-black/20 p-2 px-3 rounded-lg border border-white/5">
-                                                    <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold block mb-0.5">Confidence</span>
-                                                    <div className="text-amber-500 font-mono text-base font-black">
-                                                        {Math.round(player.ai_profile.confidence * 100)}%
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {player.ai_profile && (
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="bg-white/5 p-3 rounded-lg border border-white/5">
-                                                    <span className="text-[10px] text-gray-500 uppercase tracking-widest block mb-2">Aggression</span>
-                                                    <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
-                                                        <div className="h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] transition-all duration-1000" style={{ width: `${player.ai_profile.aggression_score}%` }}></div>
-                                                    </div>
-                                                </div>
-                                                <div className="bg-white/5 p-3 rounded-lg border border-white/5">
-                                                    <span className="text-[10px] text-gray-500 uppercase tracking-widest block mb-2">Looseness</span>
-                                                    <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
-                                                        <div className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-1000" style={{ width: `${player.ai_profile.looseness_score}%` }}></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {player.ai_profile && player.ai_profile.leaks.length > 0 && (
-                                            <div className="space-y-2">
-                                                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold block">Observed Intelligence Leaks</span>
-                                                <div className="grid grid-cols-1 gap-2">
-                                                    {player.ai_profile.leaks.map((leak, idx) => (
-                                                        <div key={idx} className="flex items-center gap-3 text-[11px] text-gray-300 bg-white/5 p-2.5 rounded-lg border border-white/5 hover:border-amber-500/20 transition-colors">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"></div>
-                                                            {leak}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="space-y-4 pt-2">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Target className="w-4 h-4 text-amber-500" />
-                                                <span className="text-[10px] text-amber-500 uppercase tracking-[0.2em] font-black">
-                                                    {player.ai_profile ? "Elite Exploit Directives" : "Standard Strategy Guide"}
-                                                </span>
-                                            </div>
-
-                                            <div className="bg-amber-500/5 p-5 rounded-2xl border border-amber-500/20 relative overflow-hidden backdrop-blur-sm">
-                                                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl"></div>
-
-                                                <div className="relative z-10 space-y-3">
-                                                    {player.ai_profile ? (
-                                                        /* AI STRATEGY DISPLAY */
-                                                        (player.ai_profile.strategy || "").split(/[.;\n]/).filter(s => s.trim().length > 3).map((sentence, idx) => (
-                                                            <div key={idx} className="flex gap-3 items-start group">
-                                                                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500/40 group-hover:bg-amber-500 transition-colors shrink-0"></div>
-                                                                <p className="text-xs text-gray-200 leading-relaxed font-medium">
-                                                                    {sentence.trim()}.
-                                                                </p>
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        /* TEXTBOOK STRATEGY FALLBACK */
-                                                        (STRATEGIES[(player.playstyle || '').toUpperCase()] || [
-                                                            "Not enough intelligence gathered to formulate a specific exploitative strategy.",
-                                                            "Play default GTO ranges and observe their VPIP/PFR deviation."
-                                                        ]).map((heuristic: string, idx: number) => (
-                                                            <div key={idx} className="flex gap-3 items-start group">
-                                                                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500/20 group-hover:bg-amber-500 transition-colors shrink-0"></div>
-                                                                <p className="text-xs text-gray-400 leading-relaxed group-hover:text-gray-200 transition-colors">
-                                                                    {heuristic}
-                                                                </p>
-                                                            </div>
-                                                        ))
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="pt-2 space-y-3">
-                                            {!player.ai_profile ? (
-                                                <button
-                                                    onClick={handleRunAIAnalyst}
-                                                    disabled={isAnalyzing || cooldown > 0 || (usage && !usage.allowed)}
-                                                    className="w-full py-4 bg-gradient-to-br from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-black text-sm uppercase tracking-[0.2em] rounded-xl shadow-[0_4px_15px_rgba(245,158,11,0.3)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 disabled:opacity-50 disabled:transform-none disabled:grayscale"
-                                                >
-                                                    <Zap className="w-5 h-5" />
-                                                    {cooldown > 0 ? `Wait ${cooldown}s` : (usage && !usage.allowed ? 'OUT OF TURNS' : 'Run AI Deep Analyst')}
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={handleRunAIAnalyst}
-                                                    disabled={isAnalyzing || cooldown > 0 || (usage && !usage.allowed)}
-                                                    className="w-full py-3 bg-white/5 hover:bg-white/10 text-[10px] text-gray-500 hover:text-amber-400 font-bold uppercase tracking-[0.3em] rounded-xl transition-all border border-dashed border-white/10 hover:border-amber-500/40 group disabled:opacity-50"
-                                                >
-                                                    <div className="flex items-center justify-center gap-2">
-                                                        <RefreshCw className={`w-3 h-3 ${isAnalyzing ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-700`} />
-                                                        {cooldown > 0 ? `Cooldown (${cooldown}s)` : (usage && !usage.allowed ? 'NO TURNS LEFT' : 'Recalculate Elite Intel')}
-                                                    </div>
-                                                </button>
-                                            )}
-
-                                            {/* Simple quota hint */}
-                                            {usage && (
-                                                <p className={`text-center text-[10px] font-bold tracking-wider ${
-                                                    usage.remaining === 0 ? 'text-red-500' : 'text-gray-600'
-                                                }`}>
-                                                    {usage.remaining === 0
-                                                        ? `Resets ${new Date(usage.resetsAt).toLocaleDateString()}`
-                                                        : `${usage.remaining} AI turn${usage.remaining !== 1 ? 's' : ''} left`
-                                                    }
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                        </div>
-
-                        {/* RIGHT COLUMN: INTELLIGENCE FEED */}
-                        <div className="lg:col-span-2">
-                            <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl p-8 h-full shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
-                                <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/10">
                                     <div className="flex items-center">
-                                        <AlignLeft className="w-5 h-5 text-felt-light mr-3" />
-                                        <h2 className="text-lg font-bold text-white tracking-wide">INTELLIGENCE LOG</h2>
+                                        <AlignLeft className="w-4 h-4 text-gold mr-2" />
+                                        <h2 className="text-xs font-black text-white tracking-[0.2em] uppercase">Intelligence Feed</h2>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-sm font-mono text-gold bg-gold/10 px-3 py-1 rounded-full border border-gold/20">
-                                            {player.notes.length} RECORDS
-                                        </span>
-                                        <button
-                                            onClick={() => setShowAddNote(!showAddNote)}
-                                            className="flex items-center text-xs px-3 py-1.5 bg-felt-light/20 hover:bg-felt-light/30 text-felt-light border border-felt-light/30 rounded-full transition-all font-bold uppercase tracking-wider"
-                                        >
-                                            <Plus className="w-3.5 h-3.5 mr-1.5" />
-                                            Add Note
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={() => setShowAddNote(!showAddNote)}
+                                        className="w-8 h-8 flex items-center justify-center bg-gold/10 hover:bg-gold/20 text-gold rounded-full border border-gold/20 transition-all"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </button>
                                 </div>
 
-                                {/* Inline Add Note Form */}
                                 {showAddNote && (
-                                    <div className="mb-6 p-5 bg-black/40 border border-felt-light/20 rounded-xl space-y-3">
-                                        <div className="flex space-x-2">
-                                            {['Preflop', 'Flop', 'Turn', 'River'].map((s) => (
+                                    <div className="mb-6 p-4 bg-black/40 border border-gold/20 rounded-2xl space-y-4 animate-in slide-in-from-top duration-300">
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {['Pre', 'Flop', 'Turn', 'Riv'].map((s) => (
                                                 <button
                                                     key={s}
                                                     type="button"
-                                                    onClick={() => setNewNoteStreet(s)}
-                                                    className={`px-3 py-1 text-[10px] font-bold rounded uppercase transition-colors border ${newNoteStreet === s
-                                                        ? 'bg-felt-default text-white border-felt-light'
-                                                        : 'bg-card text-gray-400 border-border hover:text-gray-200'
+                                                    onClick={() => setNewNoteStreet(s === 'Pre' ? 'Preflop' : s === 'Riv' ? 'River' : s)}
+                                                    className={`px-2 py-0.5 text-[8px] font-black rounded border transition-all uppercase tracking-widest ${newNoteStreet.startsWith(s)
+                                                        ? 'bg-gold text-black border-gold'
+                                                        : 'bg-white/5 text-gray-500 border-white/10 hover:text-white'
                                                         }`}
                                                 >
                                                     {s}
@@ -690,120 +561,52 @@ export function PlayerProfileClient({
                                             value={newNoteContent}
                                             onChange={e => setNewNoteContent(e.target.value)}
                                             rows={2}
-                                            placeholder="e.g. 3-bet light from BB with suited connectors..."
-                                            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all resize-none"
+                                            placeholder="Observation..."
+                                            className="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold transition-all resize-none placeholder:text-gray-700"
                                         />
-                                        <div className="flex justify-end gap-2">
-                                            <button
-                                                onClick={() => { setShowAddNote(false); setNewNoteContent(''); }}
-                                                className="px-3 py-1.5 text-xs text-gray-400 hover:text-white border border-border rounded-md transition-colors"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                onClick={handleAddNote}
-                                                disabled={addingNote || !newNoteContent.trim()}
-                                                className="px-4 py-1.5 text-xs bg-felt-light text-white font-semibold rounded-md hover:bg-felt-default transition-colors disabled:opacity-50"
-                                            >
-                                                {addingNote ? 'Saving...' : 'Save Note'}
-                                            </button>
-                                        </div>
+                                        <button
+                                            onClick={handleAddNote}
+                                            disabled={addingNote || !newNoteContent.trim()}
+                                            className="w-full py-2 text-[10px] bg-gold text-black font-black uppercase tracking-widest rounded-lg hover:bg-yellow-400 transition-all disabled:opacity-50"
+                                        >
+                                            {addingNote ? 'Commiting...' : 'Commit Intel'}
+                                        </button>
                                     </div>
                                 )}
 
-                                <div className="space-y-4">
+                                <div className="space-y-4 overflow-y-auto pr-2 scrollbar-none">
                                     {player.notes.length === 0 ? (
-                                        <div className="text-center py-12 text-gray-500 border border-dashed border-white/10 rounded-xl bg-black/30">
-                                            No intelligence records available yet. Click &quot;Add Note&quot; to start.
+                                        <div className="text-center py-10 text-gray-600 border border-dashed border-white/5 rounded-2xl bg-black/20">
+                                            <p className="text-[10px] font-bold uppercase tracking-widest">No Intelligence Records</p>
                                         </div>
                                     ) : (
                                         player.notes.map((note) => (
-                                            <div key={note.id} className="bg-black/40 border border-white/5 rounded-xl p-5 hover:border-felt-light/30 transition-colors group relative overflow-hidden">
-                                                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-felt-light to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
+                                            <div key={note.id} className="bg-black/40 border border-white/5 rounded-2xl p-4 hover:border-gold/20 transition-all group relative">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-[8px] text-gold/80 uppercase tracking-widest font-black bg-gold/5 px-2 py-0.5 rounded border border-gold/10">
+                                                            {note.street || 'General'}
+                                                        </span>
+                                                        {note.is_ai_generated && <Zap className="w-2.5 h-2.5 text-gold animate-pulse" />}
+                                                    </div>
+                                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={() => { setEditingNoteId(note.id); setEditContent(note.content); setEditStreet(note.street); }} className="text-gray-600 hover:text-gold transition-colors"><Pencil className="w-2.5 h-2.5" /></button>
+                                                        <button onClick={() => handleDeleteNote(note.id)} className="text-gray-600 hover:text-red-500 transition-colors"><Trash2 className="w-2.5 h-2.5" /></button>
+                                                    </div>
+                                                </div>
+                                                
                                                 {editingNoteId === note.id ? (
-                                                    /* EDIT MODE */
-                                                    <div className="space-y-3">
-                                                        <div className="flex space-x-2">
-                                                            {['Preflop', 'Flop', 'Turn', 'River'].map((s) => (
-                                                                <button
-                                                                    key={s}
-                                                                    type="button"
-                                                                    onClick={() => setEditStreet(s)}
-                                                                    className={`px-3 py-1 text-[10px] font-bold rounded uppercase transition-colors border ${editStreet === s
-                                                                        ? 'bg-felt-default text-white border-felt-light'
-                                                                        : 'bg-card text-gray-400 border-border hover:text-gray-200'
-                                                                        }`}
-                                                                >
-                                                                    {s}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                        <textarea
-                                                            value={editContent}
-                                                            onChange={e => setEditContent(e.target.value)}
-                                                            rows={3}
-                                                            className="w-full bg-background border border-gold/30 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all resize-none"
-                                                        />
-                                                        <div className="flex justify-end gap-2">
-                                                            <button
-                                                                onClick={() => { setEditingNoteId(null); setEditContent(''); }}
-                                                                className="flex items-center text-xs text-gray-400 hover:text-white px-2 py-1 border border-border rounded transition-colors"
-                                                            >
-                                                                <X className="w-3 h-3 mr-1" /> Cancel
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleUpdateNote(note.id)}
-                                                                className="flex items-center text-xs text-white bg-felt-light px-3 py-1 rounded font-semibold hover:bg-felt-default transition-colors"
-                                                            >
-                                                                <Check className="w-3 h-3 mr-1" /> Save
-                                                            </button>
+                                                    <div className="space-y-2">
+                                                        <textarea value={editContent} onChange={e => setEditContent(e.target.value)} className="w-full bg-black/60 border border-gold/40 rounded-lg p-2 text-[11px] text-white focus:outline-none" />
+                                                        <div className="flex gap-1">
+                                                            <button onClick={() => handleUpdateNote(note.id)} className="flex-1 bg-gold text-black text-[9px] font-black uppercase py-1 rounded">Save</button>
+                                                            <button onClick={() => setEditingNoteId(null)} className="flex-1 bg-white/5 text-gray-500 text-[9px] font-black uppercase py-1 rounded">Cancel</button>
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    /* VIEW MODE */
-                                                    <>
-                                                        <div className="flex justify-between items-start mb-3">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-[10px] text-gray-500 uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded border border-white/10 font-mono">
-                                                                    {note.street || 'General'}
-                                                                </span>
-                                                                {note.is_ai_generated && (
-                                                                    <span className="text-[9px] bg-gold/10 text-gold px-1.5 py-0.5 rounded border border-gold/20 font-black uppercase tracking-[0.2em] flex items-center gap-1">
-                                                                        <Zap className="w-2.5 h-2.5" /> AI
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setEditingNoteId(note.id);
-                                                                        setEditContent(note.content);
-                                                                        setEditStreet(note.street);
-                                                                    }}
-                                                                    className="p-1.5 text-gray-500 hover:text-gold hover:bg-white/5 rounded transition-all"
-                                                                    title="Edit note"
-                                                                >
-                                                                    <Pencil className="w-3.5 h-3.5" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleDeleteNote(note.id)}
-                                                                    className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-white/5 rounded transition-all"
-                                                                    title="Delete note"
-                                                                >
-                                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                        <p className={`leading-relaxed mb-3 ${note.is_ai_generated ? 'text-amber-200/90 italic font-medium' : 'text-gray-300'}`}>
-                                                            {note.content}
-                                                        </p>
-                                                        <div className="text-[10px] text-gray-500 font-mono flex items-center">
-                                                            <Eye className="w-3 h-3 mr-1" />
-                                                            {note.is_ai_generated ? 'Auto-Extracted: ' : 'Logged: '}
-                                                            {new Date(note.created_at).toLocaleDateString()} at {new Date(note.created_at).toLocaleTimeString()}
-                                                        </div>
-                                                    </>
+                                                    <p className={`text-[11px] leading-relaxed ${note.is_ai_generated ? 'text-amber-200/80 italic' : 'text-gray-400 font-medium'}`}>
+                                                        {note.content}
+                                                    </p>
                                                 )}
                                             </div>
                                         ))
@@ -812,12 +615,11 @@ export function PlayerProfileClient({
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
             {/* Modals */}
-            <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} title="Settings & Tags" size="xl">
+            <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} title="Intelligence Templates" size="xl">
                 <TemplateManagerModal onClose={() => setSettingsOpen(false)} />
             </Modal>
         </div>

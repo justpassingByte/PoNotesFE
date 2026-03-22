@@ -43,12 +43,22 @@ interface OCRResult {
 }
 
 interface HandAnalysis {
-    heroMistakes: { street: string; description: string; severity?: string }[];
-    villainMistakes: { street: string; playerName?: string; description: string; severity?: string }[];
-    betterLine?: string;
-    exploitSuggestion?: string;
     summary?: string;
-    notesCreated?: string[];
+    reasoning_trace: string[];
+    mistakes: { 
+        street: string; 
+        player: string; 
+        description: string; 
+        better_line?: string;
+        gto_deviation_reason?: string;
+        severity?: string;
+    }[];
+    exploit_suggestions: string[];
+    final_verdict?: {
+        grade: string;
+        confidence_score?: number;
+        suggestion_type?: 'GTO' | 'Exploit' | 'Balanced';
+    };
 }
 
 // ─── Card Rendering Helpers ──────────────────────────────────────────────────
@@ -324,6 +334,59 @@ export function HandAnalyzer() {
     };
 
     const handData = (parsedHand?.parsed_data as any) || parsedHand;
+
+    // ── Logic Helpers ────────────────────────────────────────────────────────
+    async function handleFeedback(action: 'confirm' | 'edit' | 'reject', corrected?: { name: string, revised: string }) {
+        setIsSubmittingFeedback(true);
+        try {
+            // Forward to backend which forwards to OCR service
+            await fetch(`${API.base}/api/ocr/feedback`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageHex: imagePreview, // ideally this would be the crop, but passing preview for now
+                    cardName: corrected?.name || 'all_board', 
+                    action: action,
+                    correctedName: corrected?.revised || ''
+                })
+            });
+            if (action === 'confirm') {
+                // visually mark as confirmed
+                setParsedHand({ 
+                    ...parsedHand!, 
+                    parsed_data: { 
+                        ...handData, 
+                        ocr_result: { ...handData.ocr_result, decision: 'auto_accept' } 
+                    } 
+                });
+            }
+        } catch (err) {
+            console.error("Feedback failed:", err);
+        } finally {
+            setIsSubmittingFeedback(false);
+        }
+    }
+
+    function handleCardEdit(newVal: string) {
+        if (!editingCard || !parsedHand) return;
+
+        if (editingCard.type === 'board') {
+            const newBoard = [...handData.board];
+            const oldName = newBoard[editingCard.index];
+            newBoard[editingCard.index] = newVal;
+            setParsedHand({ ...parsedHand, parsed_data: { ...handData, board: newBoard } });
+            handleFeedback('edit', { name: oldName, revised: newVal });
+        } else {
+            const newPlayers = [...handData.players];
+            const p = newPlayers[editingCard.pIdx!];
+            const newCards = [...(p.hole_cards || [])];
+            const oldName = newCards[editingCard.index];
+            newCards[editingCard.index] = newVal;
+            newPlayers[editingCard.pIdx!] = { ...p, hole_cards: newCards };
+            setParsedHand({ ...parsedHand, parsed_data: { ...handData, players: newPlayers } });
+            handleFeedback('edit', { name: oldName, revised: newVal });
+        }
+    }
 
     return (
         <div className="space-y-6 text-foreground">
@@ -603,9 +666,9 @@ export function HandAnalyzer() {
                 <div className="space-y-6 animate-in zoom-in-95 duration-500 pb-12">
                     <div className="h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent my-4" />
                     
-                    {/* Summary */}
-                    {analysis.summary && (
-                        <div className="bg-gradient-to-br from-card to-felt-dark/30 border border-gold/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+                    {/* Summary & Reasoning Trace */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2 bg-gradient-to-br from-card to-felt-dark/30 border border-gold/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-5">
                                 <Sparkles className="w-24 h-24 text-gold" />
                             </div>
@@ -613,119 +676,141 @@ export function HandAnalyzer() {
                                 <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
                                     <FileText className="w-4 h-4 text-gold" />
                                 </div>
-                                Strategic Tactical Summary
+                                Strategic Summary
                             </h3>
                             <p className="text-gray-300 text-sm leading-relaxed sm:text-base">{analysis.summary}</p>
+                            
+                            {analysis.final_verdict && (
+                                <div className="mt-6 flex items-center gap-4 border-t border-white/5 pt-4">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-500 uppercase font-black">Grade</span>
+                                        <span className="text-2xl font-black text-gold">{analysis.final_verdict.grade}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-500 uppercase font-black">Confidence</span>
+                                        <span className="text-lg font-bold text-white">{((analysis.final_verdict.confidence_score || 0) * 100).toFixed(0)}%</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-500 uppercase font-black">Strategy Type</span>
+                                        <span className={`text-[11px] font-black px-2 py-0.5 rounded uppercase ${
+                                            analysis.final_verdict.suggestion_type === 'Exploit' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
+                                        }`}>
+                                            {analysis.final_verdict.suggestion_type}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
+
+                        <div className="bg-black/40 border border-white/5 rounded-2xl p-6 shadow-xl">
+                            <h3 className="text-sm font-bold text-gray-300 mb-4 flex items-center gap-2">
+                                <Loader2 className="w-3.5 h-3.5 text-gold/60" />
+                                Reasoning Trace
+                            </h3>
+                            <div className="space-y-3">
+                                {analysis.reasoning_trace?.map((step, i) => (
+                                    <div key={i} className="flex gap-3">
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-gold/40 mt-1.5" />
+                                            {i < analysis.reasoning_trace.length - 1 && <div className="w-px h-full bg-white/5 my-1" />}
+                                        </div>
+                                        <p className="text-[11px] text-gray-400 leading-snug">{step}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        {/* Hero Mistakes */}
-                        <div className="bg-card border border-red-500/20 rounded-2xl p-6 shadow-xl">
-                            <h3 className="text-lg font-bold text-red-400 mb-5 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
-                                    <XCircle className="w-4 h-4" />
-                                </div>
-                                Hero Mistakes ({analysis.heroMistakes.length})
-                            </h3>
-                            <div className="space-y-4">
-                                {analysis.heroMistakes.length > 0 ? (
-                                    analysis.heroMistakes.map((m, i) => (
-                                        <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 transition-all hover:bg-white/[0.04]">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] text-gold uppercase font-black bg-gold/10 px-2 py-0.5 rounded tracking-tighter">{m.street}</span>
-                                                    <SeverityBadge severity={m.severity} />
-                                                </div>
-                                                <SaveNoteButton
-                                                    noteData={{
-                                                        player_name: "Hero", 
-                                                        content: m.description,
-                                                        street: m.street,
-                                                        note_type: "Custom",
-                                                        source: "ai",
-                                                        hand_id: parsedHand?.id
-                                                    }}
-                                                />
-                                            </div>
-                                            <p className="text-sm text-gray-300 leading-snug">{m.description}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-6 text-gray-500 italic text-sm">No significant mistakes detected. Perfect play!</div>
-                                )}
-                            </div>
-                        </div>
+                        {/* Mistakes Array Mapping */}
+                        <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {[
+                                { title: "Hero Tactical Errors", filter: "Hero", color: "red", icon: <XCircle className="w-4 h-4" /> },
+                                { title: "Villain Detected Leaks", filter: "others", color: "amber", icon: <AlertTriangle className="w-4 h-4" /> }
+                            ].map((group) => {
+                                const items = analysis.mistakes?.filter(m => {
+                                    const isHero = m.player?.toLowerCase() === 'hero';
+                                    return group.filter === 'Hero' ? isHero : !isHero;
+                                }) || [];
 
-                        {/* Villain Mistakes */}
-                        <div className="bg-card border border-amber-500/20 rounded-2xl p-6 shadow-xl">
-                            <h3 className="text-lg font-bold text-amber-400 mb-5 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                                    <AlertTriangle className="w-4 h-4" />
-                                </div>
-                                Villain Leaks ({analysis.villainMistakes.length})
-                            </h3>
-                            <div className="space-y-4">
-                                {analysis.villainMistakes.length > 0 ? (
-                                    analysis.villainMistakes.map((m, i) => (
-                                        <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 transition-all hover:bg-white/[0.04]">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] text-gold uppercase font-black bg-gold/10 px-2 py-0.5 rounded tracking-tighter">{m.street}</span>
-                                                    <SeverityBadge severity={m.severity} />
-                                                    {m.playerName && (
-                                                        <span className="text-sm text-white font-bold">— {m.playerName}</span>
-                                                    )}
-                                                </div>
-                                                {m.playerName && (
-                                                    <SaveNoteButton
-                                                        isAutosaved={true}
-                                                        noteData={{
-                                                            player_name: m.playerName,
-                                                            content: m.description,
-                                                            street: m.street,
-                                                            note_type: "Custom",
-                                                            source: "ai",
-                                                            hand_id: parsedHand?.id
-                                                        }}
-                                                    />
-                                                )}
+                                return (
+                                    <div key={group.title} className={`bg-card border border-${group.color}-500/20 rounded-2xl p-6 shadow-xl`}>
+                                        <h3 className={`text-lg font-bold text-${group.color}-400 mb-5 flex items-center gap-3`}>
+                                            <div className={`w-8 h-8 rounded-lg bg-${group.color}-500/10 flex items-center justify-center`}>
+                                                {group.icon}
                                             </div>
-                                            <p className="text-sm text-gray-300 leading-snug">{m.description}</p>
+                                            {group.title} ({items.length})
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {items.length > 0 ? (
+                                                items.map((m, i) => {
+                                                    // Normalize street to TitleCase for Note API validation
+                                                    const rawStreet = m.street?.toLowerCase() || 'postflop';
+                                                    const normalizedStreet = rawStreet.charAt(0).toUpperCase() + rawStreet.slice(1);
+                                                    
+                                                    return (
+                                                        <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 transition-all hover:bg-white/[0.04] group/item">
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[10px] text-gold uppercase font-black bg-gold/10 px-2 py-0.5 rounded tracking-tighter">{m.street}</span>
+                                                                    <SeverityBadge severity={m.severity} />
+                                                                    {m.player?.toLowerCase() !== 'hero' && (
+                                                                        <span className="text-sm text-white font-bold">— {m.player}</span>
+                                                                    )}
+                                                                </div>
+                                                                <SaveNoteButton
+                                                                    isAutosaved={m.player?.toLowerCase() !== 'hero'}
+                                                                    noteData={{
+                                                                        player_name: m.player, 
+                                                                        content: m.description,
+                                                                        street: normalizedStreet,
+                                                                        note_type: "Custom",
+                                                                        source: "ai",
+                                                                        hand_id: parsedHand?.id
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        <p className="text-sm text-gray-300 leading-snug">{m.description}</p>
+                                                        {m.better_line && (
+                                                            <div className="mt-3 text-[11px] bg-emerald-500/5 border border-emerald-500/10 p-2 rounded">
+                                                                <span className="text-emerald-400 font-bold uppercase tracking-tighter mr-2">Better Line:</span>
+                                                                <span className="text-gray-400 italic">{m.better_line}</span>
+                                                            </div>
+                                                        )}
+                                                        {m.gto_deviation_reason && (
+                                                            <div className="mt-2 text-[10px] text-purple-400/80 italic leading-tight">
+                                                                💡 {m.gto_deviation_reason}
+                                                            </div>
+                                                        )}
+                                                        </div>
+                                                    );
+                                                })
+                                            ) : (
+                                                <div className="text-center py-6 text-gray-500 italic text-sm">No significant data points for this category.</div>
+                                            )}
                                         </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-6 text-gray-500 italic text-sm">Villain played a standard balanced range.</div>
-                                )}
-                            </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* Better Line + Exploit */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {analysis.betterLine && (
-                            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 shadow-xl group">
-                                <h3 className="text-lg font-bold text-emerald-400 mb-3 flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <CheckCircle className="w-4 h-4 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                                    </div>
-                                    Optimal Hero Line (GTO)
-                                </h3>
-                                <p className="text-sm text-gray-300 leading-relaxed sm:text-base italic">"{analysis.betterLine}"</p>
+                    {/* Exploit Suggestions */}
+                    {analysis.exploit_suggestions?.length > 0 && (
+                        <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-6 shadow-xl group">
+                            <h3 className="text-lg font-bold text-purple-400 mb-3 flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Sparkles className="w-4 h-4 shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+                                </div>
+                                Strategic Exploit Plan
+                            </h3>
+                            <div className="space-y-2">
+                                {analysis.exploit_suggestions.map((s, i) => (
+                                    <p key={i} className="text-sm text-gray-300 leading-relaxed sm:text-base">• {s}</p>
+                                ))}
                             </div>
-                        )}
-                        {analysis.exploitSuggestion && (
-                            <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-6 shadow-xl group">
-                                <h3 className="text-lg font-bold text-purple-400 mb-3 flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <Sparkles className="w-4 h-4 shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
-                                    </div>
-                                    Exploit Advice
-                                </h3>
-                                <p className="text-sm text-gray-300 leading-relaxed sm:text-base">{analysis.exploitSuggestion}</p>
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -746,57 +831,4 @@ export function HandAnalyzer() {
             )}
         </div>
     );
-
-    // ── Logic Helpers ────────────────────────────────────────────────────────
-    async function handleFeedback(action: 'confirm' | 'edit' | 'reject', corrected?: { name: string, revised: string }) {
-        setIsSubmittingFeedback(true);
-        try {
-            // Forward to backend which forwards to OCR service
-            await fetch(`/api/ocr/feedback`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    imageHex: imagePreview, // ideally this would be the crop, but passing preview for now
-                    cardName: corrected?.name || 'all_board', 
-                    action: action,
-                    correctedName: corrected?.revised || ''
-                })
-            });
-            if (action === 'confirm') {
-                // visually mark as confirmed
-                setParsedHand({ 
-                    ...parsedHand!, 
-                    parsed_data: { 
-                        ...handData, 
-                        ocr_result: { ...handData.ocr_result, decision: 'auto_accept' } 
-                    } 
-                });
-            }
-        } catch (err) {
-            console.error("Feedback failed:", err);
-        } finally {
-            setIsSubmittingFeedback(false);
-        }
-    }
-
-    function handleCardEdit(newVal: string) {
-        if (!editingCard || !parsedHand) return;
-
-        if (editingCard.type === 'board') {
-            const newBoard = [...handData.board];
-            const oldName = newBoard[editingCard.index];
-            newBoard[editingCard.index] = newVal;
-            setParsedHand({ ...parsedHand, parsed_data: { ...handData, board: newBoard } });
-            handleFeedback('edit', { name: oldName, revised: newVal });
-        } else {
-            const newPlayers = [...handData.players];
-            const p = newPlayers[editingCard.pIdx!];
-            const newCards = [...(p.hole_cards || [])];
-            const oldName = newCards[editingCard.index];
-            newCards[editingCard.index] = newVal;
-            newPlayers[editingCard.pIdx!] = { ...p, hole_cards: newCards };
-            setParsedHand({ ...parsedHand, parsed_data: { ...handData, players: newPlayers } });
-            handleFeedback('edit', { name: oldName, revised: newVal });
-        }
-    }
 }

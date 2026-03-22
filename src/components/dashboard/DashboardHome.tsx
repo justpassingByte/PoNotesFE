@@ -30,6 +30,7 @@ interface Player {
     ai_playstyle?: string;
     ai_aggression_score?: number;
     ai_exploit_strategy?: string;
+    ai_profile?: any;
 }
 
 interface DashboardHomeProps {
@@ -50,7 +51,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
     const displayName = user?.email ? user.email.split('@')[0].toUpperCase() : 'HERO';
 
     return (
-        <div className="space-y-10 pb-20">
+        <div className="space-y-8 pb-20">
             {/* Modal for AI Tuning */}
             <Modal 
                 isOpen={isAITuningOpen} 
@@ -60,75 +61,90 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 <AITuningModal onClose={() => setIsAITuningOpen(false)} />
             </Modal>
 
-            {/* 1. Welcome & Primary Action */}
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-card/80 to-card/40 border border-white/10 p-8 sm:p-12 shadow-2xl">
-                <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold/10 blur-[100px] rounded-full"></div>
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div className="space-y-6 flex-1">
-                        <div className="space-y-4">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 text-gold text-[10px] font-bold uppercase tracking-widest">
-                                <Sparkles className="w-3 h-3" />
-                                AI Analyst Online
-                            </div>
-                            <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
-                                Welcome Back, <span className="text-gold">{displayName}</span>.
-                            </h1>
-                            <p className="text-gray-400 max-w-lg leading-relaxed text-sm sm:text-base">
-                                Your AI is ready to analyze new sessions. Every hand you upload improves your opponent profiles and reveals hidden leaks.
-                            </p>
-                        </div>
+            {/* 1. Quick Operations (Moved to Top) */}
+            <div className="pt-2">
+                <div className="flex items-center justify-between px-2 mb-4">
+                    <h2 className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Neural & Quick Operations</h2>
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent ml-4"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <ActionButton 
+                        icon={<Users className="w-5 h-5" />} 
+                        title="Players" 
+                        desc="Browse all targets" 
+                        href="/players" 
+                    />
+                    <ActionButton 
+                        icon={<History className="w-5 h-5" />} 
+                        title="History" 
+                        desc="Review past sessions" 
+                        href="/history" 
+                    />
+                    <ActionButton 
+                        icon={<Brain className="w-5 h-5" />} 
+                        title="AI Tuning" 
+                        desc="Adjust logic prompts" 
+                        onClick={() => setIsAITuningOpen(true)}
+                    />
+                    <ActionButton 
+                        icon={<Plus className="w-5 h-5" />} 
+                        title="New Note" 
+                        desc="Manual player intel" 
+                        href="/players" 
+                    />
+                </div>
+            </div>
 
-                        {/* Quick Search Input */}
-                        <div className="relative max-w-md group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Search className="h-4 w-4 text-gray-500 group-focus-within:text-gold transition-colors" />
+            {/* 2. Welcome & Primary Action (Shrunken, Search Removed) */}
+            <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-card/60 to-card/30 border border-white/5 p-6 sm:p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold/5 blur-[80px] rounded-full"></div>
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-4 flex-1">
+                        <div className="space-y-2">
+                            <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-full bg-gold/10 text-gold text-[9px] font-bold uppercase tracking-[0.2em]">
+                                <Sparkles className="w-2.5 h-2.5" />
+                                System Online
                             </div>
-                            <input
-                                type="text"
-                                placeholder="Search Opponent Nickname..."
-                                className="block w-full pl-11 pr-4 py-4 bg-black/40 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all shadow-inner"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        const val = (e.target as HTMLInputElement).value;
-                                        if (val) window.location.href = `/players?search=${encodeURIComponent(val)}`;
-                                    }
-                                }}
-                            />
-                            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                                <span className="text-[10px] font-mono text-gray-600 bg-white/5 px-2 py-1 rounded border border-white/5 uppercase">Press Enter</span>
-                            </div>
+                            <h1 className="text-3xl font-bold text-white tracking-tight">
+                                Hero <span className="text-gold">{displayName}</span>
+                            </h1>
+                            <p className="text-gray-400 max-w-md leading-relaxed text-xs sm:text-sm">
+                                Ready for analysis. Upload hands to sharpen your edge and exploit opponent patterns.
+                            </p>
                         </div>
                     </div>
                     
-                    <div className="flex flex-col items-center gap-2">
+                    <div className="flex flex-col items-end gap-3">
                         <Link 
                             href="/analyzer"
-                            className="group flex flex-col sm:flex-row items-center justify-center gap-4 px-10 py-6 bg-gold text-black font-black rounded-3xl hover:bg-yellow-400 transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(250,204,21,0.3)] shadow-xl"
+                            className="group flex items-center justify-center gap-4 px-8 py-4 bg-gold text-black font-black rounded-2xl hover:bg-yellow-400 transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
                         >
-                            <div className="bg-black/10 p-2 rounded-xl group-hover:scale-110 transition-transform">
-                                <Zap className="w-6 h-6 fill-current" />
+                            <div className="bg-black/10 p-1.5 rounded-lg group-hover:scale-110 transition-transform">
+                                <Zap className="w-5 h-5 fill-current" />
                             </div>
-                            <div className="text-center sm:text-left">
-                                <span className="block text-xs uppercase tracking-widest opacity-70">Deep Scan</span>
-                                <span className="block text-lg">NEW HAND</span>
-                            </div>
-                            <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform hidden sm:block" />
+                            <span className="text-sm uppercase tracking-wider">NEW HAND SCAN</span>
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Link>
                         {stats.aiUsage && (
-                            <span className={`text-[10px] font-bold tracking-wider ${
-                                stats.aiUsage.remaining === 0 ? 'text-red-500' : 'text-gray-500'
-                            }`}>
-                                {stats.aiUsage.remaining === 0
-                                    ? `AI limit reached · Resets ${new Date(stats.aiUsage.resetsAt).toLocaleDateString()}`
-                                    : `${stats.aiUsage.remaining} AI turn${stats.aiUsage.remaining !== 1 ? 's' : ''} left`
-                                }
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <div className="h-1 w-24 bg-white/10 rounded-full overflow-hidden">
+                                    <div 
+                                        className={`h-full transition-all ${stats.aiUsage.remaining === 0 ? 'bg-red-500' : 'bg-gold'}`}
+                                        style={{ width: `${(stats.aiUsage.remaining / stats.aiUsage.limit) * 100}%` }}
+                                    ></div>
+                                </div>
+                                <span className={`text-[10px] font-bold tracking-wider ${
+                                    stats.aiUsage.remaining === 0 ? 'text-red-500' : 'text-gray-500'
+                                }`}>
+                                    {stats.aiUsage.remaining} / {stats.aiUsage.limit}
+                                </span>
+                            </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* 2. Key Stats Grid */}
+            {/* 3. Key Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                 <StatCard 
                     title="Total Targets" 
@@ -161,13 +177,14 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* 3. Top Whales (Weak Targets) */}
+                {/* 4. Top Whales (Weak Targets) */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between px-2">
                         <h2 className="text-xl font-bold text-white flex items-center gap-3">
                             <Target className="w-5 h-5 text-gold" />
-                            Top Whales (Weak Targets)
+                            Top Whales
                         </h2>
+                        <Link href="/players" className="text-[10px] text-gray-500 hover:text-gold uppercase tracking-widest font-bold transition-colors">View All</Link>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
@@ -176,20 +193,21 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                                 <PlayerCard key={player.id} player={player} />
                             ))
                         ) : (
-                            <div className="py-12 text-center bg-card/40 border border-dashed border-white/10 rounded-2xl">
-                                <p className="text-sm text-gray-500">No weak targets identified yet.</p>
+                            <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-2xl">
+                                <p className="text-sm text-gray-500 font-medium">No weak targets identified yet.</p>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* 4. Top Regulars (Strong Targets) */}
+                {/* 5. Top Regulars (Strong Targets) */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between px-2">
                         <h2 className="text-xl font-bold text-white flex items-center gap-3">
                             <ShieldAlert className="w-5 h-5 text-red-500" />
-                            Top Regulars (Caution)
+                            Top Regulars
                         </h2>
+                        <Link href="/players" className="text-[10px] text-gray-500 hover:text-gold uppercase tracking-widest font-bold transition-colors">View All</Link>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
@@ -198,42 +216,11 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                                 <PlayerCard key={player.id} player={player} isStrong />
                             ))
                         ) : (
-                            <div className="py-12 text-center bg-card/40 border border-dashed border-white/10 rounded-2xl">
-                                <p className="text-sm text-gray-500">No strong regs detected yet.</p>
+                            <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-2xl">
+                                <p className="text-sm text-gray-500 font-medium">No strong regs detected yet.</p>
                             </div>
                         )}
                     </div>
-                </div>
-            </div>
-
-            {/* 5. Quick Actions */}
-            <div className="pt-6">
-                <h2 className="text-xl font-bold text-white px-2 mb-4">Neural & Quick Operations</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <ActionButton 
-                        icon={<Search className="w-5 h-5" />} 
-                        title="Find Opponent" 
-                        desc="Lookup specific nicknames" 
-                        href="/players" 
-                    />
-                    <ActionButton 
-                        icon={<History className="w-5 h-5" />} 
-                        title="Analysis History" 
-                        desc="Review past mistakes" 
-                        href="/history" 
-                    />
-                    <ActionButton 
-                        icon={<Brain className="w-5 h-5" />} 
-                        title="AI Tuning" 
-                        desc="Adjust analysis prompts" 
-                        onClick={() => setIsAITuningOpen(true)}
-                    />
-                    <ActionButton 
-                        icon={<Plus className="w-5 h-5" />} 
-                        title="Manual Note" 
-                        desc="Add detail for player" 
-                        href="/players" 
-                    />
                 </div>
             </div>
         </div>
@@ -276,13 +263,17 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
                 </div>
             </div>
 
-            {player.ai_exploit_strategy && (
-                <div className={`mt-4 p-2 bg-black/20 rounded-lg border-l-2 ${isStrong ? 'border-red-500/50' : 'border-gold/50'}`}>
-                    <p className="text-[10px] text-gray-400 italic font-medium line-clamp-1">
-                        "{player.ai_exploit_strategy}"
+            {player.ai_exploit_strategy || player.ai_profile?.strategy ? (
+                <div className={`mt-4 p-2 bg-black/40 rounded-lg border-l-2 ${isStrong ? 'border-red-500/50' : 'border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]'}`}>
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <Brain className="w-2.5 h-2.5 text-gold" />
+                        <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Exploit Strategy</span>
+                    </div>
+                    <p className="text-[10px] text-gray-300 italic font-medium line-clamp-2 leading-tight">
+                        "{player.ai_exploit_strategy || player.ai_profile?.strategy}"
                     </p>
                 </div>
-            )}
+            ) : null}
 
             <div className="mt-4 flex items-center justify-between text-[10px] text-gray-500 font-bold">
                 <div className="flex items-center gap-4">
