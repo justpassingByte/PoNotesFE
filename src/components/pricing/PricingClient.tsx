@@ -46,15 +46,21 @@ export function PricingClient({ userEmail, currentTier = "FREE" }: { userEmail?:
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                // Using the new admin pricing endpoint (or create a public one)
-                // For now, using a fallback to the static logic if API fails
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/admin/pricing`, { credentials: "include" });
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+                const res = await fetch(`${baseUrl}/api/admin/pricing/public`, { credentials: "include" });
                 const json = await res.json();
-                if (json.success) {
+                if (json.success && json.data.length > 0) {
                     setPlans(json.data);
+                } else {
+                    throw new Error("No plans found");
                 }
             } catch (err) {
-                console.error("Failed to fetch plans:", err);
+                console.error("Failed to fetch plans, using fallback:", err);
+                // Fallback demo data so user sees something
+                setPlans([
+                    { id: "FREE", name: "Trial", price: 0, period: "/forever", description: "Standard access", features: ["2 AI Analysis / Day"], ai_limit: 2, ocr_limit: 5, is_popular: false, color_theme: "blue" },
+                    { id: "PRO", name: "Pro", price: 29, period: "/month", description: "Advanced tools", features: ["100 AI Analysis / Month"], ai_limit: 100, ocr_limit: 100, is_popular: true, color_theme: "gold" }
+                ]);
             } finally {
                 setLoading(false);
             }
