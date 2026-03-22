@@ -16,7 +16,11 @@ import {
     Calendar,
     ArrowUpRight,
     Zap,
-    Trash2
+    Trash2,
+    Plus,
+    Search,
+    Heart,
+    Filter
 } from "lucide-react";
 
 interface Stats {
@@ -24,7 +28,16 @@ interface Stats {
     premiumUsers: number;
     totalRevenue: number;
     totalHands: number;
+    loyalUsers: number;
     conversionRate: string;
+    growth: number[];
+    recentActivity: Array<{
+        id: string;
+        email: string;
+        amount: number;
+        tier: string;
+        date: string;
+    }>;
 }
 
 interface User {
@@ -45,33 +58,63 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'plans'>('stats');
     const [plans, setPlans] = useState<any[]>([]);
     const [editingPlan, setEditingPlan] = useState<any>(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [tierFilter, setTierFilter] = useState("ALL");
+    const [statusFilter, setStatusFilter] = useState("ALL");
+
+    const initialPlanState = {
+        id: "",
+        name: "",
+        price: 0,
+        description: "",
+        features: [],
+        ai_limit: 0,
+        name_ocr_limit: 0,
+        hand_ocr_limit: 0,
+        max_devices: 1,
+        is_popular: false,
+        color_theme: "blue"
+    };
 
     useEffect(() => {
-        fetchData();
+        fetchStats();
+        fetchPlans();
     }, []);
 
-    const fetchData = async () => {
-        setLoading(true);
+    useEffect(() => {
+        fetchUsers();
+    }, [searchTerm, tierFilter, statusFilter]);
+
+    const fetchStats = async () => {
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const [statsRes, usersRes, plansRes] = await Promise.all([
-                fetch(`${baseUrl}/api/admin/stats`, { credentials: "include" }),
-                fetch(`${baseUrl}/api/admin/users`, { credentials: "include" }),
-                fetch(`${baseUrl}/api/admin/pricing`, { credentials: "include" })
-            ]);
+            const res = await fetch(`${baseUrl}/api/admin/stats`, { credentials: "include" });
+            const json = await res.json();
+            if (json.success) setStats(json.data);
+        } catch (err) { console.error(err); }
+    };
 
-            const statsJson = await statsRes.json();
-            const usersJson = await usersRes.json();
-            const plansJson = await plansRes.json();
+    const fetchPlans = async () => {
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${baseUrl}/api/admin/pricing`, { credentials: "include" });
+            const json = await res.json();
+            if (json.success) setPlans(json.data);
+        } catch (err) { console.error(err); }
+    };
 
-            if (statsJson.success) setStats(statsJson.data);
-            if (usersJson.success) setUsers(usersJson.data);
-            if (plansJson.success) setPlans(plansJson.data);
-        } catch (err) {
-            console.error("Failed to fetch admin data:", err);
-        } finally {
-            setLoading(false);
-        }
+    const fetchUsers = async () => {
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const query = new URLSearchParams({
+                search: searchTerm,
+                tier: tierFilter,
+                status: statusFilter
+            }).toString();
+            const res = await fetch(`${baseUrl}/api/admin/users?${query}`, { credentials: "include" });
+            const json = await res.json();
+            if (json.success) setUsers(json.data);
+        } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
     const handleUpdateUser = async (userId: string, tier: string, days: number) => {
@@ -83,17 +126,11 @@ export default function AdminDashboard() {
                 body: JSON.stringify({ userId, tier, expiryDays: days }),
                 credentials: "include"
             });
-            const json = await res.json();
-            if (json.success) {
-                alert("User subscription updated!");
-                fetchData();
-            }
-        } catch (err) {
-            console.error("Update failed:", err);
-        }
+            if (res.ok) fetchUsers();
+        } catch (err) { console.error(err); }
     };
 
-    const handleSavePlan = async (e: React.FormEvent) => {
+    const handleSavePlan = async (e: any) => {
         e.preventDefault();
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -107,7 +144,7 @@ export default function AdminDashboard() {
             if (json.success) {
                 alert("Plan updated success!");
                 setEditingPlan(null);
-                fetchData();
+                fetchPlans();
             }
         } catch (err) {
             console.error("Save failed:", err);
@@ -126,7 +163,7 @@ export default function AdminDashboard() {
             const json = await res.json();
             if (json.success) {
                 alert("Plan deleted!");
-                fetchData();
+                fetchPlans();
             }
         } catch (err) {
             console.error("Delete failed:", err);
@@ -139,9 +176,23 @@ export default function AdminDashboard() {
 
     if (loading) return <div className="flex items-center justify-center min-h-screen bg-black text-gold">Loading Admin...</div>;
 
+    const availableFeatures = [
+        { id: 'ai_analysis', label: 'AI Analysis' },
+        { id: 'leak_detection', label: 'Leak Detection' },
+        { id: 'exploit_finder', label: 'Exploit Finder' },
+        { id: 'gto_baseline', label: 'GTO Baseline' },
+        { id: 'vgg_ocr', label: 'Premium OCR' }
+    ];
+
     return (
-        <main className="flex-1 pt-24 px-4 sm:px-8 pb-12 bg-black min-h-screen">
-            <div className="max-w-7xl mx-auto space-y-8">
+        <main className="flex-1 pt-24 px-4 sm:px-8 pb-12 bg-black min-h-screen relative overflow-hidden">
+            {/* Background Aesthetics */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold/5 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 blur-[120px] rounded-full" />
+            </div>
+
+            <div className="max-w-7xl mx-auto space-y-8 relative z-10">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -184,77 +235,124 @@ export default function AdminDashboard() {
                         subtext="Processing daily"
                     />
                     <StatCard 
-                        label="Status" 
-                        value="Healthy" 
-                        icon={CheckCircle2} 
-                        color="text-gold" 
-                        subtext="GPU OCR Nodes: 2"
+                        label="Loyal Users" 
+                        value={stats?.loyalUsers || 0} 
+                        icon={Heart} 
+                        color="text-red-400" 
+                        subtext="Power active users"
                     />
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-4 border-b border-white/10">
-                    <TabButton active={activeTab === 'stats'} onClick={() => setActiveTab('stats')} label="Overview" />
-                    <TabButton active={activeTab === 'users'} onClick={() => setActiveTab('users')} label="User Management" />
-                    <TabButton active={activeTab === 'plans'} onClick={() => setActiveTab('plans')} label="Subscription Plans" />
+                <div className="flex items-center justify-between border-b border-white/10">
+                    <div className="flex gap-4">
+                        <TabButton active={activeTab === 'stats'} onClick={() => setActiveTab('stats')} label="Overview" />
+                        <TabButton active={activeTab === 'users'} onClick={() => setActiveTab('users')} label="User Management" />
+                        <TabButton active={activeTab === 'plans'} onClick={() => setActiveTab('plans')} label="Subscription Plans" />
+                    </div>
+                    {activeTab === 'plans' && (
+                        <button 
+                            onClick={() => setEditingPlan({...initialPlanState})}
+                            className="mb-2 bg-gold hover:bg-yellow-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg shadow-gold/20"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Add New Plan
+                        </button>
+                    )}
                 </div>
 
                 {/* User Table */}
                 {activeTab === 'users' && (
-                    <div className="bg-card border border-white/10 rounded-2xl overflow-hidden animate-in fade-in duration-500">
-                        {/* ... Existing Table Content ... */}
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-white/5 text-[10px] uppercase font-bold text-gray-500 tracking-wider">
-                                        <th className="px-6 py-4">User</th>
-                                        <th className="px-6 py-4">Tier</th>
-                                        <th className="px-6 py-4">Usage (Mtd)</th>
-                                        <th className="px-6 py-4">Expiry</th>
-                                        <th className="px-6 py-4 text-right">Quick Manage</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {users.map((user) => (
-                                        <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center text-gold text-xs font-bold ring-1 ring-gold/20">
-                                                        {user.email[0].toUpperCase()}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-white">{user.email}</p>
-                                                        <p className="text-[10px] text-gray-600 font-mono tracking-tighter">{user.id.slice(0, 8)}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`text-[10px] font-bold px-2 py-1 rounded inline-flex items-center gap-1 ${
-                                                    user.premium_tier === 'FREE' ? 'bg-gray-500/10 text-gray-400' :
-                                                    user.premium_tier === 'PRO' ? 'bg-gold/10 text-gold' : 'bg-purple-500/10 text-purple-400'
-                                                }`}>
-                                                    {user.premium_tier}
-                                                    {user.is_admin && <Shield className="w-3 h-3 ml-1" />}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-xs font-mono text-gray-300">{user._count.hands} hands</td>
-                                            <td className="px-6 py-4 text-xs text-gray-300">
-                                                {user.subscription_expiry ? new Date(user.subscription_expiry).toLocaleDateString() : 'N/A'}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <button onClick={() => handleUpdateUser(user.id, 'PRO', 30)} className="text-[10px] bg-white/5 hover:bg-gold/20 text-gray-400 hover:text-gold px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
-                                                        +PRO
-                                                    </button>
-                                                    <button onClick={() => handleUpdateUser(user.id, 'PRO_PLUS', 30)} className="text-[10px] bg-white/5 hover:bg-purple-500/20 text-gray-400 hover:text-purple-400 px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
-                                                        +ELITE
-                                                    </button>
-                                                </div>
-                                            </td>
+                    <div className="space-y-4 animate-in fade-in duration-500">
+                        {/* Filters */}
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="flex-1 relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                <input 
+                                    type="text"
+                                    placeholder="Search by email..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-card border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm text-white outline-none focus:border-gold/30 transition-all"
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <select 
+                                    value={tierFilter}
+                                    onChange={(e) => setTierFilter(e.target.value)}
+                                    className="bg-card border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-gold/30 transition-all cursor-pointer"
+                                >
+                                    <option value="ALL">All Tiers</option>
+                                    <option value="FREE">Free</option>
+                                    <option value="PRO">Pro</option>
+                                    <option value="PRO_PLUS">Elite</option>
+                                </select>
+                                <select 
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="bg-card border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-gold/30 transition-all cursor-pointer"
+                                >
+                                    <option value="ALL">All Status</option>
+                                    <option value="ACTIVE">Active Only</option>
+                                    <option value="EXPIRED">Expired Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="bg-card border border-white/10 rounded-2xl overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-white/5 text-[10px] uppercase font-bold text-gray-500 tracking-wider">
+                                            <th className="px-6 py-4">User</th>
+                                            <th className="px-6 py-4">Tier</th>
+                                            <th className="px-6 py-4">Usage (Mtd)</th>
+                                            <th className="px-6 py-4">Expiry</th>
+                                            <th className="px-6 py-4 text-right">Quick Manage</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {users.map((user) => (
+                                            <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center text-gold text-xs font-bold ring-1 ring-gold/20">
+                                                            {user.email[0].toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium text-white">{user.email}</p>
+                                                            <p className="text-[10px] text-gray-600 font-mono tracking-tighter">{user.id.slice(0, 8)}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`text-[10px] font-bold px-2 py-1 rounded inline-flex items-center gap-1 ${
+                                                        user.premium_tier === 'FREE' ? 'bg-gray-500/10 text-gray-400' :
+                                                        user.premium_tier === 'PRO' ? 'bg-gold/10 text-gold' : 'bg-purple-500/10 text-purple-400'
+                                                    }`}>
+                                                        {user.premium_tier}
+                                                        {user.is_admin && <Shield className="w-3 h-3 ml-1" />}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-xs font-mono text-gray-300">{user._count.hands} hands</td>
+                                                <td className="px-6 py-4 text-xs text-gray-300">
+                                                    {user.subscription_expiry ? new Date(user.subscription_expiry).toLocaleDateString() : 'N/A'}
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        <button onClick={() => handleUpdateUser(user.id, 'PRO', 30)} className="text-[10px] bg-white/5 hover:bg-gold/20 text-gray-400 hover:text-gold px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
+                                                            +PRO
+                                                        </button>
+                                                        <button onClick={() => handleUpdateUser(user.id, 'PRO_PLUS', 30)} className="text-[10px] bg-white/5 hover:bg-purple-500/20 text-gray-400 hover:text-purple-400 px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
+                                                            +ELITE
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -313,6 +411,16 @@ export default function AdminDashboard() {
                                 Edit Plan {editingPlan.id}
                             </h2>
                             <form onSubmit={handleSavePlan} className="space-y-6">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Plan ID (Unique)</label>
+                                    <input 
+                                        value={editingPlan.id}
+                                        onChange={(e) => setEditingPlan({...editingPlan, id: e.target.value.toUpperCase()})}
+                                        placeholder="e.g. VIP_MONTHLY"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm font-mono"
+                                        disabled={plans.some(p => p.id === editingPlan.id && editingPlan.id !== "") && !plans.find(p => p.id === editingPlan.id)}
+                                    />
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Display Name</label>
@@ -348,16 +456,19 @@ export default function AdminDashboard() {
                                         <input 
                                             type="number"
                                             value={editingPlan.name_ocr_limit}
-                                            onChange={(e) => setEditingPlan({...editingPlan, name_ocr_limit: parseInt(e.target.value) || 0})}
+                                            onChange={(e) => setEditingPlan({...editingPlan, name_ocr_limit: parseInt(e.target.value)})}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm font-mono"
                                         />
                                     </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Hand OCR / Day</label>
                                         <input 
                                             type="number"
                                             value={editingPlan.hand_ocr_limit}
-                                            onChange={(e) => setEditingPlan({...editingPlan, hand_ocr_limit: parseInt(e.target.value) || 0})}
+                                            onChange={(e) => setEditingPlan({...editingPlan, hand_ocr_limit: parseInt(e.target.value)})}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm font-mono"
                                         />
                                     </div>
@@ -366,36 +477,29 @@ export default function AdminDashboard() {
                                         <input 
                                             type="number"
                                             value={editingPlan.max_devices}
-                                            onChange={(e) => setEditingPlan({...editingPlan, max_devices: parseInt(e.target.value) || 1})}
+                                            onChange={(e) => setEditingPlan({...editingPlan, max_devices: parseInt(e.target.value)})}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm font-mono"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Toggle Features</label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {[
-                                            { id: 'FULL_HAND_OCR', label: 'Full Table OCR' },
-                                            { id: 'LEAK_DETECTION', label: 'Leak Detection' },
-                                            { id: 'EXPLOIT_STRATEGY', label: 'Exploit Finder' },
-                                            { id: 'VGG_OCR', label: 'Premium VGG OCR' }
-                                        ].map(feat => {
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Toggled Features</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {availableFeatures.map(feat => {
                                             const isActive = editingPlan.features.includes(feat.label);
                                             return (
                                                 <button
                                                     key={feat.id}
                                                     type="button"
                                                     onClick={() => {
-                                                        const newFeatures = isActive 
+                                                        const newFeatures = isActive
                                                             ? editingPlan.features.filter((f: string) => f !== feat.label)
                                                             : [...editingPlan.features, feat.label];
                                                         setEditingPlan({...editingPlan, features: newFeatures});
                                                     }}
-                                                    className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                                                        isActive 
-                                                        ? 'bg-gold/10 border-gold/40 text-gold' 
-                                                        : 'bg-white/5 border-white/10 text-gray-500'
+                                                    className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
+                                                        isActive ? 'bg-gold/10 border-gold/50 text-gold' : 'bg-white/5 border-white/10 text-gray-500'
                                                     }`}
                                                 >
                                                     <span className="text-[10px] font-black uppercase tracking-tight">{feat.label}</span>
@@ -427,34 +531,52 @@ export default function AdminDashboard() {
                                 <TrendingUp className="w-5 h-5 text-emerald-400" />
                             </h3>
                             <div className="h-64 flex items-end justify-between gap-2 px-2">
-                                {[40, 65, 55, 90, 80, 110, 145].map((val, i) => (
-                                    <div key={i} className="flex-1 space-y-2">
-                                        <div 
-                                            className="bg-gold/20 hover:bg-gold/40 transition-all rounded-t-lg border-t border-x border-gold/30" 
-                                            style={{ height: `${val}px` }}
-                                        />
-                                        <p className="text-[10px] text-gray-600 text-center">Day {i+1}</p>
-                                    </div>
-                                ))}
+                                {(stats?.growth || [0, 0, 0, 0, 0, 0, 0]).map((val, i) => {
+                                    const max = Math.max(...(stats?.growth || [1]));
+                                    const height = max === 0 ? 0 : (val / max) * 100;
+                                    return (
+                                        <div key={i} className="flex-1 space-y-2">
+                                            <div 
+                                                className="bg-gold/20 hover:bg-gold/40 transition-all rounded-t-lg border-t border-x border-gold/30 relative group" 
+                                                style={{ height: `${Math.max(height, 5)}%` }}
+                                            >
+                                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/80 border border-white/10 px-2 py-1 rounded text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    {val}
+                                                </div>
+                                            </div>
+                                            <p className="text-[10px] text-gray-600 text-center">T-{6-i}d</p>
+                                        </div>
+                                    )
+                                })}
                             </div>
                         </div>
                         <div className="bg-card border border-white/10 rounded-2xl p-6">
                             <h3 className="text-lg font-bold text-white mb-6">Recent Activity</h3>
-                            <div className="space-y-4">
-                                {[1,2,3,4].map(i => (
-                                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 rounded-lg bg-emerald-500/10">
-                                                <CreditCard className="w-4 h-4 text-emerald-400" />
+                            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                {stats?.recentActivity && stats.recentActivity.length > 0 ? (
+                                    stats.recentActivity.map(activity => (
+                                        <div key={activity.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-gold/20 transition-all">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 rounded-lg bg-emerald-500/10">
+                                                    <CreditCard className="w-4 h-4 text-emerald-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-white">{activity.email}</p>
+                                                    <p className="text-[10px] text-gray-500">
+                                                        {new Date(activity.date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                        <span className="ml-2 text-gold">[{activity.tier}]</span>
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-white">New Subscription</p>
-                                                <p className="text-[10px] text-gray-500">2 minutes ago</p>
-                                            </div>
+                                            <span className="text-emerald-400 font-bold text-sm">+${activity.amount}</span>
                                         </div>
-                                        <span className="text-emerald-400 font-bold text-sm">+$29.00</span>
+                                    ))
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-12 text-gray-600">
+                                        <AlertCircle className="w-8 h-8 mb-2 opacity-20" />
+                                        <p className="text-xs uppercase font-bold tracking-widest">No recent transactions</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
                     </div>

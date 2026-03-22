@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Clock, Search, Tag, ChevronRight, Sparkles, Trophy, Calendar, Trash2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Clock, Search, Tag, ChevronRight, Sparkles, Trophy, Calendar, Trash2, Image as ImageIcon, Loader2 } from "lucide-react";
+import Tesseract from 'tesseract.js';
 import { API } from "@/lib/api";
 
 interface HandSummary {
@@ -45,7 +46,10 @@ export function HandHistoryList() {
     const [searchTag, setSearchTag] = useState("");
     const [gameType, setGameType] = useState("");
     const [minPot, setMinPot] = useState("");
+    const [playerName, setPlayerName] = useState("");
     const [selectedHand, setSelectedHand] = useState<string | null>(null);
+    const [scanning, setScanning] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchHands();
@@ -60,6 +64,7 @@ export function HandHistoryList() {
             if (searchTag) params.set("tag", searchTag);
             if (gameType) params.set("gameType", gameType);
             if (minPot) params.set("minPot", minPot);
+            if (playerName) params.set("playerName", playerName);
 
             const res = await fetch(`${API.handHistory}?${params.toString()}`);
             const json = await res.json();
@@ -96,8 +101,46 @@ export function HandHistoryList() {
         setSearchTag("");
         setGameType("");
         setMinPot("");
+        setPlayerName("");
         // Optimization: trigger fetch manually after state updates
         setTimeout(fetchHands, 0);
+    };
+
+    const runOCR = async (source: File | Blob) => {
+        setScanning(true);
+        try {
+            const worker = await Tesseract.createWorker('eng');
+            const { data: { text } } = await worker.recognize(source);
+            await worker.terminate();
+
+            const firstLine = text.trim().split('\n')[0].trim();
+            if (firstLine) {
+                setPlayerName(firstLine);
+            }
+        } catch (error) {
+            console.error('OCR Error:', error);
+        } finally {
+            setScanning(false);
+        }
+    };
+
+    const handleOCRUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await runOCR(file);
+    };
+
+    const handlePaste = async (e: React.ClipboardEvent) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        for (const item of Array.from(items)) {
+            if (item.type.startsWith('image/')) {
+                const blob = item.getAsFile();
+                if (blob) await runOCR(blob);
+                return;
+            }
+        }
     };
 
     if (loading && hands.length === 0) {
@@ -139,6 +182,31 @@ export function HandHistoryList() {
                             <option value="PLO">Pot Limit Omaha</option>
                             <option value="SHORT_DECK">6+ Short Deck</option>
                         </select>
+                    </div>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                        <input
+                            type="text"
+                            value={playerName}
+                            onChange={(e) => setPlayerName(e.target.value)}
+                            onPaste={handlePaste}
+                            placeholder={scanning ? "Scanning..." : "Player Name (or Paste Snapshot)"}
+                            className={`w-full bg-black/40 border border-border rounded-lg pl-10 pr-10 py-2 text-sm text-gray-300 placeholder-gray-600 focus:ring-1 focus:ring-gold/50 ${scanning ? 'animate-pulse border-gold/40' : ''}`}
+                        />
+                        <button 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gold transition-colors"
+                            title="OCR Scan Name"
+                        >
+                            {scanning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5" />}
+                        </button>
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={handleOCRUpload} 
+                            className="hidden" 
+                            accept="image/*" 
+                        />
                     </div>
                     <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-mono">Min BB</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, FileText, Loader2, ImageIcon, Sparkles, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { API } from "@/lib/api";
 import { createNote } from "@/app/actions";
@@ -132,9 +132,10 @@ function SaveNoteButton({ noteData }: { noteData: any }) {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export function HandAnalyzer() {
-    const [inputType, setInputType] = useState<"text" | "image">("text");
+    const [inputType, setInputType] = useState<"text" | "image">("image");
     const [textInput, setTextInput] = useState("");
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isPasting, setIsPasting] = useState(false);
     const [isParsing, setIsParsing] = useState(false);
     const [isReviewing, setIsReviewing] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -143,6 +144,32 @@ export function HandAnalyzer() {
     const [fromCache, setFromCache] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // clipboard paste support
+    useEffect(() => {
+        const handlePaste = (e: ClipboardEvent) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    const blob = items[i].getAsFile();
+                    if (!blob) continue;
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        setImagePreview(event.target?.result as string);
+                        setInputType("image");
+                    };
+                    reader.readAsDataURL(blob);
+                    break;
+                }
+            }
+        };
+
+        window.addEventListener("paste", handlePaste);
+        return () => window.removeEventListener("paste", handlePaste);
+    }, []);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -254,11 +281,19 @@ export function HandAnalyzer() {
                         className="w-full h-40 bg-black/40 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gold/40 transition-colors group"
                     >
                         {imagePreview ? (
-                            <img src={imagePreview} alt="Hand screenshot" className="max-h-36 rounded" />
+                            <div className="relative group">
+                                <img src={imagePreview} alt="Hand screenshot" className="max-h-36 rounded shadow-lg border border-white/10" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded">
+                                    <p className="text-[10px] font-bold text-white uppercase tracking-widest">Change Image</p>
+                                </div>
+                            </div>
                         ) : (
                             <>
-                                <Upload className="w-8 h-8 text-gray-500 group-hover:text-gold/60 mb-2 transition-colors" />
-                                <p className="text-sm text-gray-500 group-hover:text-gray-400">Click or drag to upload screenshot</p>
+                                <div className="w-12 h-12 rounded-2xl bg-gold/5 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                    <Upload className="w-6 h-6 text-gold/60" />
+                                </div>
+                                <p className="text-sm text-gray-400 font-medium">Click, Drag, or <span className="text-gold">Paste (Ctrl+V)</span></p>
+                                <p className="text-[10px] text-gray-600 mt-1 uppercase tracking-tighter">Support standard poker client screenshots</p>
                             </>
                         )}
                         <input

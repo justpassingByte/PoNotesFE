@@ -66,7 +66,14 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
     );
 
     return (
-        <section id="pricing" className={`${isDashboard ? '' : 'max-w-7xl mx-auto px-6 py-24 sm:py-32'}`}>
+        <section id="pricing" className={`relative overflow-hidden ${isDashboard ? '' : 'max-w-7xl mx-auto px-6 py-24 sm:py-32'}`}>
+            {/* Background Effects */}
+            {!isDashboard && (
+                <div className="absolute inset-0 z-0 pointer-events-none">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 blur-[120px] rounded-full"></div>
+                </div>
+            )}
+
             {!isDashboard && (
                 <div className="text-center space-y-4 mb-20">
                     <span className="text-gold font-bold tracking-widest text-sm uppercase text-glow">Pricing Plans</span>
