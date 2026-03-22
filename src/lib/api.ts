@@ -41,5 +41,6 @@ export const API = {
   // Payments
   payments: `${API_BASE_URL}/api/payments`,
   paymentCreateInvoice: `${API_BASE_URL}/api/payments/create-invoice`,
+  paymentStatus: (id: string) => `${API_BASE_URL}/api/payments/${id}/status`,
   pricingPublic: `${API_BASE_URL}/api/admin/pricing/public`,
 } as const;
