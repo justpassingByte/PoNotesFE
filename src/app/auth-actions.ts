@@ -25,7 +25,7 @@ export async function login(formData: FormData) {
 
         // Set cookie
         const cookieStore = await cookies();
-        const secure = process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === "production";
+        const secure = process.env.NEXT_PUBLIC_API_URL?.startsWith('https') || false;
 
         cookieStore.set("token", json.token, {
             httpOnly: true,

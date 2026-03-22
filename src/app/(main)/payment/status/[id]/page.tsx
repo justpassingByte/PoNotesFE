@@ -111,6 +111,16 @@ export default function PaymentStatusPage() {
             if (json.success) {
                 setData(json.data);
                 setError(null);
+
+                // If payment just finished and user is upgraded, refresh session
+                if (json.data.status === "FINISHED" && json.data.is_upgraded) {
+                    fetch(API.authRefreshSession, { method: "POST", credentials: "include" })
+                        .then(() => {
+                            // Tell Next.js to re-fetch Server Components (like the Header)
+                            router.refresh();
+                        })
+                        .catch(err => console.error("Session refresh failed:", err));
+                }
             } else {
                 setError(json.error || "Failed to load payment status");
             }

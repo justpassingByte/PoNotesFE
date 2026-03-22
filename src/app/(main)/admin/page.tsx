@@ -446,6 +446,16 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
 
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Description</label>
+                                    <textarea 
+                                        value={editingPlan.description || ""}
+                                        onChange={(e) => setEditingPlan({...editingPlan, description: e.target.value})}
+                                        placeholder="Short description for the pricing card"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-gold/50 text-sm resize-none h-16"
+                                    />
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">AI Analyst / Day</label>
