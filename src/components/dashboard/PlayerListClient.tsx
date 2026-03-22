@@ -34,17 +34,15 @@ export interface PaginationMeta {
 interface PlayerListClientProps {
     initialPlayers: Player[];
     initialMeta: PaginationMeta;
+    initialPlatforms?: { id: string; name: string }[];
 }
 
 export function PlayerListClient({
     initialPlayers,
     initialMeta,
-    user: user
-}: {
-    initialPlayers: Player[];
-    initialMeta: PaginationMeta;
-    user?: { email: string; premium_tier: string } | null;
-}) {
+    initialPlatforms = [],
+    user
+}: PlayerListClientProps & { user?: { email: string; premium_tier: string } | null }) {
     const [players, setPlayers] = useState<Player[]>(initialPlayers);
     const [meta, setMeta] = useState<PaginationMeta>(initialMeta);
     const [cursor, setCursor] = useState<string | null>(initialMeta.nextCursor);
@@ -69,7 +67,11 @@ export function PlayerListClient({
         setIsLoading(true);
 
         try {
-            const result = await loadMorePlayers(cursor);
+            const result = await loadMorePlayers(cursor, { 
+                query: searchQuery, 
+                playstyle: filterPlaystyle, 
+                platform: filterPlatform 
+            });
             setPlayers(prev => [...prev, ...result.data]);
             setMeta(result.meta);
             setHasMore(result.meta.hasMore);
@@ -79,13 +81,17 @@ export function PlayerListClient({
         } finally {
             setIsLoading(false);
         }
-    }, [isLoading, hasMore, cursor]);
+    }, [isLoading, hasMore, cursor, searchQuery, filterPlaystyle, filterPlatform]);
 
     // Reset and reload from page 1 via Server Action
-    const resetAndReload = useCallback(async () => {
+    const resetAndReload = useCallback(async (overrides?: { query?: string; playstyle?: string; platform?: string }) => {
         setIsLoading(true);
         try {
-            const result = await fetchFirstPage();
+            const result = await fetchFirstPage({ 
+                query: overrides?.query !== undefined ? overrides.query : searchQuery, 
+                playstyle: overrides?.playstyle !== undefined ? overrides.playstyle : filterPlaystyle, 
+                platform: overrides?.platform !== undefined ? overrides.platform : filterPlatform 
+            });
             setPlayers(result.data);
             setMeta(result.meta);
             setHasMore(result.meta.hasMore);
@@ -95,7 +101,7 @@ export function PlayerListClient({
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [searchQuery, filterPlaystyle, filterPlatform]);
     
     const handleDeletePlayer = async (id: string) => {
         try {
@@ -124,16 +130,16 @@ export function PlayerListClient({
         return () => observer.disconnect();
     }, [hasMore, isLoading, cursor, handleLoadMore]);
 
-    // Filter Logic — operates on loaded players
-    const filteredPlayers = players.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesPlaystyle = filterPlaystyle === 'All' || p.playstyle === filterPlaystyle;
-        const matchesPlatform = filterPlatform === 'All' || p.platform?.name === filterPlatform;
-        return matchesSearch && matchesPlaystyle && matchesPlatform;
-    });
+    // Trigger server-side reload when filters change (debounced for search)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            resetAndReload();
+        }, 300); // 300ms debounce
+        return () => clearTimeout(timer);
+    }, [searchQuery, filterPlaystyle, filterPlatform]);
 
-    // Extract distinct platforms from loaded data
-    const distinctPlatforms = Array.from(new Set(players.map(p => p.platform?.name).filter(Boolean))) as string[];
+    // Format platforms for the dropdown
+    const platformNames = initialPlatforms.map(p => p.name);
 
     return (
         <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0f2e1e] via-[#020202] to-black">
@@ -162,7 +168,7 @@ export function PlayerListClient({
                         searchQuery={searchQuery}
                         filterPlaystyle={filterPlaystyle}
                         filterPlatform={filterPlatform}
-                        distinctPlatforms={distinctPlatforms}
+                        distinctPlatforms={platformNames}
                         onSearchChange={setSearchQuery}
                         onFilterChange={setFilterPlaystyle}
                         onPlatformFilterChange={setFilterPlatform}
@@ -171,13 +177,13 @@ export function PlayerListClient({
                     {/* Player Grid */}
                     <div className="bg-gradient-to-b from-card/20 to-transparent border-x border-b border-white/5 rounded-b-2xl p-4 sm:p-8 shadow-inner">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                            {filteredPlayers.length === 0 && !isLoading ? (
+                            {players.length === 0 && !isLoading ? (
                                 <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-border rounded-lg bg-card/20">
                                     <p>No players found.</p>
-                                    {searchQuery && <p className="text-xs mt-1">Try a different search query.</p>}
+                                    {(searchQuery || filterPlaystyle !== 'All' || filterPlatform !== 'All') && <p className="text-xs mt-1">Try different filters.</p>}
                                 </div>
                             ) : (
-                                filteredPlayers.map((player) => (
+                                players.map((player) => (
                                     <PlayerHUD
                                         key={player.id}
                                         id={player.id}

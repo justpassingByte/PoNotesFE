@@ -14,10 +14,15 @@ export async function PlayersContent() {
         nextCursor: null 
     };
 
+    let initialPlatforms: { id: string, name: string }[] = [];
     try {
-        const result = await fetchFirstPage();
-        initialPlayers = result.data as Player[];
-        initialMeta = result.meta;
+        const [playersResult, platformsResult] = await Promise.all([
+            fetchFirstPage(),
+            import("@/app/actions").then(a => a.getAllPlatforms())
+        ]);
+        initialPlayers = playersResult.data as Player[];
+        initialMeta = playersResult.meta;
+        initialPlatforms = platformsResult;
     } catch (err) {
         console.error("Players fetch error:", err);
     }
@@ -26,6 +31,7 @@ export async function PlayersContent() {
         <PlayerListClient
             initialPlayers={initialPlayers}
             initialMeta={initialMeta}
+            initialPlatforms={initialPlatforms}
             user={user}
         />
     );

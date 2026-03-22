@@ -66,12 +66,17 @@ export async function fetchDashboard() {
  * Server Action: fetch the first page of players.
  * Used for initial SSR load and reset-after-mutation.
  */
-export async function fetchFirstPage(): Promise<PaginatedResult> {
+export async function fetchFirstPage(options?: { query?: string; playstyle?: string; platform?: string }): Promise<PaginatedResult> {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
+    const params = new URLSearchParams({ limit: String(PAGE_SIZE) });
+    if (options?.query) params.append("query", options.query);
+    if (options?.playstyle) params.append("playstyle", options.playstyle);
+    if (options?.platform) params.append("platform", options.platform);
+
     try {
-        const res = await fetch(`${API.players}?limit=${PAGE_SIZE}`, { 
+        const res = await fetch(`${API.players}?${params.toString()}`, { 
             cache: "no-store",
             headers: token ? { "Authorization": `Bearer ${token}` } : {}
         });
@@ -116,11 +121,15 @@ export async function fetchFirstPage(): Promise<PaginatedResult> {
  * Server Action: fetch the next page of players using cursor-based pagination.
  * Called from the client when the IntersectionObserver triggers.
  */
-export async function loadMorePlayers(cursor: string): Promise<PaginatedResult> {
+export async function loadMorePlayers(cursor: string, options?: { query?: string; playstyle?: string; platform?: string }): Promise<PaginatedResult> {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
     const params = new URLSearchParams({ limit: String(PAGE_SIZE), cursor });
+    if (options?.query) params.append("query", options.query);
+    if (options?.playstyle) params.append("playstyle", options.playstyle);
+    if (options?.platform) params.append("platform", options.platform);
+
     const res = await fetch(`${API.players}?${params.toString()}`, { 
         cache: "no-store",
         headers: token ? { "Authorization": `Bearer ${token}` } : {}
@@ -314,6 +323,25 @@ export async function exportPlayersAction() {
     } catch (err) {
         console.error("Server Action Error (exportPlayersAction):", err);
         throw err;
+    }
+}
+/**
+ * Server Action: fetch all platforms for filter dropdowns.
+ */
+export async function getAllPlatforms(): Promise<{ id: string, name: string }[]> {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    try {
+        const res = await fetch(API.platforms, { 
+            cache: "no-store",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (json.success) return json.data;
+        return [];
+    } catch (err) {
+        console.error("Failed to fetch platforms", err);
+        return [];
     }
 }
 /**
