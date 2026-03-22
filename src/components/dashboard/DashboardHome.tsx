@@ -177,51 +177,22 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 />
             </div>
 
-            <div className="space-y-10">
-                {/* 4. Top Whales (Weak Targets) */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2 text-gold">
-                        <h2 className="text-xl font-black flex items-center gap-3 uppercase tracking-tighter">
-                            <Target className="w-5 h-5" />
-                            Target Priority: High
-                        </h2>
-                        <Link href="/players" className="text-[10px] text-gray-500 hover:text-gold uppercase tracking-widest font-bold font-mono transition-colors italic">Analyze More &gt;</Link>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6">
-                        {topWhales.length > 0 ? (
-                            topWhales.map(player => (
-                                <PlayerCard key={player.id} player={player} />
-                            ))
-                        ) : (
-                            <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-2xl">
-                                <p className="text-sm text-gray-500 font-medium font-mono uppercase tracking-widest opacity-50">Radial search yield: 0 targets</p>
-                            </div>
-                        )}
-                    </div>
+            <div className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                    <h2 className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Neural Network: Targets Found</h2>
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent ml-4"></div>
                 </div>
 
-                {/* 5. Top Regulars (Strong Targets) */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2 text-rose-500">
-                        <h2 className="text-xl font-black flex items-center gap-3 uppercase tracking-tighter">
-                            <ShieldAlert className="w-5 h-5" />
-                            Strategic Threats
-                        </h2>
-                        <Link href="/players" className="text-[10px] text-gray-500 hover:text-rose-400 uppercase tracking-widest font-bold font-mono transition-colors italic">Deep Scan &gt;</Link>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6">
-                        {topRegs.length > 0 ? (
-                            topRegs.map(player => (
-                                <PlayerCard key={player.id} player={player} isStrong />
-                            ))
-                        ) : (
-                            <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-2xl">
-                                <p className="text-sm text-gray-500 font-medium font-mono uppercase tracking-widest opacity-50">No high-risk entities detected</p>
-                            </div>
-                        )}
-                    </div>
+                <div className="grid grid-cols-1 gap-6 sm:gap-8">
+                    {[...topWhales, ...topRegs].length > 0 ? (
+                        [...topWhales, ...topRegs].map(player => (
+                            <PlayerCard key={player.id} player={player} />
+                        ))
+                    ) : (
+                        <div className="py-20 text-center bg-card/20 border border-dashed border-white/5 rounded-[2rem]">
+                            <p className="text-sm text-gray-500 font-medium font-mono uppercase tracking-widest opacity-50">Radial search yield: 0 targets</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -265,24 +236,33 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
             </div>
 
             {player.ai_profile?.range_adjustments && player.ai_profile.range_adjustments.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                    {player.ai_profile.range_adjustments.slice(0, 2).map((adj: string, i: number) => (
-                        <div key={i} className="px-2.5 py-1 bg-gold/10 border border-gold/20 rounded-lg text-[10px] text-gold font-black uppercase tracking-tighter">
-                            {adj}
+                <div className="mt-4 space-y-2">
+                    <div className="flex items-center gap-1.5 mb-1 text-[8px] font-black text-gold/60 uppercase tracking-widest">
+                        <Zap className="w-2.5 h-2.5" />
+                        Live Range Adjustments
+                    </div>
+                    {player.ai_profile.range_adjustments.slice(0, 3).map((adj: string, i: number) => (
+                        <div key={i} className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-xl px-3 py-2">
+                            <Brain className="w-3 h-3 text-gold/60 flex-shrink-0" />
+                            <span className="text-[11px] text-gray-100 font-bold leading-tight">{adj}</span>
                         </div>
                     ))}
                 </div>
             ) : player.ai_exploit_strategy ? (
-                <div className={`mt-4 p-2 bg-black/40 rounded-lg border-l-2 ${isStrong ? 'border-red-500/50' : 'border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]'}`}>
-                    <div className="flex items-center gap-1.5 mb-1">
+                <div className={`mt-4 p-3 bg-black/40 rounded-xl border-l-2 ${isStrong ? 'border-red-500/50' : 'border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]'}`}>
+                    <div className="flex items-center gap-1.5 mb-1.5">
                         <Brain className="w-2.5 h-2.5 text-gold" />
                         <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Exploit Strategy</span>
                     </div>
-                    <p className="text-[10px] text-gray-300 italic font-medium line-clamp-2 leading-tight">
+                    <p className="text-[11px] text-gray-300 italic font-medium leading-tight">
                         "{player.ai_exploit_strategy}"
                     </p>
                 </div>
-            ) : null}
+            ) : (
+                <div className="mt-4 p-4 text-center border border-dashed border-white/5 rounded-xl">
+                    <span className="text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em]">Neural profile pending scan...</span>
+                </div>
+            )}
 
             <div className="mt-4 flex items-center justify-between text-[10px] text-gray-500 font-bold">
                 <div className="flex items-center gap-4">
