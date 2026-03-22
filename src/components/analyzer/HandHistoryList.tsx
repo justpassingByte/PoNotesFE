@@ -23,6 +23,13 @@ interface HandSummary {
         villainMistakes?: any[];
         summary?: string;
     };
+    system_logs?: {
+        id: string;
+        event_type: string;
+        message: string;
+        metadata?: any;
+        created_at: string;
+    }[];
 }
 
 const SUIT_SYMBOLS: Record<string, string> = { h: "♥", d: "♦", c: "♣", s: "♠" };
@@ -327,6 +334,47 @@ export function HandHistoryList() {
                                                 <p className="text-sm text-gray-200 leading-relaxed italic border-l-2 border-gold/30 pl-4 py-1">
                                                     {analysis?.summary || "No automated summary available for this hand history."}
                                                 </p>
+                                            </div>
+
+                                            {/* Evolution Log (The "Learning" Part) */}
+                                            <div className="bg-black/40 rounded-xl p-4 border border-white/5 overflow-hidden">
+                                                <h4 className="text-[10px] uppercase font-black text-gold tracking-widest mb-4 flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <Loader2 className="w-3 h-3 animate-spin text-gold/60" />
+                                                        Neural Evolution Log
+                                                    </div>
+                                                    <span className="text-[9px] bg-gold/10 text-gold px-1.5 py-0.5 rounded animate-pulse">Self-Learning Active</span>
+                                                </h4>
+                                                <div className="space-y-2 font-mono text-[11px]">
+                                                    {hand.system_logs && hand.system_logs.length > 0 ? (
+                                                        hand.system_logs.map((log) => (
+                                                            <div key={log.id} className="flex gap-3 text-gray-400 group/log">
+                                                                <span className="text-gray-600 flex-shrink-0">[{new Date(log.created_at).toLocaleTimeString([], { hour12: false, minute: '2-digit', second: '2-digit' })}]</span>
+                                                                <div className="flex-1">
+                                                                    <span className={`font-black uppercase tracking-tighter mr-2 ${
+                                                                        log.event_type === 'OCR_FEEDBACK' ? 'text-blue-400' : 
+                                                                        log.event_type === 'AI_LEARNING' ? 'text-purple-400' : 
+                                                                        log.event_type === 'PROFILE_EVOLUTION' ? 'text-gold' : 'text-gray-500'
+                                                                    }`}>
+                                                                        {log.event_type}:
+                                                                    </span>
+                                                                    <span className="group-hover/log:text-gray-200 transition-colors">{log.message}</span>
+                                                                    {log.metadata && Object.keys(log.metadata).length > 0 && (
+                                                                        <div className="mt-1 pl-4 border-l border-white/5 text-[9px] text-gray-500 italic">
+                                                                            {JSON.stringify(log.metadata)}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="text-gray-600 italic py-2">
+                                                            [SYSTEM] Initial scan complete. No feedback loop events recorded yet.
+                                                            <br/>
+                                                            <span className="text-[9px] opacity-40">Self-correction will appear here after manual adjustments or profile merges.</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
