@@ -169,6 +169,10 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
     name: string;
     playstyle: string;
     aggression_score: number;
+    platform: {
+        id: string;
+        name: string;
+    };
     ai_playstyle?: string | null;
     ai_aggression_level?: string | null;
     ai_aggression_score?: number | null;
@@ -217,6 +221,7 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
         name: p.name,
         playstyle: p.playstyle || "UNKNOWN",
         aggression_score: p.aggression_score ?? 0,
+        platform: p.platform || { id: "unknown", name: "Unknown" },
         ai_playstyle: p.ai_playstyle || null,
         ai_aggression_score: p.ai_aggression_score ?? null,
         ai_exploit_strategy: p.ai_exploit_strategy || null,
@@ -297,10 +302,12 @@ export async function updateAppSettings(data: { ai_enabled?: boolean; analysis_m
  * Server Action: create a new note for a player.
  */
 export async function createNote(data: {
-    player_id: string;
+    player_id?: string;
+    player_name?: string;
     content: string;
     street: string;
     note_type: string;
+    source?: string;
     hand_id?: string;
 }) {
     const cookieStore = await cookies();
