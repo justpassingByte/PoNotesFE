@@ -100,8 +100,8 @@ export function PricingClient({ userEmail, currentTier = "FREE" }: { userEmail?:
 
             const { invoice_url, invoiceId, sandbox } = json.data;
 
-            // If API key not configured (sandbox/dev mode) → redirect to status page
-            if (!invoice_url || sandbox) {
+            // If API key not configured → redirect to status page
+            if (!invoice_url) {
                 router.push(`/payment/status/${invoiceId}`);
                 return;
             }
