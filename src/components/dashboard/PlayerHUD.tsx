@@ -75,11 +75,23 @@ export function PlayerHUD({
                             </span>
                         )}
                     </div>
+
+                    {/* Leaks - Prioritized in HUD */}
+                    {ai_profile?.leaks && ai_profile.leaks.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                            {ai_profile.leaks.slice(0, 3).map((leak: string, i: number) => (
+                                <span key={i} className="text-[9px] bg-red-500/10 text-red-500 border border-red-500/20 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tighter">
+                                    {leak}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
                     {strategy && (
-                        <div className="mt-2 p-2 bg-black/40 rounded-lg border-l-2 border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]">
+                        <div className="p-2 bg-black/40 rounded-lg border-l-2 border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]">
                             <span className="text-[8px] font-bold text-gray-500 uppercase tracking-tighter block mb-1">Counter-Strategy:</span>
-                            <p className="text-[11px] text-gray-200 font-medium italic leading-relaxed">
-                                "{strategy}"
+                            <p className="text-[10px] text-gray-200 font-medium italic leading-tight">
+                                "{strategy.length > 85 ? strategy.substring(0, 85) + '...' : strategy}"
                             </p>
                         </div>
                     )}

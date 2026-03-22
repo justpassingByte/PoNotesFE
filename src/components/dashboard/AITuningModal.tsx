@@ -120,6 +120,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
 
                 <div className="h-px bg-white/5 my-2" />
 
+                {/* BASIC MODEL SETTINGS */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">AI Model</label>
@@ -154,6 +155,103 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                             className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-gold"
                         />
                     </div>
+                </div>
+
+                <div className="h-px bg-white/5 my-2" />
+
+                {/* BEHAVIORAL TUNING (DYNAMICAL PER TAB) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Strategy Style</label>
+                        <select 
+                            value={activeTab === 'profile' ? (settings?.ai_style || "Balanced") : (settings?.hand_style || "Balanced")}
+                            onChange={(e) => setSettings({ 
+                                ...settings, 
+                                [activeTab === 'profile' ? 'ai_style' : 'hand_style']: e.target.value 
+                            })}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold/50 transition-all font-bold"
+                        >
+                            <option value="Exploit">Max Exploit</option>
+                            <option value="Balanced">Balanced (Default)</option>
+                            <option value="GTO">Pure GTO</option>
+                        </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 flex justify-between">
+                            Aggression Bias
+                            <span className="text-gold">{activeTab === 'profile' ? (settings?.aggression_bias || 50) : (settings?.hand_aggression_bias || 50)}%</span>
+                        </label>
+                        <input 
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="5"
+                            value={activeTab === 'profile' ? (settings?.aggression_bias || 50) : (settings?.hand_aggression_bias || 50)}
+                            onChange={(e) => setSettings({ 
+                                ...settings, 
+                                [activeTab === 'profile' ? 'aggression_bias' : 'hand_aggression_bias']: parseInt(e.target.value) 
+                            })}
+                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-gold"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Insight Depth</label>
+                        <div className="flex bg-black/40 border border-white/10 rounded-xl p-1 h-[46px]">
+                            {['Quick', 'Deep'].map((depth) => {
+                                const currentDepth = activeTab === 'profile' ? (settings?.insight_depth || "Deep") : (settings?.hand_insight_depth || "Deep");
+                                return (
+                                    <button
+                                        key={depth}
+                                        type="button"
+                                        onClick={() => setSettings({ 
+                                            ...settings, 
+                                            [activeTab === 'profile' ? 'insight_depth' : 'hand_insight_depth']: depth 
+                                        })}
+                                        className={`flex-1 flex items-center justify-center text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${currentDepth === depth ? 'bg-gold text-black' : 'text-gray-500 hover:text-white'}`}
+                                    >
+                                        {depth}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="h-px bg-white/5 my-2" />
+
+                {/* TOGGLES */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {[
+                        { key: 'softInference', label: 'Soft Inference', info: 'Allow the model to guess tendencies' },
+                        { key: 'forceExploit', label: 'Force Exploit', info: 'Ignore GTO safety checks' },
+                        { key: 'highlightLeaks', label: 'Spot Leaks', info: 'Focus on finding weaknesses' }
+                    ].map((toggle) => {
+                        const togglesKey = activeTab === 'profile' ? 'behavior_toggles' : 'hand_behavior_toggles';
+                        const currentToggles = settings?.[togglesKey] || { softInference: true, forceExploit: false, highlightLeaks: true };
+                        const isActive = currentToggles[toggle.key];
+
+                        return (
+                            <button
+                                key={toggle.key}
+                                type="button"
+                                onClick={() => {
+                                    const newToggles = { ...currentToggles, [toggle.key]: !isActive };
+                                    setSettings({ ...settings, [togglesKey]: newToggles });
+                                }}
+                                className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${isActive ? 'bg-gold/10 border-gold/30' : 'bg-white/5 border-white/5 opacity-50'}`}
+                            >
+                                <div className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-all ${isActive ? 'bg-gold border-gold' : 'border-white/20'}`}>
+                                    {isActive && <div className="w-1.5 h-1.5 bg-black rounded-full" />}
+                                </div>
+                                <div>
+                                    <div className={`text-[9px] font-black uppercase tracking-widest ${isActive ? 'text-gold' : 'text-gray-500'}`}>{toggle.label}</div>
+                                    <div className="text-[8px] text-gray-600 font-medium leading-none mt-0.5">{toggle.info}</div>
+                                </div>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 

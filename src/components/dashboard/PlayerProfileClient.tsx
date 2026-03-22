@@ -334,11 +334,13 @@ export function PlayerProfileClient({
                                         </div>
                                     ) : (
                                         <>
-                                            <blockquote className="text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight mb-10">
-                                                &quot;{player.ai_profile?.strategy || player.ai_exploit_strategy || "Gathering more data for neural mapping..."}&quot;
-                                            </blockquote>
+                                            <div className="max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gold/20 pr-4 mb-10">
+                                                <blockquote className="text-base md:text-lg font-medium text-gray-200 leading-relaxed tracking-tight italic">
+                                                    &quot;{player.ai_profile?.strategy || player.ai_exploit_strategy || "Gathering more data for neural mapping..."}&quot;
+                                                </blockquote>
+                                            </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-white/5">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-white/5">
                                                 <div className="space-y-2">
                                                     <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Archetype</p>
                                                     <div className="flex items-center gap-2">
