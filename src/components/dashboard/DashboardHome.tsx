@@ -188,7 +188,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                         <Link href="/players" className="text-[10px] text-gray-500 hover:text-gold uppercase tracking-widest font-bold transition-colors">View All</Link>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {topWhales.length > 0 ? (
                             topWhales.map(player => (
                                 <PlayerCard key={player.id} player={player} />
@@ -211,7 +211,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                         <Link href="/players" className="text-[10px] text-gray-500 hover:text-gold uppercase tracking-widest font-bold transition-colors">View All</Link>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {topRegs.length > 0 ? (
                             topRegs.map(player => (
                                 <PlayerCard key={player.id} player={player} isStrong />
@@ -257,7 +257,6 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
                     </div>
                 </div>
                 <div className="text-right">
-                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">Aggression</div>
                     <div className={`text-xl font-black ${isStrong ? 'text-red-400' : 'text-white'}`}>
                         {player.ai_aggression_score ?? player.aggression_score}%
                     </div>

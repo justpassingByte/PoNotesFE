@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ShieldAlert, Crosshair, AlertTriangle, Trash2 } from 'lucide-react';
+import { ShieldAlert, Crosshair, AlertTriangle, Trash2, Brain, Plus, History, FileText } from 'lucide-react';
 
 export interface PlayerHUDProps {
     id: string;
@@ -49,28 +49,26 @@ export function PlayerHUD({
             {/* Decorative Card Background Element */}
             <div className="absolute -right-10 -top-10 w-32 h-32 bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-felt-light/20 to-transparent opacity-50 rounded-full pointer-events-none group-hover:opacity-80 transition-opacity"></div>
 
-            <div className="flex justify-between items-start mb-6">
-                <div className="space-y-1">
-                    <h3 className="font-black text-2xl text-white tracking-tight truncate max-w-[200px]">{name}</h3>
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] block">{platformName || 'Unknown Platform'}</span>
+            <div className="flex justify-between items-start mb-4">
+                <div className="space-y-0.5">
+                    <h3 className="font-black text-xl text-white tracking-tight truncate max-w-[150px]">{name}</h3>
+                    <span className="text-[8px] text-gray-400 font-bold uppercase tracking-[0.1em] block">{platformName || 'Unknown Platform'}</span>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                    <div className={`px-3 py-1.5 text-[11px] font-black rounded-lg border ${getPlaystyleColor(playstyle)} transition-all uppercase tracking-tighter shadow-sm`}>
-                        {playstyle}
-                    </div>
+                <div className={`px-2 py-1 text-[9px] font-black rounded-lg border ${getPlaystyleColor(playstyle)} transition-all uppercase tracking-tight shadow-sm`}>
+                    {playstyle}
                 </div>
             </div>
 
             {/* AI HUD Section - HIGHLIGHTED */}
             {(ai_archetype || (ai_profile?.range_adjustments && ai_profile.range_adjustments.length > 0)) && (
                 <div className="bg-gold/5 border border-gold/10 rounded-2xl p-4 mb-6 shadow-inner">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-gold animate-pulse shadow-[0_0_8px_rgba(250,204,21,0.5)]"></span>
-                            <span className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">Neural Intelligence</span>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse shadow-[0_0_5px_rgba(250,204,21,0.5)]"></span>
+                            <Brain className="w-3 h-3 text-gold/80" />
                         </div>
                         {ai_archetype && (
-                            <span className={`px-2 py-0.5 text-[9px] font-black rounded border ${getPlaystyleColor(ai_archetype)}`}>
+                            <span className={`px-1.5 py-0.5 text-[8px] font-black rounded border ${getPlaystyleColor(ai_archetype)}`}>
                                 {ai_archetype}
                             </span>
                         )}
@@ -92,35 +90,39 @@ export function PlayerHUD({
                 </div>
             )}
 
-            <div className="grid grid-cols-2 gap-6 mt-auto">
-                <div className="flex flex-col">
-                    <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1.5 ml-1">Aggression</span>
-                    <div className="flex items-center space-x-3 bg-white/5 p-3 rounded-2xl border border-white/5">
-                        {getAggressionIcon(ai_aggression_score ?? aggressionScore)}
-                        <span className="text-2xl font-black font-mono text-white tracking-tighter">
-                            {ai_aggression_score ?? aggressionScore}%
-                        </span>
-                    </div>
+            {/* 3. Metrics Row (No Labels) */}
+            <div className="grid grid-cols-3 gap-3 mt-auto pt-4 border-t border-white/5">
+                <div className="flex flex-col items-center justify-center bg-white/5 py-3 rounded-2xl border border-white/10 group/stat hover:bg-white/10 transition-all">
+                    <div className="mb-1">{getAggressionIcon(ai_aggression_score ?? aggressionScore)}</div>
+                    <span className="text-xl font-black font-mono text-white tracking-tighter">
+                        {ai_aggression_score ?? aggressionScore}%
+                    </span>
                 </div>
 
-                <div className="flex flex-col">
-                    <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1.5 ml-1">Data Depth</span>
-                    <div className="flex items-center space-x-3 bg-white/5 p-3 rounded-2xl border border-white/5">
-                        <div className="w-2 h-2 rounded-full bg-gold shadow-[0_0_10px_rgba(250,204,21,0.3)]"></div>
-                        <span className="text-2xl font-black font-mono text-white tracking-tighter">{notesCount}</span>
+                <div className="flex flex-col items-center justify-center bg-white/5 py-3 rounded-2xl border border-white/10 group/stat hover:bg-white/10 transition-all">
+                    <div className="w-2 h-2 rounded-full bg-gold shadow-[0_0_10px_rgba(250,204,21,0.3)] mb-2"></div>
+                    <span className="text-xl font-black font-mono text-white tracking-tighter">{notesCount}</span>
+                </div>
+
+                <div className="flex flex-col items-center justify-center bg-white/5 py-3 rounded-2xl border border-white/10 group/stat hover:bg-white/10 transition-all">
+                    <div className="p-1 bg-gold/10 rounded-lg mb-1">
+                        <FileText className="w-3.5 h-3.5 text-gold" />
                     </div>
+                    <span className="text-xl font-black font-mono text-white tracking-tighter">{notesCount}</span>
                 </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center">
-                <span className="text-[9px] uppercase font-black tracking-[0.3em] text-gold/70 group-hover:text-gold transition-colors">
-                    FULL DATA
-                </span>
+            <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
+                <div className="flex items-center gap-1.5">
+                    <History className="w-3.5 h-3.5 text-gold/50" />
+                    <span className="text-[8px] font-black tracking-widest text-gold/70">ARCHIVE</span>
+                </div>
                 <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddNote?.(); }}
-                    className="bg-white/5 hover:bg-white/10 text-white text-[10px] px-3 py-1.5 rounded-full transition-all border border-white/10 hover:border-white/20 font-bold uppercase tracking-tight"
+                    className="bg-white/5 hover:bg-white/10 text-white p-2 rounded-full transition-all border border-white/10 hover:border-white/20"
+                    title="Quick Note"
                 >
-                    Quick Note
+                    <Plus className="w-3.5 h-3.5" />
                 </button>
             </div>
         </Link>

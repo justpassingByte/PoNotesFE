@@ -79,6 +79,8 @@ interface PlayerDetails {
         looseness_score: number;
         leaks: string[];
         strategy: string;
+        range_adjustments?: string[];
+        gto_deviation_reason?: string;
     } | null;
     ai_exploit_strategy?: string | null;
     usage?: {
@@ -396,18 +398,19 @@ export function PlayerProfileClient({
                                         <Target className="w-3 h-3 text-gold" />
                                     </h3>
                                     <div className="space-y-4">
-                                        <div className="flex justify-between items-center text-xs">
-                                            <span className="text-gray-500 uppercase tracking-widest font-bold">Open-Raise</span>
-                                            <span className="text-white font-mono">Tight-Aggressive</span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-xs">
-                                            <span className="text-gray-500 uppercase tracking-widest font-bold">Cold-Call</span>
-                                            <span className="text-white font-mono">Under-Defending</span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-xs">
-                                            <span className="text-gray-500 uppercase tracking-widest font-bold">3-Bet</span>
-                                            <span className="text-white font-mono">Polarized</span>
-                                        </div>
+                                        {(player.ai_profile?.range_adjustments && player.ai_profile.range_adjustments.length > 0) ? (
+                                            player.ai_profile.range_adjustments.map((adj, idx) => (
+                                                <div key={idx} className="flex justify-between items-center text-xs group">
+                                                    <span className="text-gray-500 uppercase tracking-widest font-black flex items-center gap-2">
+                                                        <div className="w-1 h-1 rounded-full bg-gold/50 group-hover:bg-gold transition-colors"></div>
+                                                        ADJUSTMENT {idx + 1}
+                                                    </span>
+                                                    <span className="text-white font-mono font-bold">{adj}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-[10px] text-gray-600 italic uppercase">Neural mapping pending...</div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
