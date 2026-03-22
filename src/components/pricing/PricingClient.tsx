@@ -56,8 +56,9 @@ export function PricingClient({ userEmail, currentTier = "FREE" }: { userEmail?:
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-                const res = await fetch(`${baseUrl}/api/admin/pricing/public`, { credentials: "include" });
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+                const res = await fetch(`${baseUrl}/api/payments/public-plans`, { credentials: "include" });
+                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
                 const json = await res.json();
                 if (json.success && json.data.length > 0) {
                     setPlans(json.data);

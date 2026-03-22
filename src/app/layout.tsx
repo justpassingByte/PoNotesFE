@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   description: "Dumbfound your opponents with Tier-1 AI player profiling, shorthand note parsing, and professional exploitative strategies. The definitive poker database for serious grinders.",
   keywords: ["poker analysis", "player profiling", "poker notes", "GTO", "exploitative strategy", "VillainVault"],
   authors: [{ name: "VillainVault Elite Team" }],
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
