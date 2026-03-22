@@ -429,17 +429,17 @@ export function HandAnalyzer() {
                 ) : (
                     <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-full min-h-[200px] bg-black/40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gold/40 transition-all group p-4"
+                        className="w-full min-h-[160px] bg-black/40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gold/40 transition-all group p-4"
                     >
                         {imagePreview ? (
-                            <div className="relative group w-full flex justify-center">
-                                <img src={imagePreview} alt="Hand screenshot" className="max-h-[500px] w-auto rounded-xl shadow-2xl border border-white/10" />
-                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
-                                    <div className="bg-gold text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2">
-                                        <ImageIcon className="w-4 h-4" />
-                                        RE-UPLOAD IMAGE
-                                    </div>
+                            <div className="flex flex-col items-center justify-center py-4">
+                                <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-emerald-900/20">
+                                    <CheckCircle className="w-8 h-8 text-emerald-400" />
                                 </div>
+                                <p className="text-base text-emerald-400 font-bold mb-1">Hand Screenshot Loaded Successfully</p>
+                                <p className="text-sm text-gray-500 font-medium group-hover:text-gold transition-colors block">
+                                    Click, Drag, or Paste to change image
+                                </p>
                             </div>
                         ) : (
                             <>
