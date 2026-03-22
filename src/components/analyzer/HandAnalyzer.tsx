@@ -45,10 +45,10 @@ interface OCRResult {
 interface HandAnalysis {
     summary?: string;
     reasoning_trace: string[];
-    mistakes: {
-        street: string;
-        player: string;
-        description: string;
+    mistakes: { 
+        street: string; 
+        player: string; 
+        description: string; 
         better_line?: string;
         gto_deviation_reason?: string;
         severity?: string;
@@ -139,7 +139,7 @@ function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (val: string
                     {SUITS.map(s => (
                         <button
                             key={s}
-                            onClick={() => { }} // Suits are selected via common grid
+                            onClick={() => {}} // Suits are selected via common grid
                             className={`h-12 flex items-center justify-center rounded-xl text-2xl border ${SUIT_COLORS[s]} bg-white/5 border-white/5`}
                         >
                             {SUIT_SYMBOLS[s]}
@@ -225,45 +225,16 @@ export function HandAnalyzer() {
     const [analysis, setAnalysis] = useState<HandAnalysis | null>(null);
     const [fromCache, setFromCache] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
+    
     // Phase 4 UI state
     const [editingCard, setEditingCard] = useState<{ type: 'board' | 'hole', index: number, pIdx?: number } | null>(null);
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
-
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const compressImage = (file: File): Promise<string> => {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target?.result as string;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1280;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > MAX_WIDTH) {
-                        height = Math.round((height * MAX_WIDTH) / width);
-                        width = MAX_WIDTH;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx?.drawImage(img, 0, 0, width, height);
-                    // Use jpeg with 0.7 quality to significantly reduce size
-                    resolve(canvas.toDataURL('image/jpeg', 0.7));
-                };
-            };
-        });
-    };
 
     // clipboard paste support
     useEffect(() => {
-        const handlePaste = async (e: ClipboardEvent) => {
+        const handlePaste = (e: ClipboardEvent) => {
             const items = e.clipboardData?.items;
             if (!items) return;
 
@@ -272,9 +243,12 @@ export function HandAnalyzer() {
                     const blob = items[i].getAsFile();
                     if (!blob) continue;
 
-                    const compressedBase64 = await compressImage(blob);
-                    setImagePreview(compressedBase64);
-                    setInputType("image");
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        setImagePreview(event.target?.result as string);
+                        setInputType("image");
+                    };
+                    reader.readAsDataURL(blob);
                     break;
                 }
             }
@@ -284,11 +258,12 @@ export function HandAnalyzer() {
         return () => window.removeEventListener("paste", handlePaste);
     }, []);
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const compressedBase64 = await compressImage(file);
-        setImagePreview(compressedBase64);
+        const reader = new FileReader();
+        reader.onload = () => setImagePreview(reader.result as string);
+        reader.readAsDataURL(file);
     };
 
     const handleParse = async () => {
@@ -311,8 +286,8 @@ export function HandAnalyzer() {
             const json = await res.json();
             if (!json.success) {
                 // If quota exceeded, include reset date in error message
-                const resetInfo = json.usage?.resetsAt
-                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}`
+                const resetInfo = json.usage?.resetsAt 
+                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}` 
                     : '';
                 throw new Error((json.error || "Parsing failed") + resetInfo);
             }
@@ -335,16 +310,16 @@ export function HandAnalyzer() {
             const res = await fetch(`${API.handAnalyze}/analyze`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+                body: JSON.stringify({ 
                     handId: parsedHand.id,
-                    parsedData: parsedHand.parsed_data
+                    parsedData: parsedHand.parsed_data 
                 }),
             });
 
             const json = await res.json();
             if (!json.success) {
-                const resetInfo = json.usage?.resetsAt
-                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}`
+                const resetInfo = json.usage?.resetsAt 
+                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}` 
                     : '';
                 throw new Error((json.error || "Analysis failed") + resetInfo);
             }
@@ -370,19 +345,19 @@ export function HandAnalyzer() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageHex: imagePreview, // ideally this would be the crop, but passing preview for now
-                    cardName: corrected?.name || 'all_board',
+                    cardName: corrected?.name || 'all_board', 
                     action: action,
                     correctedName: corrected?.revised || ''
                 })
             });
             if (action === 'confirm') {
                 // visually mark as confirmed
-                setParsedHand({
-                    ...parsedHand!,
-                    parsed_data: {
-                        ...handData,
-                        ocr_result: { ...handData.ocr_result, decision: 'auto_accept' }
-                    }
+                setParsedHand({ 
+                    ...parsedHand!, 
+                    parsed_data: { 
+                        ...handData, 
+                        ocr_result: { ...handData.ocr_result, decision: 'auto_accept' } 
+                    } 
                 });
             }
         } catch (err) {
@@ -522,11 +497,11 @@ export function HandAnalyzer() {
                     {/* Phase 4.1: OCR Decision Banner */}
                     {handData.ocr_result && (
                         <div className={`mb-6 p-4 rounded-xl border flex items-center justify-between
-                            ${handData.ocr_result.decision === 'auto_accept'
-                                ? 'bg-emerald-500/5 border-emerald-500/20'
+                            ${handData.ocr_result.decision === 'auto_accept' 
+                                ? 'bg-emerald-500/5 border-emerald-500/20' 
                                 : handData.ocr_result.decision === 'confirm'
-                                    ? 'bg-amber-500/5 border-amber-500/20'
-                                    : 'bg-red-500/5 border-red-500/20'}`}>
+                                ? 'bg-amber-500/5 border-amber-500/20'
+                                : 'bg-red-500/5 border-red-500/20'}`}>
                             <div className="flex items-center gap-4">
                                 <OCRConfidenceBadge score={handData.ocr_result.confidence} />
                                 <div>
@@ -540,7 +515,7 @@ export function HandAnalyzer() {
                             </div>
                             {handData.ocr_result.decision !== 'auto_accept' && (
                                 <div className="flex items-center gap-2">
-                                    <button
+                                    <button 
                                         onClick={() => handleFeedback('confirm')}
                                         disabled={isSubmittingFeedback}
                                         className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all"
@@ -560,15 +535,15 @@ export function HandAnalyzer() {
                                 <div className="flex gap-1.5 flex-wrap">
                                     {handData.board.length > 0 ? (
                                         handData.board.map((c: string, i: number) => (
-                                            <button
-                                                key={i}
+                                            <button 
+                                                key={i} 
                                                 onClick={() => setEditingCard({ type: 'board', index: i })}
                                             >
                                                 <CardChip card={c} />
                                             </button>
                                         ))
                                     ) : (
-                                        <button
+                                        <button 
                                             onClick={() => setEditingCard({ type: 'board', index: 0 })}
                                             className="text-gold text-xs border border-gold/30 px-2 py-1 rounded bg-gold/5 hover:bg-gold/10 transition-colors"
                                         >
@@ -579,7 +554,7 @@ export function HandAnalyzer() {
                             </div>
                             <div>
                                 <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1">Total Pot</span>
-                                <input
+                                <input 
                                     type="number"
                                     value={handData.pot || 0}
                                     onChange={(e) => setParsedHand({ ...parsedHand!, parsed_data: { ...handData, pot: parseFloat(e.target.value) } })}
@@ -588,7 +563,7 @@ export function HandAnalyzer() {
                                 {handData.winner && (
                                     <div className="mt-1 flex items-center gap-1.5 text-xs">
                                         <span className="text-gray-400">Winner:</span>
-                                        <input
+                                        <input 
                                             value={handData.winner}
                                             onChange={(e) => setParsedHand({ ...parsedHand!, parsed_data: { ...handData, winner: e.target.value } })}
                                             className="bg-transparent text-emerald-400 font-medium border-none focus:ring-0 p-0 text-sm"
@@ -605,7 +580,7 @@ export function HandAnalyzer() {
                                 {handData.players?.map((p: any, i: number) => (
                                     <div key={i} className="bg-black/30 rounded-lg px-3 py-2 border border-white/5 flex items-center justify-between group hover:border-gold/30 transition-colors">
                                         <div className="flex-1">
-                                            <input
+                                            <input 
                                                 value={p.name}
                                                 onChange={(e) => {
                                                     const newPlayers = [...handData.players];
@@ -620,7 +595,7 @@ export function HandAnalyzer() {
                                         </div>
                                         <div className="flex items-center gap-1 ml-2">
                                             {p.hole_cards?.map((c: string, j: number) => (
-                                                <button
+                                                <button 
                                                     key={j}
                                                     onClick={() => setEditingCard({ type: 'hole', index: j, pIdx: i })}
                                                 >
@@ -629,7 +604,7 @@ export function HandAnalyzer() {
                                             ))}
                                             {p.stack != null && (
                                                 <div className="flex items-center gap-0.5">
-                                                    <input
+                                                    <input 
                                                         type="number"
                                                         value={p.stack}
                                                         onChange={(e) => {
@@ -690,7 +665,7 @@ export function HandAnalyzer() {
             {analysis && (
                 <div className="space-y-6 animate-in zoom-in-95 duration-500 pb-12">
                     <div className="h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent my-4" />
-
+                    
                     {/* Summary & Reasoning Trace */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="md:col-span-2 bg-gradient-to-br from-card to-felt-dark/30 border border-gold/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
@@ -704,7 +679,7 @@ export function HandAnalyzer() {
                                 Strategic Summary
                             </h3>
                             <p className="text-gray-300 text-sm leading-relaxed sm:text-base">{analysis.summary}</p>
-
+                            
                             {analysis.final_verdict && (
                                 <div className="mt-6 flex items-center gap-4 border-t border-white/5 pt-4">
                                     <div className="flex flex-col">
@@ -717,8 +692,9 @@ export function HandAnalyzer() {
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-[10px] text-gray-500 uppercase font-black">Strategy Type</span>
-                                        <span className={`text-[11px] font-black px-2 py-0.5 rounded uppercase ${analysis.final_verdict.suggestion_type === 'Exploit' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
-                                            }`}>
+                                        <span className={`text-[11px] font-black px-2 py-0.5 rounded uppercase ${
+                                            analysis.final_verdict.suggestion_type === 'Exploit' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
+                                        }`}>
                                             {analysis.final_verdict.suggestion_type}
                                         </span>
                                     </div>
@@ -771,7 +747,7 @@ export function HandAnalyzer() {
                                                     // Normalize street to TitleCase for Note API validation
                                                     const rawStreet = m.street?.toLowerCase() || 'postflop';
                                                     const normalizedStreet = rawStreet.charAt(0).toUpperCase() + rawStreet.slice(1);
-
+                                                    
                                                     return (
                                                         <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 transition-all hover:bg-white/[0.04] group/item">
                                                             <div className="flex items-center justify-between mb-2">
@@ -785,7 +761,7 @@ export function HandAnalyzer() {
                                                                 <SaveNoteButton
                                                                     isAutosaved={m.player?.toLowerCase() !== 'hero'}
                                                                     noteData={{
-                                                                        player_name: m.player,
+                                                                        player_name: m.player, 
                                                                         content: m.description,
                                                                         street: normalizedStreet,
                                                                         note_type: "Custom",
@@ -794,18 +770,18 @@ export function HandAnalyzer() {
                                                                     }}
                                                                 />
                                                             </div>
-                                                            <p className="text-sm text-gray-300 leading-snug">{m.description}</p>
-                                                            {m.better_line && (
-                                                                <div className="mt-3 text-[11px] bg-emerald-500/5 border border-emerald-500/10 p-2 rounded">
-                                                                    <span className="text-emerald-400 font-bold uppercase tracking-tighter mr-2">Better Line:</span>
-                                                                    <span className="text-gray-400 italic">{m.better_line}</span>
-                                                                </div>
-                                                            )}
-                                                            {m.gto_deviation_reason && (
-                                                                <div className="mt-2 text-[10px] text-purple-400/80 italic leading-tight">
-                                                                    💡 {m.gto_deviation_reason}
-                                                                </div>
-                                                            )}
+                                                        <p className="text-sm text-gray-300 leading-snug">{m.description}</p>
+                                                        {m.better_line && (
+                                                            <div className="mt-3 text-[11px] bg-emerald-500/5 border border-emerald-500/10 p-2 rounded">
+                                                                <span className="text-emerald-400 font-bold uppercase tracking-tighter mr-2">Better Line:</span>
+                                                                <span className="text-gray-400 italic">{m.better_line}</span>
+                                                            </div>
+                                                        )}
+                                                        {m.gto_deviation_reason && (
+                                                            <div className="mt-2 text-[10px] text-purple-400/80 italic leading-tight">
+                                                                💡 {m.gto_deviation_reason}
+                                                            </div>
+                                                        )}
                                                         </div>
                                                     );
                                                 })
@@ -840,10 +816,10 @@ export function HandAnalyzer() {
 
             {/* Premium Card Picker Overlay */}
             {editingCard && (
-                <CardPicker
+                <CardPicker 
                     currentVal={
-                        editingCard.type === 'board'
-                            ? handData.board[editingCard.index]
+                        editingCard.type === 'board' 
+                            ? handData.board[editingCard.index] 
                             : handData.players[editingCard.pIdx!].hole_cards![editingCard.index]
                     }
                     onSelect={(val) => {
