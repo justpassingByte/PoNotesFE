@@ -4,7 +4,7 @@
 const IS_SERVER = typeof window === 'undefined';
 const API_BASE_URL = IS_SERVER
   ? 'http://backend:3001'
-  : '');
+  : '';
 
 export const API = {
   base: API_BASE_URL,
