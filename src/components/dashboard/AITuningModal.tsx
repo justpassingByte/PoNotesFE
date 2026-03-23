@@ -170,7 +170,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Strategic Architecture</label>
                         <div className="grid grid-cols-3 gap-2 p-1 bg-black/40 border border-white/5 rounded-2xl h-[58px]">
                             {['Exploit', 'Balanced', 'GTO'].map((style) => {
-                                const currentStyle = activeTab === 'profile' ? (settings?.ai_style || "Balanced") : (settings?.hand_style || "Balanced");
+                                const currentStyle = activeTab === 'profile' ? (settings?.ai_style || "Exploit") : (settings?.hand_style || "Exploit");
                                 return (
                                     <button
                                         key={style}
@@ -202,14 +202,14 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                     <div className="space-y-3">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 flex justify-between">
                             Aggression Bias
-                            <span className="text-gold font-mono font-bold tracking-widest">{activeTab === 'profile' ? (settings?.aggression_bias || 50) : (settings?.hand_aggression_bias || 50)}%</span>
+                            <span className="text-gold font-mono font-bold tracking-widest">{activeTab === 'profile' ? (settings?.aggression_bias || 85) : (settings?.hand_aggression_bias || 85)}%</span>
                         </label>
                         <input 
                             type="range"
                             min="0"
                             max="100"
                             step="5"
-                            value={activeTab === 'profile' ? (settings?.aggression_bias || 50) : (settings?.hand_aggression_bias || 50)}
+                            value={activeTab === 'profile' ? (settings?.aggression_bias || 85) : (settings?.hand_aggression_bias || 85)}
                             onChange={(e) => setSettings({ 
                                 ...settings, 
                                 [activeTab === 'profile' ? 'aggression_bias' : 'hand_aggression_bias']: parseInt(e.target.value) 
