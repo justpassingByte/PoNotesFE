@@ -337,37 +337,52 @@ export function PlayerProfileClient({
                                     ) : (
                                         <>
                                             <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gold/20 pr-4 mb-10 space-y-4">
-                                                {Array.isArray(player.ai_profile?.strategy) ? (
-                                                    player.ai_profile.strategy.map((move: any, i: number) => (
-                                                        <div key={i} className="bg-black/30 border border-white/10 rounded-xl p-4">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <span className="text-[10px] text-gold font-black uppercase tracking-widest bg-gold/10 px-2 py-0.5 rounded">{move.node}</span>
+                                                {(() => {
+                                                    const rawStrategy = player.ai_profile?.strategy || player.ai_exploit_strategy;
+                                                    if (!rawStrategy) {
+                                                        return <blockquote className="text-base md:text-lg font-medium text-gray-200 leading-relaxed tracking-tight italic">&quot;Gathering more data for neural mapping...&quot;</blockquote>;
+                                                    }
+                                                    
+                                                    // Normalize to array if it's an object/array
+                                                    const strategyArray = Array.isArray(rawStrategy) 
+                                                        ? rawStrategy 
+                                                        : (typeof rawStrategy === 'object' && rawStrategy !== null ? [rawStrategy] : null);
+
+                                                    if (strategyArray) {
+                                                        return strategyArray.map((move: any, i: number) => (
+                                                            <div key={i} className="bg-black/30 border border-white/10 rounded-xl p-4">
+                                                                <div className="flex items-center gap-2 mb-2">
+                                                                    <span className="text-[10px] text-gold font-black uppercase tracking-widest bg-gold/10 px-2 py-0.5 rounded">{move.node || 'GENERAL'}</span>
+                                                                </div>
+                                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
+                                                                    <div>
+                                                                        <p className="text-[8px] text-gray-500 uppercase font-black">Action</p>
+                                                                        <p className="text-white text-xs font-bold leading-tight mt-1">{move.action || '-'}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-[8px] text-gray-500 uppercase font-black">Range</p>
+                                                                        <p className="text-white text-xs font-bold leading-tight mt-1">{move.range || '-'}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-[8px] text-gray-500 uppercase font-black">Structure</p>
+                                                                        <p className="text-white text-xs font-bold leading-tight mt-1">{move.structure || '-'}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-[8px] text-gray-500 uppercase font-black">Sizing / Freq</p>
+                                                                        <p className="text-white text-xs font-bold leading-tight mt-1">{move.sizing || '-'} ({move.frequency || '-'})</p>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
-                                                                <div>
-                                                                    <p className="text-[8px] text-gray-500 uppercase font-black">Action</p>
-                                                                    <p className="text-white text-xs font-bold leading-tight mt-1">{move.action}</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-[8px] text-gray-500 uppercase font-black">Range</p>
-                                                                    <p className="text-white text-xs font-bold leading-tight mt-1">{move.range}</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-[8px] text-gray-500 uppercase font-black">Structure</p>
-                                                                    <p className="text-white text-xs font-bold leading-tight mt-1">{move.structure}</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-[8px] text-gray-500 uppercase font-black">Sizing / Freq</p>
-                                                                    <p className="text-white text-xs font-bold leading-tight mt-1">{move.sizing} ({move.frequency})</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <blockquote className="text-base md:text-lg font-medium text-gray-200 leading-relaxed tracking-tight italic">
-                                                        &quot;{player.ai_profile?.strategy || player.ai_exploit_strategy || "Gathering more data for neural mapping..."}&quot;
-                                                    </blockquote>
-                                                )}
+                                                        ));
+                                                    }
+
+                                                    // Fallback for primitive strings
+                                                    return (
+                                                        <blockquote className="text-base md:text-lg font-medium text-gray-200 leading-relaxed tracking-tight italic">
+                                                            &quot;{String(rawStrategy)}&quot;
+                                                        </blockquote>
+                                                    );
+                                                })()}
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-white/5">

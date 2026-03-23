@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Brain, Save, RefreshCw, AlertCircle, Info, Zap, ChevronDown, ChevronUp } from "lucide-react";
-import { getAISettings, updateAISettings } from "@/app/actions";
+import { getAISettings, updateAISettings, getAIPreviewAction } from "@/app/actions";
 
 interface AITuningModalProps {
     onClose: () => void;
@@ -10,12 +10,32 @@ interface AITuningModalProps {
 
 export function AITuningModal({ onClose }: AITuningModalProps) {
     const [settings, setSettings] = useState<any>(null);
+    const [previews, setPreviews] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [activeTab, setActiveTab] = useState<'profile' | 'hand'>('profile');
     const [showPrompt, setShowPrompt] = useState(false);
+
+    // REAL-TIME PREVIEW: Update prompts as settings or tab changes
+    useEffect(() => {
+        if (!settings) return;
+        const fetchPreview = async () => {
+            const data = await getAIPreviewAction(settings);
+            if (data) setPreviews(data);
+        };
+        const timer = setTimeout(fetchPreview, 200); 
+        return () => clearTimeout(timer);
+    }, [
+        activeTab,
+        settings?.ai_style, 
+        settings?.hand_style, 
+        settings?.aggression_bias, 
+        settings?.hand_aggression_bias, 
+        settings?.insight_depth, 
+        settings?.hand_insight_depth
+    ]);
 
     useEffect(() => {
         async function loadSettings() {
@@ -155,11 +175,22 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                                     <button
                                         key={style}
                                         type="button"
-                                        onClick={() => setSettings({ 
-                                            ...settings, 
-                                            [activeTab === 'profile' ? 'ai_style' : 'hand_style']: style 
-                                        })}
-                                        className={`flex flex-col items-center justify-center text-[9px] font-black uppercase tracking-widest rounded-xl transition-all ${currentStyle === style ? 'bg-gold/10 text-gold border border-gold/30' : 'text-gray-500 hover:text-white'}`}
+                                        onClick={() => {
+                                            const presets: Record<string, number> = {
+                                                'Exploit': 85,
+                                                'Balanced': 50,
+                                                'GTO': 40
+                                            };
+                                            const styleField = activeTab === 'profile' ? 'ai_style' : 'hand_style';
+                                            const biasField = activeTab === 'profile' ? 'aggression_bias' : 'hand_aggression_bias';
+                                            
+                                            setSettings({ 
+                                                ...settings, 
+                                                [styleField]: style,
+                                                [biasField]: presets[style] // Automatic slider jump based on preset
+                                            });
+                                        }}
+                                        className={`flex flex-col items-center justify-center text-[9px] font-black uppercase tracking-widest rounded-xl transition-all ${currentStyle === style ? 'bg-gold text-black shadow-lg font-black' : 'text-gray-500 hover:text-white'}`}
                                     >
                                         {style}
                                     </button>
@@ -248,7 +279,9 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-gold/20 to-transparent blur opacity-25 group-hover:opacity-40 transition-opacity rounded-3xl pointer-events-none"></div>
                         <textarea 
-                            value={activeTab === 'profile' ? (settings?.system_prompt || "") : (settings?.analysis_prompt || "")}
+                            value={activeTab === 'profile' 
+                                ? (settings?.system_prompt || previews?.system_prompt || "") 
+                                : (settings?.analysis_prompt || previews?.analysis_prompt || "")}
                             onChange={(e) => {
                                 if (activeTab === 'profile') setSettings({ ...settings, system_prompt: e.target.value });
                                 else setSettings({ ...settings, analysis_prompt: e.target.value });

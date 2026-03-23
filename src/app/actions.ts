@@ -436,3 +436,25 @@ export async function updateAISettings(data: any): Promise<any> {
         return { success: false, error: String(err) };
     }
 }
+/**
+ * Server Action: preview AI prompts based on UI config.
+ */
+export async function getAIPreviewAction(data: any): Promise<any> {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    try {
+        const res = await fetch(`${API.settings}/ai/preview`, { 
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        return json.success ? json.data : null;
+    } catch (err) {
+        console.error("Failed to fetch AI preview", err);
+        return null;
+    }
+}
