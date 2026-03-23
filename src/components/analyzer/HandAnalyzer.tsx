@@ -336,7 +336,7 @@ export function HandAnalyzer() {
     const handData = (parsedHand?.parsed_data as any) || parsedHand;
 
     // ── Logic Helpers ────────────────────────────────────────────────────────
-    async function handleFeedback(action: 'confirm' | 'edit' | 'reject', corrected?: { name: string, revised: string }) {
+    async function handleFeedback(action: 'confirm' | 'edit' | 'reject', corrected?: { name: string, revised: string, index?: number }) {
         setIsSubmittingFeedback(true);
         try {
             // Forward to backend which forwards to OCR service
@@ -347,7 +347,8 @@ export function HandAnalyzer() {
                     imageHex: imagePreview, // ideally this would be the crop, but passing preview for now
                     cardName: corrected?.name || 'all_board', 
                     action: action,
-                    correctedName: corrected?.revised || ''
+                    correctedName: corrected?.revised || '',
+                    cardIndex: corrected?.index
                 })
             });
             if (action === 'confirm') {
@@ -375,7 +376,7 @@ export function HandAnalyzer() {
             const oldName = newBoard[editingCard.index];
             newBoard[editingCard.index] = newVal;
             setParsedHand({ ...parsedHand, parsed_data: { ...handData, board: newBoard } });
-            handleFeedback('edit', { name: oldName, revised: newVal });
+            handleFeedback('edit', { name: oldName, revised: newVal, index: editingCard.index });
         } else {
             const newPlayers = [...handData.players];
             const p = newPlayers[editingCard.pIdx!];
@@ -384,7 +385,7 @@ export function HandAnalyzer() {
             newCards[editingCard.index] = newVal;
             newPlayers[editingCard.pIdx!] = { ...p, hole_cards: newCards };
             setParsedHand({ ...parsedHand, parsed_data: { ...handData, players: newPlayers } });
-            handleFeedback('edit', { name: oldName, revised: newVal });
+            handleFeedback('edit', { name: oldName, revised: newVal, index: editingCard.index });
         }
     }
 
@@ -664,19 +665,90 @@ export function HandAnalyzer() {
 
                                 {/* Actions */}
                                 <div className="space-y-4 pt-4">
-                                    <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Tactical Log Review</span>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Tactical Log Review & Edit</span>
+                                        <span className="text-[9px] text-amber-500/70 border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 rounded italic">Text corrections do not auto-learn yet, but ensure AI accuracy!</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                         {(["preflop", "flop", "turn", "river"] as const).map((street) => {
-                                            const actions = handData.actions?.[street];
-                                            if (!actions || actions.length === 0) return null;
+                                            const actions = handData.actions?.[street] || [];
                                             return (
                                                 <div key={street} className="bg-black/40 rounded-2xl p-4 border border-white/5 shadow-inner">
                                                     <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
                                                         <span className="text-[10px] text-gold font-black uppercase tracking-[0.2em] italic">{street}</span>
-                                                        <span className="text-[8px] text-gray-600 font-bold uppercase tracking-widest">{actions.length} PURE ACTIONS</span>
+                                                        <span className="text-[8px] text-gray-600 font-bold uppercase tracking-widest">{actions.length} ACTIONS</span>
                                                     </div>
-                                                    <div className="space-y-3">
-                                                        {actions.map((a: any, i: number) => <ActionBadge key={i} action={a} />)}
+                                                    <div className="space-y-2">
+                                                        {actions.map((a: any, i: number) => (
+                                                            <div key={i} className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap bg-white/[0.02] p-1.5 rounded-lg border border-white/5 hover:border-gold/30 transition-colors">
+                                                                <input 
+                                                                    value={a.player} 
+                                                                    onChange={(e) => {
+                                                                        const newActions = { ...handData.actions };
+                                                                        newActions[street][i] = { ...a, player: e.target.value };
+                                                                        setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                                                    }}
+                                                                    placeholder="Player"
+                                                                    className="bg-black/50 text-gray-300 text-xs px-2 py-1 rounded border border-white/5 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 w-24 flex-shrink" 
+                                                                />
+                                                                <select 
+                                                                    value={a.action} 
+                                                                    onChange={(e) => {
+                                                                        const newActions = { ...handData.actions };
+                                                                        newActions[street][i] = { ...a, action: e.target.value };
+                                                                        setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                                                    }}
+                                                                    className="bg-black/50 text-gray-300 text-xs px-1 py-1 rounded border border-white/5 focus:border-gold/50 uppercase flex-shrink max-w-[80px]"
+                                                                >
+                                                                    <option value="fold">Fold</option>
+                                                                    <option value="check">Check</option>
+                                                                    <option value="call">Call</option>
+                                                                    <option value="bet">Bet</option>
+                                                                    <option value="raise">Raise</option>
+                                                                    <option value="all-in">All-in</option>
+                                                                    <option value="post">Post</option>
+                                                                </select>
+                                                                
+                                                                <div className="flex items-center gap-1 bg-black/50 rounded border border-white/5 px-1 py-1">
+                                                                    <input 
+                                                                        type="number" 
+                                                                        value={a.amount === undefined || a.amount === null ? '' : a.amount} 
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            const newActions = { ...handData.actions };
+                                                                            newActions[street][i] = { ...a, amount: val === '' ? undefined : parseFloat(val) };
+                                                                            setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                                                        }}
+                                                                        placeholder="0"
+                                                                        className="bg-transparent text-gold text-xs px-1 w-12 focus:outline-none font-mono text-right" 
+                                                                    />
+                                                                    <span className="text-[9px] text-amber-700 font-black">BB</span>
+                                                                </div>
+
+                                                                <button 
+                                                                    onClick={() => {
+                                                                        const newActions = { ...handData.actions };
+                                                                        newActions[street].splice(i, 1);
+                                                                        setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                                                    }}
+                                                                    className="text-gray-500 hover:text-red-400 p-1 transition-colors ml-auto"
+                                                                >
+                                                                    <XCircle className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                        
+                                                        <button 
+                                                            onClick={() => {
+                                                                const newActions = { ...handData.actions };
+                                                                if (!newActions[street]) newActions[street] = [];
+                                                                newActions[street].push({ player: 'Hero', action: 'check' });
+                                                                setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                                            }}
+                                                            className="w-full mt-2 py-1.5 border border-dashed border-white/10 rounded-lg text-[10px] text-gray-500 hover:text-gold hover:border-gold/30 hover:bg-gold/5 transition-all uppercase tracking-widest font-bold"
+                                                        >
+                                                            + Add Action
+                                                        </button>
                                                     </div>
                                                 </div>
                                             );
