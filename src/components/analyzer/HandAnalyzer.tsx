@@ -48,6 +48,7 @@ interface HandAnalysis {
     mistakes: { 
         street: string; 
         player: string; 
+        position?: string;
         description: string; 
         better_line?: string;
         gto_deviation_reason?: string;
@@ -640,7 +641,7 @@ export function HandAnalyzer() {
                                                                         newActions[street][i] = { ...a, position: e.target.value.toUpperCase() };
                                                                         setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                     }}
-                                                                    className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black px-1.5 py-1 rounded border border-emerald-500/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 w-10 text-center uppercase" 
+                                                                    className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black px-1.5 py-1 rounded border border-emerald-500/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 w-9 shrink-0 text-center uppercase" 
                                                                 />
                                                                 <input 
                                                                     value={a.player} 
@@ -650,7 +651,7 @@ export function HandAnalyzer() {
                                                                         setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                     }}
                                                                     placeholder="Player"
-                                                                    className="bg-black/50 text-gray-300 text-[10px] px-2 py-1 rounded border border-white/5 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 w-24 min-w-0 flex-1 truncate" 
+                                                                    className="bg-black/50 text-gray-300 text-[10px] px-2 py-1 rounded border border-white/5 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 min-w-[36px] flex-1 shrink truncate" 
                                                                 />
                                                                 <select 
                                                                     value={a.action} 
@@ -659,7 +660,7 @@ export function HandAnalyzer() {
                                                                         newActions[street][i] = { ...a, action: e.target.value };
                                                                         setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                     }}
-                                                                    className="bg-black/50 text-gray-300 text-[10px] px-1 py-1 rounded border border-white/5 focus:border-gold/50 uppercase w-16"
+                                                                    className="bg-black/50 text-gray-300 text-[10px] px-0.5 py-1 rounded border border-white/5 focus:border-gold/50 uppercase w-16 shrink-0"
                                                                 >
                                                                     <option value="fold">Fold</option>
                                                                     <option value="check">Check</option>
@@ -670,7 +671,7 @@ export function HandAnalyzer() {
                                                                     <option value="post">Post</option>
                                                                 </select>
                                                                 
-                                                                <div className="flex items-center gap-0.5 bg-black/50 rounded border border-white/5 px-1 py-1 w-16">
+                                                                <div className="flex items-center gap-0.5 bg-black/50 rounded border border-white/5 px-1 py-1 w-14 shrink-0">
                                                                     <input 
                                                                         type="number" 
                                                                         value={a.amount === undefined || a.amount === null ? '' : a.amount} 
@@ -691,7 +692,7 @@ export function HandAnalyzer() {
                                                                         newActions[street].splice(i, 1);
                                                                         setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                     }}
-                                                                    className="text-gray-600 hover:text-red-400 p-1 transition-colors"
+                                                                    className="text-gray-600 hover:text-red-400 p-1 shrink-0 transition-colors"
                                                                 >
                                                                     <XCircle className="w-3 h-3" />
                                                                 </button>
@@ -808,7 +809,9 @@ export function HandAnalyzer() {
                                 { title: "Villain Detected Leaks", filter: "others", color: "amber", icon: <AlertTriangle className="w-4 h-4" /> }
                             ].map((group) => {
                                 const items = analysis.mistakes?.filter(m => {
-                                    const isHero = m.player?.toLowerCase() === 'hero';
+                                    const heroPlayer = parsedHand?.parsed_data?.players?.find(p => p.hole_cards && p.hole_cards.length > 0);
+                                    const heroName = heroPlayer?.name?.toLowerCase() || 'hero';
+                                    const isHero = m.player?.toLowerCase() === 'hero' || m.player?.toLowerCase() === heroName;
                                     return group.filter === 'Hero' ? isHero : !isHero;
                                 }) || [];
 
@@ -832,6 +835,9 @@ export function HandAnalyzer() {
                                                             <div className="flex items-center justify-between mb-2">
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="text-[10px] text-gold uppercase font-black bg-gold/10 px-2 py-0.5 rounded tracking-tighter">{m.street}</span>
+                                                                    {m.position && (
+                                                                        <span className="text-[10px] text-emerald-400 uppercase font-black bg-emerald-500/10 px-2 py-0.5 rounded tracking-tighter">{m.position}</span>
+                                                                    )}
                                                                     <SeverityBadge severity={m.severity} />
                                                                     {m.player?.toLowerCase() !== 'hero' && (
                                                                         <span className="text-sm text-white font-bold">— {m.player}</span>
