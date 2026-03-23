@@ -45,11 +45,11 @@ interface OCRResult {
 interface HandAnalysis {
     summary?: string;
     reasoning_trace: string[];
-    mistakes: { 
-        street: string; 
-        player: string; 
+    mistakes: {
+        street: string;
+        player: string;
         position?: string;
-        description: string; 
+        description: string;
         better_line?: string;
         gto_deviation_reason?: string;
         severity?: string;
@@ -140,7 +140,7 @@ function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (val: string
                     {SUITS.map(s => (
                         <button
                             key={s}
-                            onClick={() => {}} // Suits are selected via common grid
+                            onClick={() => { }} // Suits are selected via common grid
                             className={`h-12 flex items-center justify-center rounded-xl text-2xl border ${SUIT_COLORS[s]} bg-white/5 border-white/5`}
                         >
                             {SUIT_SYMBOLS[s]}
@@ -226,11 +226,11 @@ export function HandAnalyzer() {
     const [analysis, setAnalysis] = useState<HandAnalysis | null>(null);
     const [fromCache, setFromCache] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    
+
     // Phase 4 UI state
     const [editingCard, setEditingCard] = useState<{ type: 'board' | 'hole', index: number, pIdx?: number } | null>(null);
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
-    
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // clipboard paste support
@@ -287,8 +287,8 @@ export function HandAnalyzer() {
             const json = await res.json();
             if (!json.success) {
                 // If quota exceeded, include reset date in error message
-                const resetInfo = json.usage?.resetsAt 
-                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}` 
+                const resetInfo = json.usage?.resetsAt
+                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}`
                     : '';
                 throw new Error((json.error || "Parsing failed") + resetInfo);
             }
@@ -311,16 +311,16 @@ export function HandAnalyzer() {
             const res = await fetch(`${API.handAnalyze}/analyze`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     handId: parsedHand.id,
-                    parsedData: parsedHand.parsed_data 
+                    parsedData: parsedHand.parsed_data
                 }),
             });
 
             const json = await res.json();
             if (!json.success) {
-                const resetInfo = json.usage?.resetsAt 
-                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}` 
+                const resetInfo = json.usage?.resetsAt
+                    ? ` · Resets ${new Date(json.usage.resetsAt).toLocaleDateString()}`
                     : '';
                 throw new Error((json.error || "Analysis failed") + resetInfo);
             }
@@ -346,7 +346,7 @@ export function HandAnalyzer() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageHex: imagePreview, // ideally this would be the crop, but passing preview for now
-                    cardName: corrected?.name || 'all_board', 
+                    cardName: corrected?.name || 'all_board',
                     action: action,
                     correctedName: corrected?.revised || '',
                     cardIndex: corrected?.index
@@ -354,12 +354,12 @@ export function HandAnalyzer() {
             });
             if (action === 'confirm') {
                 // visually mark as confirmed
-                setParsedHand({ 
-                    ...parsedHand!, 
-                    parsed_data: { 
-                        ...handData, 
-                        ocr_result: { ...handData.ocr_result, decision: 'auto_accept' } 
-                    } 
+                setParsedHand({
+                    ...parsedHand!,
+                    parsed_data: {
+                        ...handData,
+                        ocr_result: { ...handData.ocr_result, decision: 'auto_accept' }
+                    }
                 });
             }
         } catch (err) {
@@ -391,186 +391,158 @@ export function HandAnalyzer() {
     }
 
     return (
-        <div className="space-y-6 text-foreground">
-            {/* ── Input Section ── */}
-            <div className="bg-card border border-border rounded-xl p-4 shadow-xl mb-4">
-                <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-base font-semibold text-white flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-gold" />
-                        Hand Input
-                    </h2>
-                    <div className="flex bg-black/40 rounded-lg p-0.5 border border-border">
-                        <button
-                            onClick={() => setInputType("text")}
-                            className={`px-3 py-1 rounded-md text-xs transition-all ${inputType === "text"
-                                ? "bg-felt-default text-white shadow"
-                                : "text-gray-400 hover:text-white"
-                                }`}
-                        >
-                            <FileText className="w-3.5 h-3.5 inline mr-1" /> Text
-                        </button>
-                        <button
-                            onClick={() => setInputType("image")}
-                            className={`px-3 py-1 rounded-md text-xs transition-all ${inputType === "image"
-                                ? "bg-felt-default text-white shadow"
-                                : "text-gray-400 hover:text-white"
-                                }`}
-                        >
-                            <ImageIcon className="w-3.5 h-3.5 inline mr-1" /> Screenshot
-                        </button>
-                    </div>
-                </div>
-
-                {inputType === "text" ? (
-                    <textarea
-                        value={textInput}
-                        onChange={(e) => setTextInput(e.target.value)}
-                        placeholder={`Paste your hand history here...\n\nExample:\nPokerStars Hand #123456789...`}
-                        className="w-full h-24 bg-black/40 border border-border rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-gold/50"
-                    />
-                ) : (
-                    <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full min-h-[100px] bg-black/40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gold/40 transition-all group p-3"
-                    >
-                        {imagePreview ? (
-                            <div className="flex items-center justify-center gap-4 py-1">
-                                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-900/20">
-                                    <CheckCircle className="w-5 h-5 text-emerald-400" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-emerald-400 font-bold">Successfully Loaded</p>
-                                    <p className="text-[10px] text-gray-500 font-medium group-hover:text-gold transition-colors">Click, Drag, or Paste to change</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="w-16 h-16 rounded-2xl bg-gold/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform border border-gold/10">
-                                    <Upload className="w-8 h-8 text-gold" />
-                                </div>
-                                <p className="text-base text-gray-300 font-bold mb-1">Upload Poker Screenshot</p>
-                                <p className="text-sm text-gray-500 font-medium">Click, Drag, or <span className="text-gold">Paste (Ctrl+V)</span></p>
-                                <p className="text-[10px] text-gray-600 mt-4 uppercase tracking-[0.2em] font-black">Support WPT, GG, PokerStars & more</p>
-                            </>
-                        )}
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                            className="hidden"
-                        />
-                    </div>
-                )}
-
-                <button
-                    onClick={handleParse}
-                    disabled={isParsing || isAnalyzing}
-                    className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-gold/90 to-amber-600 hover:from-gold hover:to-amber-500 text-black font-black py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-gold/10 uppercase tracking-wider text-sm"
-                >
-                    {isParsing ? (
-                        <><Loader2 className="w-5 h-5 animate-spin" /> Neural OCR Engine Processing...</>
-                    ) : (
-                        <><Sparkles className="w-5 h-5" /> {isReviewing ? "RE-PROCESS DATA" : "ANALYZE SCREENSHOT"}</>
-                    )}
-                </button>
-
-                {error && (
-                    <div className="mt-4 flex items-center gap-3 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                        <AlertTriangle className="w-5 h-5 flex-shrink-0" /> {error}
-                    </div>
-                )}
-            </div>
-
-            {/* ── Parsed Hand & Review Section ── */}
-            {handData && handData.board && (
-                <div className="space-y-6">
-                    {/* Header Banner */}
-                    <div className="bg-card border border-border rounded-xl p-6 shadow-xl animate-in fade-in slide-in-from-bottom-2">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                                <h2 className="text-xl font-black text-white uppercase tracking-tight">Manual Verification</h2>
-                                <div className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-3 py-1 rounded-full">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
-                                    <span className="text-[10px] text-gold font-black uppercase tracking-widest italic">Reference Check</span>
-                                </div>
-                            </div>
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start text-foreground">
+            {/* ── LEFT COLUMN: Input & Reference (3 cols) ── */}
+            <div className={`xl:col-span-3 space-y-4 ${handData ? 'xl:sticky xl:top-24' : ''}`}>
+                {/* ── Input Section ── */}
+                <div className="bg-card border border-border rounded-xl p-4 shadow-xl">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-base font-semibold text-white flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-gold" />
+                            Hand Input
+                        </h2>
+                        <div className="flex bg-black/40 rounded-lg p-0.5 border border-border">
+                            <button
+                                onClick={() => setInputType("text")}
+                                className={`px-3 py-1 rounded-md text-xs transition-all ${inputType === "text"
+                                    ? "bg-felt-default text-white shadow"
+                                    : "text-gray-400 hover:text-white"
+                                    }`}
+                            >
+                                <FileText className="w-3.5 h-3.5 inline mr-1" /> Text
+                            </button>
+                            <button
+                                onClick={() => setInputType("image")}
+                                className={`px-3 py-1 rounded-md text-xs transition-all ${inputType === "image"
+                                    ? "bg-felt-default text-white shadow"
+                                    : "text-gray-400 hover:text-white"
+                                    }`}
+                            >
+                                <ImageIcon className="w-3.5 h-3.5 inline mr-1" /> Screenshot
+                            </button>
                         </div>
-                        
-                        {handData.ocr_result && (
-                            <div className={`p-4 rounded-xl border flex items-center justify-between
-                                ${handData.ocr_result.decision === 'auto_accept' 
-                                    ? 'bg-emerald-500/5 border-emerald-500/10' 
-                                    : handData.ocr_result.decision === 'confirm'
-                                    ? 'bg-amber-500/5 border-amber-500/10'
-                                    : 'bg-red-500/5 border-red-500/10'}`}>
-                                <div className="flex items-center gap-4">
-                                    <OCRConfidenceBadge score={handData.ocr_result.confidence} />
+                    </div>
+
+                    {inputType === "text" ? (
+                        <textarea
+                            value={textInput}
+                            onChange={(e) => setTextInput(e.target.value)}
+                            placeholder={`Paste your hand history here...\n\nExample:\nPokerStars Hand #123456789...`}
+                            className="w-full h-24 bg-black/40 border border-border rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-gold/50"
+                        />
+                    ) : (
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full min-h-[100px] bg-black/40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gold/40 transition-all group p-3"
+                        >
+                            {imagePreview ? (
+                                <div className="flex items-center justify-center gap-4 py-1">
+                                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-900/20">
+                                        <CheckCircle className="w-5 h-5 text-emerald-400" />
+                                    </div>
                                     <div>
-                                        <p className="text-sm font-black text-white uppercase tracking-tight">
-                                            {handData.ocr_result.decision.replace('_', ' ')}
-                                        </p>
-                                        <p className="text-[10px] text-gray-500 font-medium uppercase tracking-tighter">
-                                            {handData.ocr_result.decision_reason.join(' · ')}
-                                        </p>
+                                        <p className="text-sm text-emerald-400 font-bold">Successfully Loaded</p>
+                                        <p className="text-[10px] text-gray-500 font-medium group-hover:text-gold transition-colors">Click, Drag, or Paste to change</p>
                                     </div>
                                 </div>
-                                {handData.ocr_result.decision !== 'auto_accept' && (
-                                    <button 
-                                        onClick={() => handleFeedback('confirm')}
-                                        disabled={isSubmittingFeedback}
-                                        className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-emerald-900/40"
-                                    >
-                                        {isSubmittingFeedback ? "Saving..." : "CONFIRM DETECTION"}
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                            ) : (
+                                <>
+                                    <div className="w-16 h-16 rounded-2xl bg-gold/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform border border-gold/10">
+                                        <Upload className="w-8 h-8 text-gold" />
+                                    </div>
+                                    <p className="text-base text-gray-300 font-bold mb-1">Upload Poker Screenshot</p>
+                                    <p className="text-sm text-gray-500 font-medium">Click, Drag, or <span className="text-gold">Paste (Ctrl+V)</span></p>
+                                    <p className="text-[10px] text-gray-600 mt-4 uppercase tracking-[0.2em] font-black">Support WPT, GG, PokerStars & more</p>
+                                </>
+                            )}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                            />
+                        </div>
+                    )}
 
-                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-                        {/* LEFT: Reference Image (Sticky) */}
-                        <div className="xl:col-span-5 xl:sticky xl:top-24 space-y-4">
-                            <div className="bg-black/60 border border-white/5 rounded-2xl p-4 shadow-2xl relative group overflow-hidden">
-                                <div className="flex items-center justify-between mb-3 text-gray-500">
-                                    <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                                        <ImageIcon className="w-3 h-3" />
-                                        Input Reference
-                                    </span>
-                                    {inputType === 'image' && (
-                                        <button 
-                                            onClick={() => {
-                                                const win = window.open();
-                                                win?.document.write(`<img src="${imagePreview}" style="max-width:100%"/>`);
-                                            }}
-                                            className="text-[9px] hover:text-gold transition-colors font-bold uppercase tracking-tighter flex items-center gap-1"
+                    <button
+                        onClick={handleParse}
+                        disabled={isParsing || isAnalyzing}
+                        className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-gold/90 to-amber-600 hover:from-gold hover:to-amber-500 text-black font-black py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-gold/10 uppercase tracking-wider text-sm"
+                    >
+                        {isParsing ? (
+                            <><Loader2 className="w-5 h-5 animate-spin" /> Neural OCR Engine Processing...</>
+                        ) : (
+                            <><Sparkles className="w-5 h-5" /> {isReviewing ? "RE-PROCESS DATA" : "ANALYZE SCREENSHOT"}</>
+                        )}
+                    </button>
+
+                    {error && (
+                        <div className="mt-4 flex items-center gap-3 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                            <AlertTriangle className="w-5 h-5 flex-shrink-0" /> {error}
+                        </div>
+                    )}
+                </div>
+            </div>
+            {/* ── RIGHT COLUMN: Review & Analysis (9 cols) ── */}
+            <div className="xl:col-span-9 space-y-6">
+                {!handData && (
+                    <div className="flex flex-col items-center justify-center min-h-[60vh] border border-dashed border-white/10 rounded-3xl bg-black/20">
+                        <div className="w-20 h-20 rounded-2xl bg-gold/5 flex items-center justify-center mb-6">
+                            <Sparkles className="w-10 h-10 text-gold/40" />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-500 uppercase tracking-widest mb-2">Awaiting Neural Input</h3>
+                        <p className="text-sm text-gray-600 font-medium text-center max-w-sm">Upload a hand screenshot on the left or paste your text to begin analysis.</p>
+                    </div>
+                )}
+
+                {/* ── Parsed Hand & Review Section ── */}
+                {handData && handData.board && (
+                    <div className="space-y-6">
+                        {/* Header Banner */}
+                        <div className="bg-card border border-border rounded-xl p-6 shadow-xl animate-in fade-in slide-in-from-bottom-2">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <h2 className="text-xl font-black text-white uppercase tracking-tight">Manual Verification</h2>
+                                    <div className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-3 py-1 rounded-full">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
+                                        <span className="text-[10px] text-gold font-black uppercase tracking-widest italic">Reference Check</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {handData.ocr_result && (
+                                <div className={`p-4 rounded-xl border flex items-center justify-between
+                                ${handData.ocr_result.decision === 'auto_accept'
+                                        ? 'bg-emerald-500/5 border-emerald-500/10'
+                                        : handData.ocr_result.decision === 'confirm'
+                                            ? 'bg-amber-500/5 border-amber-500/10'
+                                            : 'bg-red-500/5 border-red-500/10'}`}>
+                                    <div className="flex items-center gap-4">
+                                        <OCRConfidenceBadge score={handData.ocr_result.confidence} />
+                                        <div>
+                                            <p className="text-sm font-black text-white uppercase tracking-tight">
+                                                {handData.ocr_result.decision.replace('_', ' ')}
+                                            </p>
+                                            <p className="text-[10px] text-gray-500 font-medium uppercase tracking-tighter">
+                                                {handData.ocr_result.decision_reason.join(' · ')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {handData.ocr_result.decision !== 'auto_accept' && (
+                                        <button
+                                            onClick={() => handleFeedback('confirm')}
+                                            disabled={isSubmittingFeedback}
+                                            className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-emerald-900/40"
                                         >
-                                            View Full Size
+                                            {isSubmittingFeedback ? "Saving..." : "CONFIRM DETECTION"}
                                         </button>
                                     )}
                                 </div>
-                                {imagePreview ? (
-                                    <img 
-                                        src={imagePreview} 
-                                        alt="Reference" 
-                                        className="w-full h-auto rounded-lg border border-white/10 group-hover:scale-[1.02] transition-transform duration-500" 
-                                    />
-                                ) : (
-                                    <div className="bg-card w-full aspect-video flex items-center justify-center border border-dashed border-white/10 rounded-lg text-gray-600 italic text-sm">
-                                        Text input mode - no image reference
-                                    </div>
-                                )}
-                                
-                                <div className="mt-4 p-3 bg-gold/5 rounded-xl border border-gold/10">
-                                    <p className="text-[10px] text-gray-400 leading-relaxed indent-2 italic">
-                                        "Use this screenshot to verify card suits, player stacks, and post-flop action sizing before final analysis."
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                            )}</div>
 
-                        {/* RIGHT: Correction Form */}
-                        <div className="xl:col-span-7 bg-card/40 border border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-3xl space-y-8">
+                        {/* Correction Form */}
+                        <div className="bg-card/40 border border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-3xl space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
                             <div className="grid grid-cols-1 gap-8">
                                 {/* Board, Hero & Pot */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-8 border-b border-white/5">
@@ -579,8 +551,8 @@ export function HandAnalyzer() {
                                         <div className="flex gap-2 flex-wrap min-h-[44px]">
                                             {handData.board.length > 0 ? (
                                                 handData.board.map((c: string, i: number) => (
-                                                    <button 
-                                                        key={i} 
+                                                    <button
+                                                        key={i}
                                                         onClick={() => setEditingCard({ type: 'board', index: i })}
                                                         className="hover:scale-110 transition-transform active:scale-95"
                                                     >
@@ -588,7 +560,7 @@ export function HandAnalyzer() {
                                                     </button>
                                                 ))
                                             ) : (
-                                                <button 
+                                                <button
                                                     onClick={() => setEditingCard({ type: 'board', index: 0 })}
                                                     className="text-gold text-[10px] font-black uppercase tracking-widest border border-gold/30 px-4 py-2 rounded-xl bg-gold/5 hover:bg-gold/10 transition-all"
                                                 >
@@ -597,19 +569,31 @@ export function HandAnalyzer() {
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     <div className="space-y-4 md:col-span-1">
-                                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Hero Hand</span>
-                                        <div className="flex gap-2 min-h-[44px]">
+                                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Player Hands</span>
+                                        <div className="space-y-2 min-h-[44px]">
                                             {(() => {
-                                                const heroObj = handData.players.find((p: any) => p.hole_cards && p.hole_cards.length > 0);
-                                                const hCards = heroObj?.hole_cards || [];
-                                                return hCards.length > 0 ? (
-                                                    hCards.map((c: string, i: number) => (
-                                                        <CardChip key={i} card={c} />
+                                                const playersWithCards = handData.players.filter((p: any) => p.hole_cards && p.hole_cards.length > 0);
+                                                return playersWithCards.length > 0 ? (
+                                                    playersWithCards.map((p: any, pIdx: number) => (
+                                                        <div key={pIdx} className="flex items-center gap-2">
+                                                            <span className="text-[10px] text-gray-400 w-24 truncate">{p.name}</span>
+                                                            <div className="flex gap-1">
+                                                                {p.hole_cards.map((c: string, i: number) => (
+                                                                    <button
+                                                                        key={i}
+                                                                        onClick={() => setEditingCard({ type: 'hole', index: i, pIdx: handData.players.indexOf(p) })}
+                                                                        className="hover:scale-110 transition-transform active:scale-95"
+                                                                    >
+                                                                        <CardChip card={c} />
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
                                                     ))
                                                 ) : (
-                                                    <span className="text-gray-600 italic text-[11px] font-medium flex items-center h-full">Unknown</span>
+                                                    <span className="text-gray-600 italic text-[11px] font-medium flex items-center h-full">No hands detected</span>
                                                 );
                                             })()}
                                         </div>
@@ -618,7 +602,7 @@ export function HandAnalyzer() {
                                     <div className="space-y-4 md:col-span-1">
                                         <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Pot Value</span>
                                         <div className="flex items-center gap-3">
-                                            <input 
+                                            <input
                                                 type="number"
                                                 value={handData.pot || 0}
                                                 onChange={(e) => setParsedHand({ ...parsedHand!, parsed_data: { ...handData, pot: parseFloat(e.target.value) } })}
@@ -650,8 +634,8 @@ export function HandAnalyzer() {
                                                     <div className="space-y-2">
                                                         {actions.map((a: any, i: number) => (
                                                             <div key={i} className="flex items-center gap-1 bg-white/[0.02] p-1.5 rounded-lg border border-white/5 hover:border-gold/30 transition-colors w-full overflow-hidden">
-                                                                <input 
-                                                                    value={a.position || ""} 
+                                                                <input
+                                                                    value={a.position || ""}
                                                                     placeholder="Pos"
                                                                     maxLength={3}
                                                                     onChange={(e) => {
@@ -659,20 +643,20 @@ export function HandAnalyzer() {
                                                                         newActions[street][i] = { ...a, position: e.target.value.toUpperCase() };
                                                                         setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                     }}
-                                                                    className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black px-1.5 py-1 rounded border border-emerald-500/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 w-9 shrink-0 text-center uppercase" 
+                                                                    className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black px-1.5 py-1 rounded border border-emerald-500/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 w-9 shrink-0 text-center uppercase"
                                                                 />
-                                                                <input 
-                                                                    value={a.player} 
+                                                                <input
+                                                                    value={a.player}
                                                                     onChange={(e) => {
                                                                         const newActions = { ...handData.actions };
                                                                         newActions[street][i] = { ...a, player: e.target.value };
                                                                         setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                     }}
                                                                     placeholder="Player"
-                                                                    className="bg-black/50 text-gray-300 text-[10px] px-2 py-1 rounded border border-white/5 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 min-w-[36px] flex-1 shrink truncate" 
+                                                                    className="bg-black/50 text-gray-300 text-[10px] px-2 py-1 rounded border border-white/5 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 min-w-[36px] flex-1 shrink truncate"
                                                                 />
-                                                                <select 
-                                                                    value={a.action} 
+                                                                <select
+                                                                    value={a.action}
                                                                     onChange={(e) => {
                                                                         const newActions = { ...handData.actions };
                                                                         newActions[street][i] = { ...a, action: e.target.value };
@@ -688,11 +672,11 @@ export function HandAnalyzer() {
                                                                     <option value="all-in">All-in</option>
                                                                     <option value="post">Post</option>
                                                                 </select>
-                                                                
+
                                                                 <div className="flex items-center gap-0.5 bg-black/50 rounded border border-white/5 px-1 py-1 w-14 shrink-0">
-                                                                    <input 
-                                                                        type="number" 
-                                                                        value={a.amount === undefined || a.amount === null ? '' : a.amount} 
+                                                                    <input
+                                                                        type="number"
+                                                                        value={a.amount === undefined || a.amount === null ? '' : a.amount}
                                                                         onChange={(e) => {
                                                                             const val = e.target.value;
                                                                             const newActions = { ...handData.actions };
@@ -700,11 +684,11 @@ export function HandAnalyzer() {
                                                                             setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                         }}
                                                                         placeholder="0"
-                                                                        className="bg-transparent text-gold text-[10px] px-0.5 w-full focus:outline-none font-mono text-right" 
+                                                                        className="bg-transparent text-gold text-[10px] px-0.5 w-full focus:outline-none font-mono text-right"
                                                                     />
                                                                     <span className="text-[8px] text-amber-700 font-black">BB</span>
                                                                 </div>
-                                                                <button 
+                                                                <button
                                                                     onClick={() => {
                                                                         const newActions = { ...handData.actions };
                                                                         newActions[street].splice(i, 1);
@@ -717,8 +701,8 @@ export function HandAnalyzer() {
                                                             </div>
                                                         ))}
 
-                                                        
-                                                        <button 
+
+                                                        <button
                                                             onClick={() => {
                                                                 const newActions = { ...handData.actions };
                                                                 if (!newActions[street]) newActions[street] = [];
@@ -750,179 +734,158 @@ export function HandAnalyzer() {
                                         )}
                                     </button>
                                     <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest italic text-center leading-relaxed">
-                                        "Ensure data depth matches the reference image on the left<br/>for clinical-grade strategic precision."
+                                        "Ensure data depth matches the reference image on the left<br />for clinical-grade strategic precision."
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* ── AI Analysis Results ── */}
-            {analysis && (
-                <div className="space-y-6 animate-in zoom-in-95 duration-500 pb-12">
-                    <div className="h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent my-4" />
-                    
-                    {/* Summary & Reasoning Trace */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="md:col-span-2 bg-gradient-to-br from-card to-felt-dark/30 border border-gold/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-5">
-                                <Sparkles className="w-24 h-24 text-gold" />
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
-                                    <FileText className="w-4 h-4 text-gold" />
-                                </div>
-                                Strategic Summary
-                            </h3>
-                            <p className="text-gray-300 text-sm leading-relaxed sm:text-base">{analysis.summary}</p>
-                            
-                            {analysis.final_verdict && (
-                                <div className="mt-6 flex items-center gap-4 border-t border-white/5 pt-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-gray-500 uppercase font-black">Grade</span>
-                                        <span className="text-2xl font-black text-gold">{analysis.final_verdict.grade}</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-gray-500 uppercase font-black">Confidence</span>
-                                        <span className="text-lg font-bold text-white">{((analysis.final_verdict.confidence_score || 0) * 100).toFixed(0)}%</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-gray-500 uppercase font-black">Strategy Type</span>
-                                        <span className={`text-[11px] font-black px-2 py-0.5 rounded uppercase ${
-                                            analysis.final_verdict.suggestion_type === 'Exploit' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
-                                        }`}>
-                                            {analysis.final_verdict.suggestion_type}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                {/* ── AI Analysis Results ── */}
+                {analysis && (
+                    <div className="space-y-6 animate-in zoom-in-95 duration-500 pb-12">
+                        <div className="h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent my-4" />
 
-                        <div className="bg-black/40 border border-white/5 rounded-2xl p-6 shadow-xl">
-                            <h3 className="text-sm font-bold text-gray-300 mb-4 flex items-center gap-2">
-                                <Loader2 className="w-3.5 h-3.5 text-gold/60" />
-                                Reasoning Trace
-                            </h3>
-                            <div className="space-y-3">
-                                {analysis.reasoning_trace?.map((step, i) => (
-                                    <div key={i} className="flex gap-3">
-                                        <div className="flex flex-col items-center">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-gold/40 mt-1.5" />
-                                            {i < analysis.reasoning_trace.length - 1 && <div className="w-px h-full bg-white/5 my-1" />}
+                        {/* Summary & Reasoning Trace */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="md:col-span-2 bg-gradient-to-br from-card to-felt-dark/30 border border-gold/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-5">
+                                    <Sparkles className="w-24 h-24 text-gold" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                                        <FileText className="w-4 h-4 text-gold" />
+                                    </div>
+                                    Strategic Summary
+                                </h3>
+                                <p className="text-gray-300 text-sm leading-relaxed sm:text-base">{analysis.summary}</p>
+
+                                {analysis.final_verdict && (
+                                    <div className="mt-6 flex items-center gap-4 border-t border-white/5 pt-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-gray-500 uppercase font-black">Grade</span>
+                                            <span className="text-2xl font-black text-gold">{analysis.final_verdict.grade}</span>
                                         </div>
-                                        <p className="text-[11px] text-gray-400 leading-snug">{step}</p>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-gray-500 uppercase font-black">Confidence</span>
+                                            <span className="text-lg font-bold text-white">{((analysis.final_verdict.confidence_score || 0) * 100).toFixed(0)}%</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-gray-500 uppercase font-black">Strategy Type</span>
+                                            <span className={`text-[11px] font-black px-2 py-0.5 rounded uppercase ${analysis.final_verdict.suggestion_type === 'Exploit' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
+                                                }`}>
+                                                {analysis.final_verdict.suggestion_type}
+                                            </span>
+                                        </div>
                                     </div>
-                                ))}
+                                )}
                             </div>
-                        </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        {/* Mistakes Array Mapping */}
-                        <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {[
-                                { title: "Hero Tactical Errors", filter: "Hero", color: "red", icon: <XCircle className="w-4 h-4" /> },
-                                { title: "Villain Detected Leaks", filter: "others", color: "amber", icon: <AlertTriangle className="w-4 h-4" /> }
-                            ].map((group) => {
-                                const items = analysis.mistakes?.filter(m => {
-                                    const heroPlayer = parsedHand?.parsed_data?.players?.find(p => p.hole_cards && p.hole_cards.length > 0);
-                                    const heroName = heroPlayer?.name?.toLowerCase() || 'hero';
-                                    const isHero = m.player?.toLowerCase() === 'hero' || m.player?.toLowerCase() === heroName;
-                                    return group.filter === 'Hero' ? isHero : !isHero;
-                                }) || [];
-
-                                return (
-                                    <div key={group.title} className={`bg-card border border-${group.color}-500/20 rounded-2xl p-6 shadow-xl`}>
-                                        <h3 className={`text-lg font-bold text-${group.color}-400 mb-5 flex items-center gap-3`}>
-                                            <div className={`w-8 h-8 rounded-lg bg-${group.color}-500/10 flex items-center justify-center`}>
-                                                {group.icon}
+                            <div className="bg-black/40 border border-white/5 rounded-2xl p-6 shadow-xl">
+                                <h3 className="text-sm font-bold text-gray-300 mb-4 flex items-center gap-2">
+                                    <Loader2 className="w-3.5 h-3.5 text-gold/60" />
+                                    Reasoning Trace
+                                </h3>
+                                <div className="space-y-3">
+                                    {analysis.reasoning_trace?.map((step, i) => (
+                                        <div key={i} className="flex gap-3">
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-gold/40 mt-1.5" />
+                                                {i < analysis.reasoning_trace.length - 1 && <div className="w-px h-full bg-white/5 my-1" />}
                                             </div>
-                                            {group.title} ({items.length})
-                                        </h3>
-                                        <div className="space-y-4">
-                                            {items.length > 0 ? (
-                                                items.map((m, i) => {
-                                                    // Normalize street to TitleCase for Note API validation
-                                                    const rawStreet = m.street?.toLowerCase() || 'postflop';
-                                                    const normalizedStreet = rawStreet.charAt(0).toUpperCase() + rawStreet.slice(1);
-                                                    
-                                                    return (
-                                                        <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 transition-all hover:bg-white/[0.04] group/item">
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-[10px] text-gold uppercase font-black bg-gold/10 px-2 py-0.5 rounded tracking-tighter">{m.street}</span>
-                                                                    {m.position && (
-                                                                        <span className="text-[10px] text-emerald-400 uppercase font-black bg-emerald-500/10 px-2 py-0.5 rounded tracking-tighter">{m.position}</span>
-                                                                    )}
-                                                                    <SeverityBadge severity={m.severity} />
-                                                                    {m.player?.toLowerCase() !== 'hero' && (
-                                                                        <span className="text-sm text-white font-bold">— {m.player}</span>
-                                                                    )}
-                                                                </div>
-                                                                <SaveNoteButton
-                                                                    isAutosaved={m.player?.toLowerCase() !== 'hero'}
-                                                                    noteData={{
-                                                                        player_name: m.player, 
-                                                                        content: m.description,
-                                                                        street: normalizedStreet,
-                                                                        note_type: "Custom",
-                                                                        source: "ai",
-                                                                        hand_id: parsedHand?.id
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        <p className="text-sm text-gray-300 leading-snug">{m.description}</p>
-                                                        {m.better_line && (
-                                                            <div className="mt-3 text-[11px] bg-emerald-500/5 border border-emerald-500/10 p-2 rounded">
-                                                                <span className="text-emerald-400 font-bold uppercase tracking-tighter mr-2">Better Line:</span>
-                                                                <span className="text-gray-400 italic">{m.better_line}</span>
-                                                            </div>
-                                                        )}
-                                                        {m.gto_deviation_reason && (
-                                                            <div className="mt-2 text-[10px] text-purple-400/80 italic leading-tight">
-                                                                💡 {m.gto_deviation_reason}
-                                                            </div>
-                                                        )}
-                                                        </div>
-                                                    );
-                                                })
-                                            ) : (
-                                                <div className="text-center py-6 text-gray-500 italic text-sm">No significant data points for this category.</div>
-                                            )}
+                                            <p className="text-[11px] text-gray-400 leading-snug">{step}</p>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Exploit Suggestions */}
-                    {analysis.exploit_suggestions?.length > 0 && (
-                        <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-6 shadow-xl group">
-                            <h3 className="text-lg font-bold text-purple-400 mb-3 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <Sparkles className="w-4 h-4 shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+                                    ))}
                                 </div>
-                                Strategic Exploit Plan
-                            </h3>
-                            <div className="space-y-2">
-                                {analysis.exploit_suggestions.map((s, i) => (
-                                    <p key={i} className="text-sm text-gray-300 leading-relaxed sm:text-base">• {s}</p>
-                                ))}
                             </div>
                         </div>
-                    )}
-                </div>
-            )}
+
+                        <div className="grid grid-cols-1 gap-6">
+                            {/* Unified Mistakes List */}
+                            <div className="bg-card border border-amber-500/20 rounded-2xl p-6 shadow-xl">
+                                <h3 className="text-lg font-bold text-amber-400 mb-5 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                                        <AlertTriangle className="w-4 h-4" />
+                                    </div>
+                                    Player Mistakes & Leaks ({analysis.mistakes?.length || 0})
+                                </h3>
+                                <div className="space-y-4">
+                                    {analysis.mistakes?.length > 0 ? (
+                                        analysis.mistakes.map((m, i) => {
+                                            const rawStreet = m.street?.toLowerCase() || 'postflop';
+                                            const normalizedStreet = rawStreet.charAt(0).toUpperCase() + rawStreet.slice(1);
+
+                                            return (
+                                                <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 transition-all hover:bg-white/[0.04] group/item">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] text-gold uppercase font-black bg-gold/10 px-2 py-0.5 rounded tracking-tighter">{m.street}</span>
+                                                            {m.position && (
+                                                                <span className="text-[10px] text-emerald-400 uppercase font-black bg-emerald-500/10 px-2 py-0.5 rounded tracking-tighter">{m.position}</span>
+                                                            )}
+                                                            <SeverityBadge severity={m.severity} />
+                                                            <span className="text-sm text-white font-bold">— {m.player}</span>
+                                                        </div>
+                                                        <SaveNoteButton
+                                                            noteData={{
+                                                                player_name: m.player,
+                                                                content: m.description,
+                                                                street: normalizedStreet,
+                                                                note_type: "Custom",
+                                                                source: "ai",
+                                                                hand_id: parsedHand?.id
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <p className="text-sm text-gray-300 leading-snug">{m.description}</p>
+                                                    {m.better_line && (
+                                                        <div className="mt-3 text-[11px] bg-emerald-500/5 border border-emerald-500/10 p-2 rounded">
+                                                            <span className="text-emerald-400 font-bold uppercase tracking-tighter mr-2">Better Line:</span>
+                                                            <span className="text-gray-400 italic">{m.better_line}</span>
+                                                        </div>
+                                                    )}
+                                                    {m.gto_deviation_reason && (
+                                                        <div className="mt-2 text-[10px] text-purple-400/80 italic leading-tight">
+                                                            💡 {m.gto_deviation_reason}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="text-center py-6 text-gray-500 italic text-sm">No mistakes detected in this hand.</div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Exploit Suggestions */}
+                        {analysis.exploit_suggestions?.length > 0 && (
+                            <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-6 shadow-xl group">
+                                <h3 className="text-lg font-bold text-purple-400 mb-3 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Sparkles className="w-4 h-4 shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+                                    </div>
+                                    Strategic Exploit Plan
+                                </h3>
+                                <div className="space-y-2">
+                                    {analysis.exploit_suggestions.map((s, i) => (
+                                        <p key={i} className="text-sm text-gray-300 leading-relaxed sm:text-base">• {s}</p>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
 
             {/* Premium Card Picker Overlay */}
             {editingCard && (
-                <CardPicker 
+                <CardPicker
                     currentVal={
-                        editingCard.type === 'board' 
-                            ? handData.board[editingCard.index] 
+                        editingCard.type === 'board'
+                            ? handData.board[editingCard.index]
                             : handData.players[editingCard.pIdx!].hole_cards![editingCard.index]
                     }
                     onSelect={(val) => {
