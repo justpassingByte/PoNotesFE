@@ -610,64 +610,14 @@ export function HandAnalyzer() {
                                     </div>
                                 </div>
 
-                                {/* Players */}
-                                <div className="space-y-4">
-                                    <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Participants & Stacks</span>
-                                    <div className="grid grid-cols-1 gap-3">
-                                        {handData.players?.map((p: any, i: number) => (
-                                            <div key={i} className="bg-black/40 rounded-2xl px-4 py-3 border border-white/5 flex items-center justify-between group hover:border-gold/30 hover:bg-black/60 transition-all shadow-lg">
-                                                <div className="flex flex-col flex-1 mr-4">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <input 
-                                                            value={p.name}
-                                                            onChange={(e) => {
-                                                                const newPlayers = [...handData.players];
-                                                                newPlayers[i] = { ...p, name: e.target.value };
-                                                                setParsedHand({ ...parsedHand!, parsed_data: { ...handData, players: newPlayers } });
-                                                            }}
-                                                            className="bg-transparent text-white text-sm font-black border-none focus:ring-0 p-0 w-full hover:text-gold transition-colors"
-                                                        />
-                                                        {p.position && (
-                                                            <span className="text-[8px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">{p.position}</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex items-center gap-1.5 order-2 sm:order-1">
-                                                        {p.hole_cards?.map((c: string, j: number) => (
-                                                            <button 
-                                                                key={j}
-                                                                onClick={() => setEditingCard({ type: 'hole', index: j, pIdx: i })}
-                                                                className="hover:scale-110 transition-transform"
-                                                            >
-                                                                <CardChip card={c} />
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5 bg-black/40 rounded-lg px-2 py-1 border border-white/5 order-1 sm:order-2">
-                                                        <input 
-                                                            type="number"
-                                                            value={p.stack}
-                                                            onChange={(e) => {
-                                                                const newPlayers = [...handData.players];
-                                                                newPlayers[i] = { ...p, stack: parseFloat(e.target.value) };
-                                                                setParsedHand({ ...parsedHand!, parsed_data: { ...handData, players: newPlayers } });
-                                                            }}
-                                                            className="bg-transparent text-gold text-xs font-black font-mono border-none focus:ring-0 p-0 w-12 text-right"
-                                                        />
-                                                        <span className="text-[8px] text-amber-900 font-black uppercase tracking-tighter">BB</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
                                 {/* Actions */}
-                                <div className="space-y-4 pt-4">
+                                <div className="space-y-4 pt-4 border-t border-white/5">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Tactical Log Review & Edit</span>
-                                        <span className="text-[9px] text-amber-500/70 border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 rounded italic">Text corrections do not auto-learn yet, but ensure AI accuracy!</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Tactical Log Review & Edit</span>
+                                            <p className="text-[9px] text-gray-600 font-medium italic mt-0.5">Edit positions, actions, and sizing to ensure AI precision.</p>
+                                        </div>
+                                        <span className="text-[9px] text-amber-500/70 border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 rounded italic">OCR Context-Aware</span>
                                     </div>
                                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                         {(["preflop", "flop", "turn", "river"] as const).map((street) => {
@@ -680,7 +630,18 @@ export function HandAnalyzer() {
                                                     </div>
                                                     <div className="space-y-2">
                                                         {actions.map((a: any, i: number) => (
-                                                            <div key={i} className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap bg-white/[0.02] p-1.5 rounded-lg border border-white/5 hover:border-gold/30 transition-colors">
+                                                            <div key={i} className="flex items-center gap-1 bg-white/[0.02] p-1.5 rounded-lg border border-white/5 hover:border-gold/30 transition-colors w-full overflow-hidden">
+                                                                <input 
+                                                                    value={a.position || ""} 
+                                                                    placeholder="Pos"
+                                                                    maxLength={3}
+                                                                    onChange={(e) => {
+                                                                        const newActions = { ...handData.actions };
+                                                                        newActions[street][i] = { ...a, position: e.target.value.toUpperCase() };
+                                                                        setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                                                    }}
+                                                                    className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black px-1.5 py-1 rounded border border-emerald-500/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 w-10 text-center uppercase" 
+                                                                />
                                                                 <input 
                                                                     value={a.player} 
                                                                     onChange={(e) => {
@@ -689,7 +650,7 @@ export function HandAnalyzer() {
                                                                         setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                     }}
                                                                     placeholder="Player"
-                                                                    className="bg-black/50 text-gray-300 text-xs px-2 py-1 rounded border border-white/5 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 w-24 flex-shrink" 
+                                                                    className="bg-black/50 text-gray-300 text-[10px] px-2 py-1 rounded border border-white/5 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 w-24 min-w-0 flex-1 truncate" 
                                                                 />
                                                                 <select 
                                                                     value={a.action} 
@@ -698,7 +659,7 @@ export function HandAnalyzer() {
                                                                         newActions[street][i] = { ...a, action: e.target.value };
                                                                         setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                     }}
-                                                                    className="bg-black/50 text-gray-300 text-xs px-1 py-1 rounded border border-white/5 focus:border-gold/50 uppercase flex-shrink max-w-[80px]"
+                                                                    className="bg-black/50 text-gray-300 text-[10px] px-1 py-1 rounded border border-white/5 focus:border-gold/50 uppercase w-16"
                                                                 >
                                                                     <option value="fold">Fold</option>
                                                                     <option value="check">Check</option>
@@ -709,7 +670,7 @@ export function HandAnalyzer() {
                                                                     <option value="post">Post</option>
                                                                 </select>
                                                                 
-                                                                <div className="flex items-center gap-1 bg-black/50 rounded border border-white/5 px-1 py-1">
+                                                                <div className="flex items-center gap-0.5 bg-black/50 rounded border border-white/5 px-1 py-1 w-16">
                                                                     <input 
                                                                         type="number" 
                                                                         value={a.amount === undefined || a.amount === null ? '' : a.amount} 
@@ -720,23 +681,23 @@ export function HandAnalyzer() {
                                                                             setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                         }}
                                                                         placeholder="0"
-                                                                        className="bg-transparent text-gold text-xs px-1 w-12 focus:outline-none font-mono text-right" 
+                                                                        className="bg-transparent text-gold text-[10px] px-0.5 w-full focus:outline-none font-mono text-right" 
                                                                     />
-                                                                    <span className="text-[9px] text-amber-700 font-black">BB</span>
+                                                                    <span className="text-[8px] text-amber-700 font-black">BB</span>
                                                                 </div>
-
                                                                 <button 
                                                                     onClick={() => {
                                                                         const newActions = { ...handData.actions };
                                                                         newActions[street].splice(i, 1);
                                                                         setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
                                                                     }}
-                                                                    className="text-gray-500 hover:text-red-400 p-1 transition-colors ml-auto"
+                                                                    className="text-gray-600 hover:text-red-400 p-1 transition-colors"
                                                                 >
-                                                                    <XCircle className="w-3.5 h-3.5" />
+                                                                    <XCircle className="w-3 h-3" />
                                                                 </button>
                                                             </div>
                                                         ))}
+
                                                         
                                                         <button 
                                                             onClick={() => {

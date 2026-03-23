@@ -29,7 +29,7 @@ interface Player {
     platform: { name: string };
     ai_playstyle?: string;
     ai_aggression_score?: number;
-    ai_exploit_strategy?: string;
+    ai_exploit_strategy?: any;
     ai_profile?: any;
 }
 
@@ -213,13 +213,28 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
                 </div>
             ) : player.ai_exploit_strategy ? (
                 <div className={`mt-4 p-3 bg-black/40 rounded-xl border-l-2 ${isStrong ? 'border-red-500/50' : 'border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]'}`}>
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                        <Brain className="w-2.5 h-2.5 text-gold" />
-                        <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Exploit Strategy</span>
+                    <div className="space-y-2 mt-1.5">
+                        {(() => {
+                            const strat = player.ai_exploit_strategy;
+                            if (!strat) return null;
+                            
+                            const stratArray = Array.isArray(strat) ? strat : (typeof strat === 'object' && strat !== null ? [strat] : null);
+                            
+                            if (stratArray) {
+                                return stratArray.slice(0, 2).map((s: any, i: number) => (
+                                    <div key={i} className="text-[10px] leading-tight flex items-start gap-1">
+                                        <span className="text-gold font-bold shrink-0">{s.node || 'Action'}:</span>
+                                        <span className="text-gray-300">{s.action} ({s.frequency}%)</span>
+                                    </div>
+                                ));
+                            }
+                            return (
+                                <p className="text-[11px] text-gray-300 italic font-medium leading-tight truncate">
+                                    "{String(strat)}"
+                                </p>
+                            );
+                        })()}
                     </div>
-                    <p className="text-[11px] text-gray-300 italic font-medium leading-tight">
-                        "{player.ai_exploit_strategy}"
-                    </p>
                 </div>
             ) : (
                 <div className="mt-4 p-4 text-center border border-dashed border-white/5 rounded-xl">

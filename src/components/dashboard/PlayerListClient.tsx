@@ -23,7 +23,7 @@ export interface Player {
     platform?: { id: string; name: string };
     ai_playstyle?: string | null;
     ai_aggression_score?: number | null;
-    ai_exploit_strategy?: string | null;
+    ai_exploit_strategy?: any;
     ai_profile?: any;
 }
 

@@ -357,9 +357,49 @@ export const StrategyGuide = ({
                         <h3 className="text-xs font-semibold text-purple-300 mb-2 uppercase tracking-wider">
                             Strategic Insight
                         </h3>
-                        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
-                            {aiExploitStrategy || "No strategic insight available for this profile."}
-                        </p>
+                        <div className="space-y-3">
+                            {(() => {
+                                if (!aiExploitStrategy) return <p className="text-sm text-gray-500 italic">No strategic insight available for this profile.</p>;
+                                
+                                const stratArray = Array.isArray(aiExploitStrategy) 
+                                    ? aiExploitStrategy 
+                                    : (typeof aiExploitStrategy === 'object' && aiExploitStrategy !== null ? [aiExploitStrategy] : null);
+                                
+                                if (stratArray) {
+                                    return stratArray.map((move: any, i: number) => (
+                                        <div key={i} className="bg-black/30 border border-white/5 rounded-lg p-3">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-[10px] text-gold font-black uppercase tracking-widest bg-gold/10 px-2 py-0.5 rounded">{move.node || 'GENERAL'}</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
+                                                <div>
+                                                    <p className="text-[8px] text-gray-500 uppercase font-black">Action</p>
+                                                    <p className="text-white text-xs font-bold leading-tight mt-1">{move.action || '-'}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[8px] text-gray-500 uppercase font-black">Range</p>
+                                                    <p className="text-white text-[10px] sm:text-xs font-bold leading-tight mt-1">{move.range || '-'}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[8px] text-gray-500 uppercase font-black">Structure</p>
+                                                    <p className="text-white text-xs font-bold leading-tight mt-1">{move.structure || '-'}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[8px] text-gray-500 uppercase font-black">Sizing / Freq</p>
+                                                    <p className="text-white text-xs font-bold leading-tight mt-1">{move.sizing || '-'} ({move.frequency || '-'})</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ));
+                                }
+
+                                return (
+                                    <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                                        {String(aiExploitStrategy)}
+                                    </p>
+                                );
+                            })()}
+                        </div>
                     </div>
 
                     {/* 5. Mode Indicator (using component state) */}

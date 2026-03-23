@@ -78,11 +78,11 @@ interface PlayerDetails {
         aggression_score: number;
         looseness_score: number;
         leaks: string[];
-        strategy: string;
+        strategy: any;
         range_adjustments?: string[];
         gto_deviation_reason?: string;
     } | null;
-    ai_exploit_strategy?: string | null;
+    ai_exploit_strategy?: any;
     usage?: {
         allowed: boolean;
         used: number;
