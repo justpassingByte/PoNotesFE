@@ -393,30 +393,30 @@ export function HandAnalyzer() {
     return (
         <div className="space-y-6 text-foreground">
             {/* ── Input Section ── */}
-            <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-gold" />
+            <div className="bg-card border border-border rounded-xl p-4 shadow-xl mb-4">
+                <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-base font-semibold text-white flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-gold" />
                         Hand Input
                     </h2>
                     <div className="flex bg-black/40 rounded-lg p-0.5 border border-border">
                         <button
                             onClick={() => setInputType("text")}
-                            className={`px-3 py-1.5 rounded-md text-sm transition-all ${inputType === "text"
+                            className={`px-3 py-1 rounded-md text-xs transition-all ${inputType === "text"
                                 ? "bg-felt-default text-white shadow"
                                 : "text-gray-400 hover:text-white"
                                 }`}
                         >
-                            <FileText className="w-4 h-4 inline mr-1" /> Text
+                            <FileText className="w-3.5 h-3.5 inline mr-1" /> Text
                         </button>
                         <button
                             onClick={() => setInputType("image")}
-                            className={`px-3 py-1.5 rounded-md text-sm transition-all ${inputType === "image"
+                            className={`px-3 py-1 rounded-md text-xs transition-all ${inputType === "image"
                                 ? "bg-felt-default text-white shadow"
                                 : "text-gray-400 hover:text-white"
                                 }`}
                         >
-                            <ImageIcon className="w-4 h-4 inline mr-1" /> Screenshot
+                            <ImageIcon className="w-3.5 h-3.5 inline mr-1" /> Screenshot
                         </button>
                     </div>
                 </div>
@@ -425,23 +425,23 @@ export function HandAnalyzer() {
                     <textarea
                         value={textInput}
                         onChange={(e) => setTextInput(e.target.value)}
-                        placeholder={`Paste your hand history here...\n\nExample:\nPokerStars Hand #123456789\nTable 'Nova' 6-max Seat #2 is the button\n...`}
-                        className="w-full h-40 bg-black/40 border border-border rounded-lg p-4 text-sm text-gray-300 placeholder-gray-600 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-gold/50"
+                        placeholder={`Paste your hand history here...\n\nExample:\nPokerStars Hand #123456789...`}
+                        className="w-full h-24 bg-black/40 border border-border rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-gold/50"
                     />
                 ) : (
                     <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-full min-h-[160px] bg-black/40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gold/40 transition-all group p-4"
+                        className="w-full min-h-[100px] bg-black/40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gold/40 transition-all group p-3"
                     >
                         {imagePreview ? (
-                            <div className="flex flex-col items-center justify-center py-4">
-                                <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-emerald-900/20">
-                                    <CheckCircle className="w-8 h-8 text-emerald-400" />
+                            <div className="flex items-center justify-center gap-4 py-1">
+                                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-900/20">
+                                    <CheckCircle className="w-5 h-5 text-emerald-400" />
                                 </div>
-                                <p className="text-base text-emerald-400 font-bold mb-1">Hand Screenshot Loaded Successfully</p>
-                                <p className="text-sm text-gray-500 font-medium group-hover:text-gold transition-colors block">
-                                    Click, Drag, or Paste to change image
-                                </p>
+                                <div>
+                                    <p className="text-sm text-emerald-400 font-bold">Successfully Loaded</p>
+                                    <p className="text-[10px] text-gray-500 font-medium group-hover:text-gold transition-colors">Click, Drag, or Paste to change</p>
+                                </div>
                             </div>
                         ) : (
                             <>
@@ -528,9 +528,9 @@ export function HandAnalyzer() {
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
                         {/* LEFT: Reference Image (Sticky) */}
-                        <div className="xl:sticky xl:top-24 space-y-4">
+                        <div className="xl:col-span-5 xl:sticky xl:top-24 space-y-4">
                             <div className="bg-black/60 border border-white/5 rounded-2xl p-4 shadow-2xl relative group overflow-hidden">
                                 <div className="flex items-center justify-between mb-3 text-gray-500">
                                     <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
@@ -570,11 +570,11 @@ export function HandAnalyzer() {
                         </div>
 
                         {/* RIGHT: Correction Form */}
-                        <div className="bg-card/40 border border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-3xl space-y-8">
+                        <div className="xl:col-span-7 bg-card/40 border border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-3xl space-y-8">
                             <div className="grid grid-cols-1 gap-8">
-                                {/* Board & Pot */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pb-8 border-b border-white/5">
-                                    <div className="space-y-4">
+                                {/* Board, Hero & Pot */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-8 border-b border-white/5">
+                                    <div className="space-y-4 md:col-span-1">
                                         <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Community Board</span>
                                         <div className="flex gap-2 flex-wrap min-h-[44px]">
                                             {handData.board.length > 0 ? (
@@ -592,12 +592,30 @@ export function HandAnalyzer() {
                                                     onClick={() => setEditingCard({ type: 'board', index: 0 })}
                                                     className="text-gold text-[10px] font-black uppercase tracking-widest border border-gold/30 px-4 py-2 rounded-xl bg-gold/5 hover:bg-gold/10 transition-all"
                                                 >
-                                                    + Add Board Cards
+                                                    + Add Board
                                                 </button>
                                             )}
                                         </div>
                                     </div>
-                                    <div className="space-y-4">
+                                    
+                                    <div className="space-y-4 md:col-span-1">
+                                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Hero Hand</span>
+                                        <div className="flex gap-2 min-h-[44px]">
+                                            {(() => {
+                                                const heroObj = handData.players.find((p: any) => p.hole_cards && p.hole_cards.length > 0);
+                                                const hCards = heroObj?.hole_cards || [];
+                                                return hCards.length > 0 ? (
+                                                    hCards.map((c: string, i: number) => (
+                                                        <CardChip key={i} card={c} />
+                                                    ))
+                                                ) : (
+                                                    <span className="text-gray-600 italic text-[11px] font-medium flex items-center h-full">Unknown</span>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 md:col-span-1">
                                         <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Pot Value</span>
                                         <div className="flex items-center gap-3">
                                             <input 
@@ -606,7 +624,7 @@ export function HandAnalyzer() {
                                                 onChange={(e) => setParsedHand({ ...parsedHand!, parsed_data: { ...handData, pot: parseFloat(e.target.value) } })}
                                                 className="bg-black/40 text-2xl font-black text-gold border border-white/5 rounded-xl px-4 py-2 w-32 focus:ring-1 focus:ring-gold/50"
                                             />
-                                            <span className="text-xs font-black text-amber-700/80 uppercase">BB Total</span>
+                                            <span className="text-[10px] font-black text-amber-700/80 uppercase">BB Total</span>
                                         </div>
                                     </div>
                                 </div>

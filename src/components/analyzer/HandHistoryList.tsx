@@ -17,10 +17,16 @@ interface HandSummary {
         board?: string[];
         pot?: number;
         winner?: string;
+        players?: any[];
     };
     ai_analysis?: {
-        heroMistakes?: any[];
-        villainMistakes?: any[];
+        mistakes?: {
+            player: string;
+            description: string;
+            better_line?: string;
+            severity?: string;
+            street?: string;
+        }[];
         summary?: string;
     };
     system_logs?: {
@@ -255,8 +261,16 @@ export function HandHistoryList() {
                 hands.map((hand) => {
                     const parsed = hand.parsed_data;
                     const analysis = hand.ai_analysis;
-                    const heroCount = analysis?.heroMistakes?.length || 0;
-                    const villainCount = analysis?.villainMistakes?.length || 0;
+
+                    const heroPlayer = parsed?.players?.find((p: any) => p.hole_cards && p.hole_cards.length > 0);
+                    const heroName = heroPlayer?.name?.toLowerCase() || 'hero';
+                    const rawMistakes = Array.isArray(analysis?.mistakes) ? analysis.mistakes : [];
+                    
+                    const heroMistakes = rawMistakes.filter((m: any) => m.player?.toLowerCase() === 'hero' || m.player?.toLowerCase() === heroName);
+                    const villainMistakes = rawMistakes.filter((m: any) => m.player?.toLowerCase() !== 'hero' && m.player?.toLowerCase() !== heroName);
+
+                    const heroCount = heroMistakes.length;
+                    const villainCount = villainMistakes.length;
                     const isOpen = selectedHand === hand.id;
 
                     return (
@@ -385,9 +399,16 @@ export function HandHistoryList() {
                                                         Hero Corrections
                                                     </h4>
                                                     <div className="space-y-1.5">
-                                                        {analysis?.heroMistakes && analysis.heroMistakes.length > 0 ? (
-                                                            analysis.heroMistakes.slice(0, 2).map((m, i) => (
-                                                                <p key={i} className="text-[11px] text-gray-400 leading-snug">• {m.description}</p>
+                                                        {heroMistakes.length > 0 ? (
+                                                            heroMistakes.slice(0, 2).map((m: any, i: number) => (
+                                                                <div key={i} className="text-[11px] leading-snug">
+                                                                    <p className="text-gray-400">• {m.description}</p>
+                                                                    {m.better_line && (
+                                                                        <p className="text-emerald-400/90 font-bold ml-2 mt-0.5 flex gap-1 items-start">
+                                                                            <span className="text-emerald-500/50">↳</span> {m.better_line}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
                                                             ))
                                                         ) : (
                                                             <p className="text-[11px] text-gray-600 italic">No significant errors in Hero's line.</p>
@@ -402,9 +423,16 @@ export function HandHistoryList() {
                                                         Villain Exploits
                                                     </h4>
                                                     <div className="space-y-1.5">
-                                                        {analysis?.villainMistakes && analysis.villainMistakes.length > 0 ? (
-                                                            analysis.villainMistakes.slice(0, 2).map((m, i) => (
-                                                                <p key={i} className="text-[11px] text-gray-400 leading-snug">• {m.description}</p>
+                                                        {villainMistakes.length > 0 ? (
+                                                            villainMistakes.slice(0, 2).map((m: any, i: number) => (
+                                                                <div key={i} className="text-[11px] leading-snug">
+                                                                    <p className="text-gray-400">• {m.description}</p>
+                                                                    {m.better_line && (
+                                                                        <p className="text-amber-400/90 font-bold ml-2 mt-0.5 flex gap-1 items-start">
+                                                                            <span className="text-amber-500/50">↳</span> {m.better_line}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
                                                             ))
                                                         ) : (
                                                             <p className="text-[11px] text-gray-600 italic">No obvious leaks detected for this line.</p>
