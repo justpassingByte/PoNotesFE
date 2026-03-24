@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, FileText, Loader2, ImageIcon, Sparkles, AlertTriangle, CheckCircle, XCircle, Spade } from "lucide-react";
+import { Upload, FileText, Loader2, ImageIcon, Sparkles, AlertTriangle, CheckCircle, XCircle, Spade, ShieldAlert, ArrowUpRight } from "lucide-react";
 import { API } from "@/lib/api";
 import { createNote } from "@/app/actions";
 import { useLoginModal } from "@/context/LoginModalContext";
@@ -355,6 +355,7 @@ export function HandAnalyzer() {
     const [parsedHand, setParsedHand] = useState<Hand | null>(null);
     const [analysis, setAnalysis] = useState<HandAnalysis | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [quotaError, setQuotaError] = useState<{ error: string; used: number; limit: number; remaining: number; resetsAt: string; type: 'ocr' | 'ai' } | null>(null);
     const [editingCard, setEditingCard] = useState<{ type: 'board' | 'hole', index: number, pIdx?: number } | null>(null);
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -390,6 +391,7 @@ export function HandAnalyzer() {
 
     const handleParse = async () => {
         setError(null);
+        setQuotaError(null);
         setIsParsing(true);
         setAnalysis(null);
         try {
@@ -401,13 +403,29 @@ export function HandAnalyzer() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ rawInput, inputType }),
             });
-            if (res.status === 401 || res.status === 403 || res.status === 440) {
+            // Only open login for true auth failures (401/440)
+            if (res.status === 401 || res.status === 440) {
                 openLogin('Sign in to use the AI Hand Analyzer — parse screenshots and get instant leak detection.');
                 return;
             }
             const json = await res.json();
+            // For 403: check if it's a quota error (show rich notification) vs auth error (show login)
+            if (res.status === 403) {
+                if (json.usage || json.error?.toLowerCase().includes('limit') || json.error?.toLowerCase().includes('quota')) {
+                    setQuotaError({
+                        error: json.error || 'Limit reached',
+                        used: json.usage?.used ?? 0,
+                        limit: json.usage?.limit ?? 0,
+                        remaining: json.usage?.remaining ?? 0,
+                        resetsAt: json.usage?.resetsAt || '',
+                        type: 'ocr',
+                    });
+                    return;
+                }
+                openLogin('Sign in to use the AI Hand Analyzer — parse screenshots and get instant leak detection.');
+                return;
+            }
             if (!json.success) {
-                // Check if it's an auth error
                 if (json.error?.toLowerCase().includes('auth') || json.error?.toLowerCase().includes('login') || json.error?.toLowerCase().includes('token') || json.error?.toLowerCase().includes('session') || json.error?.toLowerCase().includes('expired')) {
                     openLogin('Sign in to use the AI Hand Analyzer — parse screenshots and get instant leak detection.');
                     return;
@@ -427,6 +445,7 @@ export function HandAnalyzer() {
     const handleRunAnalysis = async () => {
         if (!parsedHand) return;
         setError(null);
+        setQuotaError(null);
         setIsAnalyzing(true);
         try {
             const res = await fetch(`${API.handAnalyze}/analyze`, {
@@ -435,11 +454,28 @@ export function HandAnalyzer() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ handId: parsedHand.id, parsedData: parsedHand.parsed_data }),
             });
-            if (res.status === 401 || res.status === 403) {
+            // Only open login for true auth failures (401/440)
+            if (res.status === 401 || res.status === 440) {
                 openLogin('Sign in to run the AI Leak Scan — deep analysis of your poker decisions and mistakes.');
                 return;
             }
             const json = await res.json();
+            // For 403: check if it's a quota error (show rich notification) vs auth error (show login)
+            if (res.status === 403) {
+                if (json.usage || json.error?.toLowerCase().includes('limit') || json.error?.toLowerCase().includes('quota')) {
+                    setQuotaError({
+                        error: json.error || 'Limit reached',
+                        used: json.usage?.used ?? 0,
+                        limit: json.usage?.limit ?? 0,
+                        remaining: json.usage?.remaining ?? 0,
+                        resetsAt: json.usage?.resetsAt || '',
+                        type: 'ai',
+                    });
+                    return;
+                }
+                openLogin('Sign in to run the AI Leak Scan — deep analysis of your poker decisions and mistakes.');
+                return;
+            }
             if (!json.success) {
                 if (json.error?.toLowerCase().includes('auth') || json.error?.toLowerCase().includes('login') || json.error?.toLowerCase().includes('token') || json.error?.toLowerCase().includes('session') || json.error?.toLowerCase().includes('expired')) {
                     openLogin('Sign in to run the AI Leak Scan — deep analysis of your poker decisions and mistakes.');
@@ -581,7 +617,49 @@ export function HandAnalyzer() {
                         )}
                     </button>
 
-                    {error && (
+                    {/* Quota Limit Notification */}
+                    {quotaError && (
+                        <div className="mt-4 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-red-500/10 border border-amber-500/30 rounded-2xl p-5 shadow-lg shadow-amber-900/10 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="flex items-start gap-3 mb-3">
+                                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                                    <ShieldAlert className="w-5 h-5 text-amber-400" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-black text-amber-300 uppercase tracking-wide">
+                                        {quotaError.type === 'ocr' ? 'OCR Scan' : 'AI Analysis'} Limit Reached
+                                    </p>
+                                    <p className="text-[11px] text-gray-400 mt-0.5">
+                                        You&apos;ve used all your {quotaError.type === 'ocr' ? 'screenshot scans' : 'AI analyses'} for this period.
+                                    </p>
+                                </div>
+                            </div>
+                            {/* Usage bar */}
+                            <div className="mb-3">
+                                <div className="flex items-center justify-between text-[10px] mb-1.5">
+                                    <span className="text-gray-500 font-bold uppercase tracking-widest">Usage</span>
+                                    <span className="text-amber-400 font-black">{quotaError.used} / {quotaError.limit}</span>
+                                </div>
+                                <div className="h-2 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                                    <div className="h-full bg-gradient-to-r from-amber-500 to-red-500 rounded-full transition-all" style={{ width: `${quotaError.limit > 0 ? Math.min((quotaError.used / quotaError.limit) * 100, 100) : 100}%` }} />
+                                </div>
+                            </div>
+                            {/* Reset date */}
+                            {quotaError.resetsAt && (
+                                <p className="text-[10px] text-gray-500 mb-3">
+                                    ⏳ Resets on <span className="text-white font-bold">{new Date(quotaError.resetsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </p>
+                            )}
+                            {/* Upgrade CTA */}
+                            <a
+                                href="/pricing"
+                                className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white text-[11px] font-black uppercase tracking-widest rounded-xl transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-amber-900/20"
+                            >
+                                Upgrade Plan for More <ArrowUpRight className="w-3.5 h-3.5" />
+                            </a>
+                        </div>
+                    )}
+
+                    {error && !quotaError && (
                         <div className="mt-4 flex items-center gap-3 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
                             <AlertTriangle className="w-5 h-5 flex-shrink-0" /> {error}
                         </div>

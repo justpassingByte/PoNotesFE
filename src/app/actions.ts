@@ -208,7 +208,8 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
     ]);
     const json = await res.json();
 
-    if (!json.success || !json.data) {
+    if (!res.ok || !json.success || !json.data) {
+        console.error(`[fetchPlayerProfile] Backend error for player ${playerId}: status=${res.status}, error=${json.error || 'unknown'}`);
         return null;
     }
 
