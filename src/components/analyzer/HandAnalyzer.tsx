@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, FileText, Loader2, ImageIcon, Sparkles, AlertTriangle, CheckCircle, XCircle, ChevronDown, ChevronUp, Spade } from "lucide-react";
+import { Upload, FileText, Loader2, ImageIcon, Sparkles, AlertTriangle, CheckCircle, XCircle, Spade } from "lucide-react";
 import { API } from "@/lib/api";
 import { createNote } from "@/app/actions";
 import { useLoginModal } from "@/context/LoginModalContext";
@@ -187,139 +187,159 @@ function SaveNoteButton({ noteData, isAutosaved }: { noteData: any; isAutosaved?
     );
 }
 
-// ─── Street Column ───────────────────────────────────────────────────────────
-function StreetSection({
-    street, streetLabel, boardCards, actions, parsedHand, handData, setParsedHand, setEditingCard,
-    isCollapsible = false
+// ─── Street Column (5-column layout) ────────────────────────────────────────
+type StreetKey = 'blinds_ante' | 'preflop' | 'flop' | 'turn' | 'river';
+
+const STREET_CONFIG: Record<StreetKey, { label: string; shortLabel: string; headerColor: string; borderColor: string; textColor: string; badgeBg: string }> = {
+    blinds_ante: { label: 'BLINDS & ANTE', shortLabel: 'BL', headerColor: 'bg-zinc-800/80', borderColor: 'border-zinc-600/30', textColor: 'text-zinc-400', badgeBg: 'bg-zinc-600/20' },
+    preflop:     { label: 'PRE-FLOP',      shortLabel: 'PF', headerColor: 'bg-blue-950/60',  borderColor: 'border-blue-500/20',  textColor: 'text-blue-400',  badgeBg: 'bg-blue-500/10' },
+    flop:        { label: 'FLOP',          shortLabel: 'FL', headerColor: 'bg-emerald-950/60', borderColor: 'border-emerald-500/20', textColor: 'text-emerald-400', badgeBg: 'bg-emerald-500/10' },
+    turn:        { label: 'TURN',          shortLabel: 'TU', headerColor: 'bg-amber-950/60',  borderColor: 'border-amber-500/20',  textColor: 'text-amber-400',  badgeBg: 'bg-amber-500/10' },
+    river:       { label: 'RIVER',         shortLabel: 'RI', headerColor: 'bg-red-950/60',    borderColor: 'border-red-500/20',    textColor: 'text-red-400',    badgeBg: 'bg-red-500/10' },
+};
+
+const ACTION_BADGE: Record<string, string> = {
+    fold:    'bg-zinc-700/60 text-zinc-400',
+    check:   'bg-slate-700/50 text-slate-300',
+    call:    'bg-emerald-700/50 text-emerald-300',
+    bet:     'bg-orange-700/50 text-orange-300',
+    raise:   'bg-amber-700/50 text-amber-200',
+    'all-in':'bg-red-700/60 text-red-200',
+    post:    'bg-zinc-700/40 text-zinc-500',
+};
+
+function StreetColumn({
+    street, boardCards, actions, potAmount, parsedHand, handData, setParsedHand, setEditingCard,
 }: {
-    street: 'preflop' | 'flop' | 'turn' | 'river';
-    streetLabel: string;
+    street: StreetKey;
     boardCards?: string[];
     actions: HandAction[];
+    potAmount?: number;
     parsedHand: Hand | null;
     handData: any;
     setParsedHand: (h: Hand) => void;
     setEditingCard: (v: any) => void;
-    isCollapsible?: boolean;
 }) {
-    const [collapsed, setCollapsed] = useState(false);
-    const streetColorMap: Record<string, string> = {
-        preflop: "text-blue-400 border-blue-500/20",
-        flop: "text-emerald-400 border-emerald-500/20",
-        turn: "text-amber-400 border-amber-500/20",
-        river: "text-red-400 border-red-500/20",
-    };
-    const color = streetColorMap[street] || "text-gold border-gold/20";
-
+    const cfg = STREET_CONFIG[street];
     return (
-        <div className="border border-white/8 rounded-xl overflow-hidden bg-black/20">
-            {/* Street Header */}
-            <div className={`flex items-center justify-between px-4 py-2.5 border-b ${color} bg-black/30`}>
-                <div className="flex items-center gap-3">
-                    <span className={`text-[10px] font-black uppercase tracking-[0.25em] ${color.split(' ')[0]}`}>{streetLabel}</span>
-                    {boardCards && boardCards.length > 0 && (
-                        <div className="flex gap-1">
-                            {boardCards.map((c, i) => (
-                                <button key={i} onClick={() => setEditingCard({ type: 'board', index: handData.board.indexOf(c) })}
-                                    className="hover:scale-110 transition-transform">
-                                    <PokerCard card={c} small />
-                                </button>
-                            ))}
+        <div className={`flex flex-col border-r border-white/5 last:border-r-0 min-w-0`}>
+            {/* Column Header */}
+            <div className={`${cfg.headerColor} ${cfg.borderColor} border-b px-2.5 py-3 flex flex-col gap-1 min-h-[80px] justify-between`}>
+                <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${cfg.textColor}`}>{cfg.label}</span>
+                {/* Board cards for flop/turn/river */}
+                {boardCards && boardCards.length > 0 && (
+                    <div className="flex gap-0.5 flex-wrap">
+                        {boardCards.map((c, i) => (
+                            <button key={i} onClick={() => setEditingCard({ type: 'board', index: handData.board.indexOf(c) })}
+                                className="hover:scale-110 transition-transform">
+                                <PokerCard card={c} small />
+                            </button>
+                        ))}
+                    </div>
+                )}
+                {/* Pot amount */}
+                {potAmount != null && potAmount > 0 && (
+                    <span className={`text-[11px] font-black font-mono ${cfg.textColor}`}>{potAmount} BB</span>
+                )}
+                {/* Action count */}
+                <span className="text-[8px] text-gray-700 font-bold">{actions.length} action{actions.length !== 1 ? 's' : ''}</span>
+            </div>
+
+            {/* Actions list */}
+            <div className="flex-1 px-2 py-1.5 space-y-1 overflow-y-auto max-h-[400px]">
+                {actions.length > 0 ? actions.map((a: any, i: number) => (
+                    <div key={i} className="group bg-black/30 hover:bg-black/50 border border-white/5 rounded-lg p-1.5 transition-all">
+                        {/* Row 1: position badge + player name */}
+                        <div className="flex items-center gap-1 mb-1">
+                            <input
+                                value={a.position || ''}
+                                placeholder="POS"
+                                maxLength={4}
+                                onChange={(e) => {
+                                    const newActions = { ...handData.actions };
+                                    newActions[street] = [...(newActions[street] || [])];
+                                    newActions[street][i] = { ...a, position: e.target.value.toUpperCase() };
+                                    setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                }}
+                                className={`${cfg.badgeBg} ${cfg.textColor} text-[8px] font-black px-1 py-0.5 rounded border ${cfg.borderColor} w-8 text-center uppercase shrink-0 focus:outline-none focus:border-gold/50 placeholder-current/40`}
+                            />
+                            <input
+                                value={a.player}
+                                placeholder="Player"
+                                onChange={(e) => {
+                                    const newActions = { ...handData.actions };
+                                    newActions[street] = [...(newActions[street] || [])];
+                                    newActions[street][i] = { ...a, player: e.target.value };
+                                    setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                }}
+                                className="bg-transparent text-gray-300 text-[9px] px-0.5 flex-1 min-w-0 focus:outline-none truncate font-medium"
+                            />
+                            <button
+                                onClick={() => {
+                                    const newActions = { ...handData.actions };
+                                    newActions[street] = [...(newActions[street] || [])];
+                                    newActions[street].splice(i, 1);
+                                    setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                }}
+                                className="opacity-0 group-hover:opacity-100 text-gray-700 hover:text-red-400 transition-all shrink-0"
+                            >
+                                <XCircle className="w-2.5 h-2.5" />
+                            </button>
                         </div>
-                    )}
-                    <span className="text-[9px] text-gray-600 font-bold">{actions.length} actions</span>
-                </div>
-                {isCollapsible && (
-                    <button onClick={() => setCollapsed(!collapsed)} className="text-gray-600 hover:text-gray-300 transition-colors p-1">
-                        {collapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
-                    </button>
+                        {/* Row 2: action select + amount */}
+                        <div className="flex items-center gap-1">
+                            <select
+                                value={a.action}
+                                onChange={(e) => {
+                                    const newActions = { ...handData.actions };
+                                    newActions[street] = [...(newActions[street] || [])];
+                                    newActions[street][i] = { ...a, action: e.target.value };
+                                    setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                }}
+                                className={`text-[8px] font-black px-1 py-0.5 rounded border focus:outline-none focus:border-gold/50 flex-1 min-w-0 ${ACTION_BADGE[a.action] || 'bg-gray-700/40 text-gray-400'} border-white/5`}
+                            >
+                                <option value="fold">Fold</option>
+                                <option value="check">Check</option>
+                                <option value="call">Call</option>
+                                <option value="bet">Bet</option>
+                                <option value="raise">Raise</option>
+                                <option value="all-in">All-in</option>
+                                <option value="post">Post</option>
+                            </select>
+                            <div className="flex items-center gap-0.5 bg-black/40 rounded border border-white/5 px-1 py-0.5 shrink-0">
+                                <input
+                                    type="number"
+                                    value={a.amount === undefined || a.amount === null ? '' : a.amount}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        const newActions = { ...handData.actions };
+                                        newActions[street] = [...(newActions[street] || [])];
+                                        newActions[street][i] = { ...a, amount: val === '' ? undefined : parseFloat(val) };
+                                        setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                                    }}
+                                    placeholder="0"
+                                    className="bg-transparent text-gold text-[8px] w-8 focus:outline-none font-mono text-right"
+                                />
+                                <span className="text-[7px] text-amber-700 font-black">BB</span>
+                            </div>
+                        </div>
+                    </div>
+                )) : (
+                    <p className="text-[9px] text-gray-700 italic py-3 text-center">No actions</p>
                 )}
             </div>
-            {/* Actions */}
-            {!collapsed && (
-                <div className="px-3 py-2">
-                    {actions.length > 0 ? (
-                        actions.map((a: any, i: number) => (
-                            <div key={i} className="flex items-center gap-1 py-1 border-b border-white/[0.04] last:border-0">
-                                <input
-                                    value={a.position || ""}
-                                    placeholder="Pos"
-                                    maxLength={3}
-                                    onChange={(e) => {
-                                        const newActions = { ...handData.actions };
-                                        newActions[street][i] = { ...a, position: e.target.value.toUpperCase() };
-                                        setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
-                                    }}
-                                    className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black px-1 py-0.5 rounded border border-emerald-500/20 w-8 text-center uppercase shrink-0 focus:outline-none focus:border-gold/50"
-                                />
-                                <input
-                                    value={a.player}
-                                    placeholder="Player"
-                                    onChange={(e) => {
-                                        const newActions = { ...handData.actions };
-                                        newActions[street][i] = { ...a, player: e.target.value };
-                                        setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
-                                    }}
-                                    className="bg-transparent text-gray-300 text-[10px] px-1 py-0.5 rounded border border-white/5 flex-1 min-w-0 focus:outline-none focus:border-gold/50"
-                                />
-                                <select
-                                    value={a.action}
-                                    onChange={(e) => {
-                                        const newActions = { ...handData.actions };
-                                        newActions[street][i] = { ...a, action: e.target.value };
-                                        setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
-                                    }}
-                                    className="bg-black/50 text-gray-300 text-[10px] px-1 py-0.5 rounded border border-white/5 w-16 shrink-0 focus:outline-none focus:border-gold/50"
-                                >
-                                    <option value="fold">Fold</option>
-                                    <option value="check">Check</option>
-                                    <option value="call">Call</option>
-                                    <option value="bet">Bet</option>
-                                    <option value="raise">Raise</option>
-                                    <option value="all-in">All-in</option>
-                                    <option value="post">Post</option>
-                                </select>
-                                <div className="flex items-center gap-0.5 bg-black/40 rounded border border-white/5 px-1 py-0.5 w-14 shrink-0">
-                                    <input
-                                        type="number"
-                                        value={a.amount === undefined || a.amount === null ? '' : a.amount}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            const newActions = { ...handData.actions };
-                                            newActions[street][i] = { ...a, amount: val === '' ? undefined : parseFloat(val) };
-                                            setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
-                                        }}
-                                        placeholder="0"
-                                        className="bg-transparent text-gold text-[10px] px-0.5 w-full focus:outline-none font-mono text-right"
-                                    />
-                                    <span className="text-[8px] text-amber-700 font-black shrink-0">BB</span>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        const newActions = { ...handData.actions };
-                                        newActions[street].splice(i, 1);
-                                        setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
-                                    }}
-                                    className="text-gray-600 hover:text-red-400 transition-colors shrink-0 p-0.5"
-                                >
-                                    <XCircle className="w-3 h-3" />
-                                </button>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-[10px] text-gray-600 italic py-2 text-center">No actions</p>
-                    )}
-                    <button
-                        onClick={() => {
-                            const newActions = { ...handData.actions };
-                            if (!newActions[street]) newActions[street] = [];
-                            newActions[street].push({ player: 'Hero', action: 'check' });
-                            setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
-                        }}
-                        className="w-full mt-1.5 py-1 border border-dashed border-white/10 rounded text-[9px] text-gray-600 hover:text-gold hover:border-gold/30 transition-all uppercase tracking-widest font-bold"
-                    >+ Add Action</button>
-                </div>
-            )}
+
+            {/* Add action */}
+            <button
+                onClick={() => {
+                    const newActions = { ...handData.actions };
+                    if (!newActions[street]) newActions[street] = [];
+                    else newActions[street] = [...newActions[street]];
+                    newActions[street].push({ player: 'Player', action: 'fold' });
+                    setParsedHand({ ...parsedHand!, parsed_data: { ...handData, actions: newActions } });
+                }}
+                className="mx-2 mb-2 py-1 border border-dashed border-white/8 rounded text-[8px] text-gray-700 hover:text-gold hover:border-gold/30 transition-all uppercase tracking-widest font-bold"
+            >+ Add</button>
         </div>
     );
 }
@@ -680,35 +700,34 @@ export function HandAnalyzer() {
                             )}
                         </div>
 
-                        {/* ═══ STREET-BY-STREET ACTION LOG ═══ */}
+                        {/* ═══ 5-COLUMN STREET ACTION LOG ═══ */}
                         <div className="bg-card/40 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+                            {/* Header */}
                             <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 bg-black/20">
                                 <span className="text-[10px] text-white font-black uppercase tracking-[0.2em]">Tactical Log — Review & Edit</span>
                                 <span className="text-[9px] text-amber-500/50 border border-amber-500/10 bg-amber-500/5 px-2 py-0.5 rounded font-bold uppercase">OCR Context-Aware</span>
                             </div>
-                            <div className="divide-y divide-white/5">
-                                {(["preflop", "flop", "turn", "river"] as const).map((street) => {
-                                    const streetBoardMap: Record<string, string[]> = {
-                                        preflop: [],
-                                        flop: flopCards,
-                                        turn: turnCards,
-                                        river: riverCards,
-                                    };
-                                    return (
-                                        <StreetSection
-                                            key={street}
-                                            street={street}
-                                            streetLabel={street === 'preflop' ? 'Pre-Flop' : street.charAt(0).toUpperCase() + street.slice(1)}
-                                            boardCards={streetBoardMap[street]}
-                                            actions={handData.actions?.[street] || []}
-                                            parsedHand={parsedHand}
-                                            handData={handData}
-                                            setParsedHand={setParsedHand}
-                                            setEditingCard={setEditingCard}
-                                            isCollapsible={street !== 'preflop'}
-                                        />
-                                    );
-                                })}
+                            {/* 5-Column grid — one col per street */}
+                            <div className="grid grid-cols-5 divide-x divide-white/5 overflow-x-auto">
+                                {([
+                                    { street: 'blinds_ante' as const, boardCards: [] },
+                                    { street: 'preflop'     as const, boardCards: [] },
+                                    { street: 'flop'        as const, boardCards: flopCards },
+                                    { street: 'turn'        as const, boardCards: turnCards },
+                                    { street: 'river'       as const, boardCards: riverCards },
+                                ]).map(({ street, boardCards }) => (
+                                    <StreetColumn
+                                        key={street}
+                                        street={street}
+                                        boardCards={boardCards}
+                                        actions={handData.actions?.[street] || []}
+                                        potAmount={handData.street_pots?.[street]}
+                                        parsedHand={parsedHand}
+                                        handData={handData}
+                                        setParsedHand={setParsedHand}
+                                        setEditingCard={setEditingCard}
+                                    />
+                                ))}
                             </div>
                         </div>
 
