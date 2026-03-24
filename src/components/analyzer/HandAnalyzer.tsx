@@ -403,7 +403,7 @@ export function HandAnalyzer() {
     async function handleFeedback(action: "confirm" | "edit" | "reject", corrected?: { name: string; revised: string; index?: number }) {
         setIsSubmittingFeedback(true);
         try {
-            await fetch(`${API.base}/api/ocr/feedback`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageHex: imagePreview, cardName: corrected?.name || "all_board", action, correctedName: corrected?.revised || "", cardIndex: corrected?.index }) });
+            await fetch(`${API.base}/api/ocr/feedback`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageHex: imagePreview, cardName: corrected?.name || "all_board", action, correctedName: corrected?.revised || "", cardIndex: corrected?.index }) });
             if (action === "confirm") setParsedHand({ ...parsedHand!, parsed_data: { ...handData, ocr_result: { ...handData.ocr_result, decision: "auto_accept" } } });
         } catch (err) { console.error("Feedback failed:", err); }
         finally { setIsSubmittingFeedback(false); }
