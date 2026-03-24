@@ -24,17 +24,41 @@ interface HandAnalysis {
 
 // ─── Suit symbols ────────────────────────────────────────────────────────────
 const SUIT_SYM: Record<string, string> = { h: "♥", d: "♦", c: "♣", s: "♠" };
+function getSuit(card: string): string {
+    if (!card || card === '??' || card.includes('?')) return '?';
+    return card.slice(-1).toLowerCase();
+}
 function toDisplay(card: string) {
+    if (!card || card === '??') return '??';
+    if (card.endsWith('?')) return `${card.slice(0, -1).toUpperCase()}?`;
     const rank = card.slice(0, -1).toUpperCase();
     const suit = card.slice(-1).toLowerCase();
     return `${rank}${SUIT_SYM[suit] || suit}`;
 }
 
+// ─── Suit color maps ─────────────────────────────────────────────────────────
+const SUIT_STYLES: Record<string, { bg: string; border: string; text: string; glow: string }> = {
+    h: { bg: 'bg-red-950/60',   border: 'border-red-700/80',   text: 'text-red-400',   glow: 'shadow-red-900/40' },
+    d: { bg: 'bg-blue-950/60',  border: 'border-blue-700/80',  text: 'text-blue-400',  glow: 'shadow-blue-900/40' },
+    c: { bg: 'bg-emerald-950/60', border: 'border-emerald-700/80', text: 'text-emerald-400', glow: 'shadow-emerald-900/40' },
+    s: { bg: 'bg-gray-800/80',  border: 'border-gray-500/60',  text: 'text-gray-200',  glow: 'shadow-gray-700/30' },
+    '?': { bg: 'bg-yellow-950/40', border: 'border-yellow-600/60 border-dashed', text: 'text-yellow-400', glow: '' },
+};
+
 // ─── CardBadge ───────────────────────────────────────────────────────────────
 function CardBadge({ card, onClick }: { card: string; onClick?: () => void }) {
+    const suit = getSuit(card);
+    const style = SUIT_STYLES[suit] || SUIT_STYLES['?'];
+    const isUnknown = !card || card === '??' || card.includes('?');
     const Tag = onClick ? "button" : "span";
     return (
-        <Tag onClick={onClick} className="px-1.5 py-0.5 text-xs bg-gray-700 text-white rounded-sm font-bold">
+        <Tag
+            onClick={onClick}
+            className={`inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded border shadow-sm transition-all
+                ${style.bg} ${style.border} ${style.text} ${style.glow}
+                ${isUnknown ? 'animate-pulse cursor-pointer' : ''}
+                ${onClick ? 'hover:brightness-125 hover:scale-105 cursor-pointer' : ''}`}
+        >
             {toDisplay(card)}
         </Tag>
     );
@@ -61,10 +85,17 @@ function ActionRow({ action }: { action: HandAction }) {
     const color = getActionColor(action.action);
     return (
         <div className="grid grid-cols-[140px_80px_1fr] items-center hover:bg-white/5 transition-colors rounded px-1 -mx-1 py-0.5">
-            <div className="text-gray-300 truncate">{action.player}</div>
+            <div className="flex items-center gap-2 truncate pr-2">
+                <span className="text-gray-600 text-[10px] font-bold w-6">{action.position ?? ""}</span>
+                <span className="text-gray-300 truncate">{action.player}</span>
+            </div>
             <div className={`${color} text-left`}>{formatAction(action.action)}</div>
             <div className="text-right text-gray-400 tabular-nums">
-                {action.amount != null ? `${action.amount}BB` : ""}
+                {action.amount != null && (
+                    <>
+                        {action.amount} <span className="text-[10px] text-gray-600 font-bold">BB</span>
+                    </>
+                )}
             </div>
         </div>
     );
@@ -85,22 +116,30 @@ function EditableActionRow({ action, onUpdate, onRemove }: {
     };
     return (
         <div className="group grid grid-cols-[140px_80px_1fr_1rem] items-center hover:bg-white/5 transition-colors rounded px-1 -mx-1 py-0.5">
-            <input value={action.player} placeholder="Player"
-                onChange={e => onUpdate("player", e.target.value)}
-                className="bg-transparent text-gray-300 truncate focus:outline-none min-w-0" />
+            <div className="flex items-center gap-2 truncate pr-2">
+                <input value={action.position ?? ""} placeholder="POS"
+                    onChange={e => onUpdate("position", e.target.value)}
+                    className="bg-transparent text-gray-600 text-[10px] font-bold w-6 focus:outline-none uppercase" />
+                <input value={action.player} placeholder="Player"
+                    onChange={e => onUpdate("player", e.target.value)}
+                    className="bg-transparent text-gray-300 truncate focus:outline-none min-w-0 flex-1" />
+            </div>
             <button onClick={cycleAction} className={`${color} text-left hover:underline`}>
                 {formatAction(action.action)}
             </button>
-            <input type="number" value={action.amount ?? ""} placeholder="—"
-                onChange={e => onUpdate("amount", e.target.value === "" ? undefined : parseFloat(e.target.value))}
-                onWheel={e => {
-                    e.currentTarget.blur(); // Prevent native scroll mess
-                    const current = action.amount ?? 0;
-                    const step = 0.5;
-                    if (e.deltaY < 0) onUpdate("amount", parseFloat((current + step).toFixed(1)));
-                    else if (e.deltaY > 0) onUpdate("amount", Math.max(0, parseFloat((current - step).toFixed(1))));
-                }}
-                className="bg-transparent text-gray-400 text-right focus:outline-none w-full tabular-nums" />
+            <div className="flex items-center justify-end text-right text-gray-400 tabular-nums">
+                <input type="number" value={action.amount ?? ""} placeholder="—"
+                    onChange={e => onUpdate("amount", e.target.value === "" ? undefined : parseFloat(e.target.value))}
+                    onWheel={e => {
+                        e.currentTarget.blur();
+                        const current = action.amount ?? 0;
+                        const step = 0.5;
+                        if (e.deltaY < 0) onUpdate("amount", parseFloat((current + step).toFixed(1)));
+                        else if (e.deltaY > 0) onUpdate("amount", Math.max(0, parseFloat((current - step).toFixed(1))));
+                    }}
+                    className="bg-transparent text-right focus:outline-none w-full tabular-nums" />
+                {action.amount != null && <span className="text-[10px] text-gray-600 font-bold ml-1">BB</span>}
+            </div>
             <button onClick={onRemove}
                 className="opacity-0 group-hover:opacity-100 text-gray-700 hover:text-red-500 transition-opacity text-right">✕</button>
         </div>
@@ -183,19 +222,23 @@ const SUITS = ["h", "d", "c", "s"];
 
 function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (v: string) => void; onCancel: () => void; currentVal?: string }) {
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f1115]" onClick={onCancel}>
-            <div className="bg-gray-900 border border-gray-700 rounded p-4 max-w-xs w-full font-mono" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between mb-2">
-                    <span className="text-xs text-gray-500 uppercase">Pick card</span>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onCancel}>
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-w-sm w-full font-mono shadow-2xl" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between mb-3">
+                    <span className="text-xs text-gray-500 uppercase font-bold">Pick card</span>
                     <button onClick={onCancel} className="text-gray-600 hover:text-white text-xs">✕</button>
                 </div>
-                <div className="grid grid-cols-4 gap-1">
+                <div className="grid grid-cols-4 gap-1.5">
                     {RANKS.flatMap(r => SUITS.map(s => {
                         const v = `${r}${s}`;
+                        const suitStyle = SUIT_STYLES[s] || SUIT_STYLES['s'];
+                        const isSelected = currentVal === v;
                         return (
                             <button key={v} onClick={() => onSelect(v)}
-                                className={`h-7 text-xs rounded transition-colors
-                                    ${currentVal === v ? "bg-yellow-400 text-[#0f1115]d" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}>
+                                className={`h-8 text-xs rounded-md border font-bold transition-all
+                                    ${isSelected
+                                        ? "bg-yellow-400 text-black border-yellow-300 scale-105"
+                                        : `${suitStyle.bg} ${suitStyle.text} ${suitStyle.border} hover:brightness-125 hover:scale-105`}`}>
                                 {toDisplay(v)}
                             </button>
                         );
@@ -235,10 +278,11 @@ export function HandAnalyzer() {
     const MOCK_HAND: Hand = {
         id: "mock-001",
         parsed_data: {
-            board: ["9d", "3c", "6h", "4c", "Kc"],
+            board: ["9d", "3c", "6h", "??", "Kc"],
             players: [
                 { name: "chipboiz", position: "BB", hole_cards: ["Qh", "Qd"] },
                 { name: "kiukiukiu902", position: "CO", hole_cards: ["9s", "9h"] },
+                { name: "Vipbka1", position: "BTN", hole_cards: ["??", "6s"] },
             ],
             actions: {
                 preflop: [
@@ -453,16 +497,16 @@ export function HandAnalyzer() {
 
                         {/* Hole cards line */}
                         {handData.players?.some((p: any) => p.hole_cards?.length > 0) && (
-                            <div className="flex items-center gap-4 mb-4 text-xs">
+                            <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
                                 {handData.players.filter((p: any) => p.hole_cards?.length > 0).map((p: any, i: number) => (
-                                    <span key={i} className="flex items-center gap-1">
-                                        <span className="text-gray-500">{p.name}</span>
+                                    <span key={i} className="flex items-center gap-1.5 bg-gray-900/50 rounded px-2 py-1 border border-gray-800">
+                                        <span className="text-gray-400 font-medium">{p.name}</span>
                                         {p.hole_cards.map((c: string, ci: number) => (
                                             <CardBadge key={ci} card={c} onClick={editable ? () => setEditingCard({ type: "hole", index: ci, pIdx: handData.players.indexOf(p) }) : undefined} />
                                         ))}
                                     </span>
                                 ))}
-                                {handData.winner && <span className="text-green-500 ml-auto">🏆 {handData.winner}</span>}
+                                {handData.winner && <span className="text-green-500 ml-auto font-bold">🏆 {handData.winner}</span>}
                                 {handData.pot != null && <span className="text-gray-500">Pot: {handData.pot}BB</span>}
                             </div>
                         )}
