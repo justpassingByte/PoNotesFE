@@ -401,14 +401,14 @@ export function HandAnalyzer() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ rawInput, inputType }),
             });
-            if (res.status === 401 || res.status === 403) {
+            if (res.status === 401 || res.status === 403 || res.status === 440) {
                 openLogin('Sign in to use the AI Hand Analyzer — parse screenshots and get instant leak detection.');
                 return;
             }
             const json = await res.json();
             if (!json.success) {
                 // Check if it's an auth error
-                if (json.error?.toLowerCase().includes('auth') || json.error?.toLowerCase().includes('login') || json.error?.toLowerCase().includes('token')) {
+                if (json.error?.toLowerCase().includes('auth') || json.error?.toLowerCase().includes('login') || json.error?.toLowerCase().includes('token') || json.error?.toLowerCase().includes('session') || json.error?.toLowerCase().includes('expired')) {
                     openLogin('Sign in to use the AI Hand Analyzer — parse screenshots and get instant leak detection.');
                     return;
                 }
@@ -441,7 +441,7 @@ export function HandAnalyzer() {
             }
             const json = await res.json();
             if (!json.success) {
-                if (json.error?.toLowerCase().includes('auth') || json.error?.toLowerCase().includes('login') || json.error?.toLowerCase().includes('token')) {
+                if (json.error?.toLowerCase().includes('auth') || json.error?.toLowerCase().includes('login') || json.error?.toLowerCase().includes('token') || json.error?.toLowerCase().includes('session') || json.error?.toLowerCase().includes('expired')) {
                     openLogin('Sign in to run the AI Leak Scan — deep analysis of your poker decisions and mistakes.');
                     return;
                 }

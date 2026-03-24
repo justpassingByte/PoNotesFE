@@ -38,6 +38,7 @@ export function LoginModal({ isOpen, onClose, reason }: LoginModalProps) {
             const endpoint = tab === 'login' ? '/api/auth/login-action' : '/api/auth/register-action';
             const res = await fetch(endpoint, {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
