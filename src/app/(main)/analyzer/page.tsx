@@ -7,10 +7,8 @@ export const metadata = {
 
 export default async function AnalyzerPage() {
     return (
-        <main className="flex-1 pt-24 sm:pt-32 px-4 sm:px-8 pb-12 overflow-y-auto w-full">
-            <div className="max-w-7xl mx-auto w-full">
-                <HandAnalyzer />
-            </div>
+        <main className="flex-1 pt-24 sm:pt-32 px-4 sm:px-6 pb-12 overflow-y-auto w-full">
+            <HandAnalyzer />
         </main>
     );
 }

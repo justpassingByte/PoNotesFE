@@ -41,6 +41,15 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
         async function loadSettings() {
             try {
                 const data = await getAISettings();
+                // Apply defaults for fields that may be null/empty from server
+                if (data) {
+                    if (!data.ai_style) data.ai_style = "Exploit";
+                    if (!data.hand_style) data.hand_style = "Exploit";
+                    if (data.aggression_bias == null) data.aggression_bias = 85;
+                    if (data.hand_aggression_bias == null) data.hand_aggression_bias = 85;
+                    if (!data.insight_depth) data.insight_depth = "Deep";
+                    if (!data.hand_insight_depth) data.hand_insight_depth = "Deep";
+                }
                 setSettings(data);
             } catch (err) {
                 setError("Failed to load AI settings");
@@ -170,7 +179,9 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Strategic Architecture</label>
                         <div className="grid grid-cols-3 gap-2 p-1 bg-black/40 border border-white/5 rounded-2xl h-[58px]">
                             {['Exploit', 'Balanced', 'GTO'].map((style) => {
-                                const currentStyle = activeTab === 'profile' ? (settings?.ai_style || "Exploit") : (settings?.hand_style || "Exploit");
+                                const currentStyle = activeTab === 'profile'
+                                    ? (settings?.ai_style || "Exploit")
+                                    : (settings?.hand_style || "Exploit");
                                 return (
                                     <button
                                         key={style}

@@ -17,8 +17,8 @@ export async function DashboardContent() {
     try {
         const dashboardData = await fetchDashboard();
         if (dashboardData.stats) stats = { ...stats, ...dashboardData.stats };
-        topWhales = dashboardData.topWhales || [];
-        topRegs = dashboardData.topRegs || [];
+        topWhales = (dashboardData.topWhales || []).slice(0, 3);
+        topRegs = (dashboardData.topRegs || []).slice(0, 3);
     } catch (err) {
         console.error("Dashboard fetch error:", err);
     }

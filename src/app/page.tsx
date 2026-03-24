@@ -5,8 +5,8 @@ import { PricingSection } from "@/components/layout/PricingSection";
 import { ContactSection } from "@/components/layout/ContactSection";
 
 export const metadata = {
-  title: "VillainVault | The AI Edge in Professional Poker",
-  description: "Master the table with Gemini-powered AI analysis, OCR automated notes, and GTO tactical guides.",
+  title: "Villiant Vault | Két Sắt + Bộ Não AI Cho Poker",
+  description: "Giảm leak, tăng edge, exploit đúng người đúng lúc. Villiant Vault — két sắt AI đầu tiên cho poker của bạn.",
 };
 
 export default function LandingPage() {
