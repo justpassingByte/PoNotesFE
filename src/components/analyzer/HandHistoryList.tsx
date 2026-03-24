@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Clock, Search, Tag, ChevronRight, Sparkles, Trophy, Calendar, Trash2, Image as ImageIcon, Loader2, FileText, AlertCircle } from "lucide-react";
 import Tesseract from 'tesseract.js';
-import { API } from "@/lib/api";
+import { API, apiFetch, apiDelete } from "@/lib/api";
 
 interface HandSummary {
     id: string;
@@ -79,7 +79,7 @@ export function HandHistoryList() {
             if (minPot) params.set("minPot", minPot);
             if (playerName) params.set("playerName", playerName);
 
-            const res = await fetch(`${API.handHistory}?${params.toString()}`);
+            const res = await apiFetch(`${API.handHistory}?${params.toString()}`);
             const json = await res.json();
             if (json.success) {
                 setHands(json.data || []);
@@ -95,10 +95,7 @@ export function HandHistoryList() {
         if (!confirm("Are you sure you want to delete this hand history?")) return;
         
         try {
-            const res = await fetch(API.hand(handId), {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" }
-            });
+            const res = await apiDelete(API.hand(handId));
             const json = await res.json();
             if (json.success) {
                 alert("Hand deleted successfully");

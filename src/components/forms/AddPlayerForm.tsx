@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Plus, Upload, Image as ImageIcon, Loader2, Zap } from 'lucide-react';
 import Tesseract from 'tesseract.js';
-import { API } from '@/lib/api';
+import { API, apiFetch, apiPost } from '@/lib/api';
 
 interface PlatformOption {
     id: string;
@@ -29,7 +29,7 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
 
     // Fetch real platforms from the database
     useEffect(() => {
-        fetch(API.platforms)
+        apiFetch(API.platforms)
             .then(res => res.json())
             .then(json => {
                 if (json.success && json.data) {
@@ -42,7 +42,7 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
             .catch(err => console.error('Failed to fetch platforms:', err));
 
         // Fetch quick tags from templates
-        fetch(API.templates)
+        apiFetch(API.templates)
             .then(res => res.json())
             .then(json => {
                 if (json.success && json.data) {
@@ -114,11 +114,7 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
                 playstyle,
             };
 
-            const res = await fetch(API.players, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
+            const res = await apiPost(API.players, payload);
 
             if (res.ok) {
                 const json = await res.json();
@@ -126,15 +122,11 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
 
                 // 2. Optionally Create Initial Note
                 if (noteContent.trim() !== '') {
-                    await fetch(API.notes, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            player_id: newPlayerId,
-                            street,
-                            note_type: 'Custom',
-                            content: noteContent
-                        }),
+                    await apiPost(API.notes, {
+                        player_id: newPlayerId,
+                        street,
+                        note_type: 'Custom',
+                        content: noteContent
                     });
                 }
 

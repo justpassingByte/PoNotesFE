@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileText, Zap } from 'lucide-react';
-import { API } from '@/lib/api';
+import { API, apiFetch, apiPost } from '@/lib/api';
 
 interface Template {
     id: string;
@@ -15,7 +15,7 @@ export function AddNoteForm({ playerId, onSuccess, onCancel }: { playerId: strin
     const [templates, setTemplates] = useState<Template[]>([]);
 
     useEffect(() => {
-        fetch(API.templates)
+        apiFetch(API.templates)
             .then(res => res.json())
             .then(json => {
                 if (json.success && json.data) {
@@ -43,11 +43,7 @@ export function AddNoteForm({ playerId, onSuccess, onCancel }: { playerId: strin
                 content,
             };
 
-            const res = await fetch(API.notes, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
+            const res = await apiPost(API.notes, payload);
 
             if (res.ok) {
                 if (onSuccess) onSuccess();

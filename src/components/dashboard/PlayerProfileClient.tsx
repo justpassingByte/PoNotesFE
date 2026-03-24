@@ -7,7 +7,7 @@ import {
     ChevronDown, Zap, Shield, Target, RefreshCw, AlignLeft, Brain
 } from 'lucide-react';
 import { Header } from "@/components/layout/Header";
-import { API } from "@/lib/api";
+import { API, apiFetch, apiPost, apiDelete } from "@/lib/api";
 
 const STRATEGIES: Record<string, string[]> = {
     "LAG": [
@@ -143,7 +143,7 @@ export function PlayerProfileClient({
     // Fetch current usage on mount if not pre-populated by SSR
     useEffect(() => {
         if (usage !== undefined) return; 
-        fetch(`${API.usage}?action=AI_ANALYZE`)
+        apiFetch(`${API.usage}?action=AI_ANALYZE`)
             .then(r => r.json())
             .then(json => { if (json.success && json.data) setUsage(json.data); })
             .catch(() => { });
@@ -162,11 +162,7 @@ export function PlayerProfileClient({
 
         setIsAnalyzing(true);
         try {
-            const res = await fetch(API.refreshProfile, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ playerId: player.id })
-            });
+            const res = await apiPost(API.refreshProfile, { playerId: player.id });
 
             const json = await res.json();
             
@@ -199,16 +195,12 @@ export function PlayerProfileClient({
         if (!newNoteContent.trim()) return;
         setAddingNote(true);
         try {
-            const res = await fetch(API.notes, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            const res = await apiPost(API.notes, {
                     player_id: player.id,
                     street: newNoteStreet,
                     note_type: 'Custom',
                     content: newNoteContent.trim()
-                })
-            });
+                });
             if (res.ok) {
                 setNewNoteContent('');
                 setShowAddNote(false);
@@ -225,9 +217,8 @@ export function PlayerProfileClient({
     const handleUpdateNote = async (noteId: string) => {
         if (!editContent.trim()) return;
         try {
-            const res = await fetch(API.note(noteId), {
+            const res = await apiFetch(API.note(noteId), {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     content: editContent.trim(),
                     street: editStreet
@@ -246,7 +237,7 @@ export function PlayerProfileClient({
     // DELETE Note
     const handleDeleteNote = async (noteId: string) => {
         try {
-            const res = await fetch(API.note(noteId), { method: 'DELETE' });
+            const res = await apiDelete(API.note(noteId));
             if (res.ok) await refreshPlayer();
         } catch (err) {
             console.error("Failed to delete note", err);
@@ -257,9 +248,8 @@ export function PlayerProfileClient({
     const handleUpdatePlayer = async () => {
         if (!editName.trim()) return;
         try {
-            const res = await fetch(API.player(player.id), {
+            const res = await apiFetch(API.player(player.id), {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: editName.trim(), playstyle: editPlaystyle })
             });
             if (res.ok) {
@@ -274,7 +264,7 @@ export function PlayerProfileClient({
     // DELETE Player
     const handleDeletePlayer = async () => {
         try {
-            const res = await fetch(API.player(player.id), { method: 'DELETE' });
+            const res = await apiDelete(API.player(player.id));
             if (res.ok) router.push('/players');
         } catch (err) {
             console.error("Failed to delete player", err);

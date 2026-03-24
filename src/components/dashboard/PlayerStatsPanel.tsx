@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BarChart3, Save, RotateCcw } from "lucide-react";
-import { API } from "@/lib/api";
+import { API, apiFetch } from "@/lib/api";
 
 interface PlayerStatsPanelProps {
     playerId: string;
@@ -51,7 +51,7 @@ export function PlayerStatsPanel({ playerId }: PlayerStatsPanelProps) {
 
     const fetchStats = async () => {
         try {
-            const res = await fetch(API.playerStats(playerId));
+            const res = await apiFetch(API.playerStats(playerId));
             if (res.ok) {
                 const json = await res.json();
                 const data = json.data as StatsData;
@@ -77,9 +77,8 @@ export function PlayerStatsPanel({ playerId }: PlayerStatsPanelProps) {
             for (const cfg of STAT_CONFIG) {
                 payload[cfg.key] = enabled[cfg.key] ? stats[cfg.key as keyof StatsData] : null;
             }
-            const res = await fetch(API.playerStats(playerId), {
+            const res = await apiFetch(API.playerStats(playerId), {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
             if (res.ok) {
