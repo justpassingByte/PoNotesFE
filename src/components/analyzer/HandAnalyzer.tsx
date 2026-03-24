@@ -397,6 +397,7 @@ export function HandAnalyzer() {
             if (!rawInput) { setError("Please provide a hand to parse."); return; }
             const res = await fetch(`${API.handAnalyze}/parse`, {
                 method: "POST",
+                credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ rawInput, inputType }),
             });
@@ -430,6 +431,7 @@ export function HandAnalyzer() {
         try {
             const res = await fetch(`${API.handAnalyze}/analyze`, {
                 method: "POST",
+                credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ handId: parsedHand.id, parsedData: parsedHand.parsed_data }),
             });

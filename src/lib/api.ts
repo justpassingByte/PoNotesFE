@@ -44,3 +44,34 @@ export const API = {
   pricingPublic: `${API_BASE_URL}/api/admin/pricing/public`,
   authRefreshSession: `${API_BASE_URL}/api/auth/refresh-session`,
 } as const;
+
+/**
+ * Global fetch wrapper — always sends cookies (credentials: 'include')
+ * so the auth token cookie reaches the backend on every request.
+ * Use this instead of raw fetch() for all API calls.
+ */
+export function apiFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(url, {
+    ...init,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init.headers || {}),
+    },
+  });
+}
+
+/** POST helper */
+export function apiPost(url: string, body: unknown, init: RequestInit = {}): Promise<Response> {
+  return apiFetch(url, { ...init, method: 'POST', body: JSON.stringify(body) });
+}
+
+/** DELETE helper */
+export function apiDelete(url: string, init: RequestInit = {}): Promise<Response> {
+  return apiFetch(url, { ...init, method: 'DELETE' });
+}
+
+/** GET helper (credentials included) */
+export function apiGet(url: string, init: RequestInit = {}): Promise<Response> {
+  return apiFetch(url, { ...init, method: 'GET' });
+}
