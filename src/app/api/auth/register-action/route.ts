@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { API } from '@/lib/api';
 
 export async function POST(request: NextRequest) {
@@ -18,9 +17,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: json.error || 'Registration failed' });
         }
 
-        const cookieStore = await cookies();
         const secure = process.env.NEXT_PUBLIC_API_URL?.startsWith('https') || false;
-        cookieStore.set('token', json.token, {
+
+        // IMPORTANT: In Route Handlers, cookies must be set on the NextResponse object directly.
+        // Using cookieStore.set() from next/headers does NOT attach to the HTTP response here.
+        const response = NextResponse.json({ success: true });
+        response.cookies.set('token', json.token, {
             httpOnly: true,
             secure,
             maxAge: 7 * 24 * 60 * 60,
@@ -28,7 +30,7 @@ export async function POST(request: NextRequest) {
             path: '/',
         });
 
-        return NextResponse.json({ success: true });
+        return response;
     } catch (err) {
         return NextResponse.json({ success: false, error: 'Network error during registration' });
     }

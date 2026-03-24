@@ -1,130 +1,160 @@
 "use client";
 
-import { useState } from "react";
-import { X, Crown, Zap, ShieldCheck, LogOut, ArrowUpRight, Star, Brain, AlertTriangle, Crosshair, ShieldAlert, FileText, History, CreditCard, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+    X, Crown, Zap, ShieldCheck, LogOut, ArrowUpRight, Star, Brain,
+    FileText, CreditCard, Sparkles, Users, StickyNote, Calendar,
+    Bot, PenLine, ChevronRight, Loader2, AlertCircle
+} from "lucide-react";
 import { logout } from "@/app/auth-actions";
+import { getUserProfile } from "@/app/actions";
 
 interface ProfileHUDModalProps {
     isOpen: boolean;
     onClose: () => void;
     user?: { email: string; premium_tier: string } | null;
-    stats?: {
-        totalCount: number;
-        totalNotesCount: number;
-        aiUsage?: { remaining: number; limit: number; resetsAt: string };
-        ocrUsage?: { remaining: number; limit: number; resetsAt: string };
-    };
-    topWhales?: any[];
-    topRegs?: any[];
 }
 
-const PLAN_CONFIG: Record<string, {
-    label: string;
-    color: string;
-    bg: string;
-    border: string;
-    glow: string;
-    icon: React.ReactNode;
-    features: string[];
-    upgrade?: { label: string; href: string };
+// ─── Plan Theming ────────────────────────────────────────────────────────────
+const TIER_THEME: Record<string, {
+    label: string; color: string; bg: string; border: string; glow: string;
+    icon: React.ReactNode; badgeGrad: string;
 }> = {
     FREE: {
-        label: "Free Tier",
-        color: "text-gray-400",
-        bg: "bg-gray-500/10",
-        border: "border-gray-500/20",
-        glow: "",
+        label: "Free", color: "text-gray-400",
+        bg: "bg-gray-500/8", border: "border-gray-500/20", glow: "",
         icon: <ShieldCheck className="w-4 h-4 text-gray-400" />,
-        features: ["5 AI Scans / month", "10 Hand Analyses / month", "Basic Player HUD"],
-        upgrade: { label: "Upgrade to Pro", href: "/pricing" },
+        badgeGrad: "from-gray-600/30 to-gray-700/20",
     },
     PRO: {
-        label: "Pro",
-        color: "text-blue-400",
-        bg: "bg-blue-500/10",
-        border: "border-blue-500/30",
-        glow: "shadow-[0_0_20px_rgba(59,130,246,0.15)]",
+        label: "Pro", color: "text-blue-400",
+        bg: "bg-blue-500/8", border: "border-blue-500/25", glow: "shadow-[0_0_24px_rgba(59,130,246,0.12)]",
         icon: <Star className="w-4 h-4 text-blue-400" />,
-        features: ["100 AI Scans / month", "50 Hand Analyses / month", "Advanced Player HUD", "AI Neural Tuning"],
-        upgrade: { label: "Upgrade to Elite", href: "/pricing" },
+        badgeGrad: "from-blue-600/30 to-blue-700/20",
     },
-    ELITE: {
-        label: "Elite",
-        color: "text-gold",
-        bg: "bg-gold/10",
-        border: "border-gold/30",
-        glow: "shadow-[0_0_25px_rgba(250,204,21,0.15)]",
+    PRO_PLUS: {
+        label: "Elite", color: "text-purple-400",
+        bg: "bg-purple-500/8", border: "border-purple-500/25", glow: "shadow-[0_0_28px_rgba(168,85,247,0.14)]",
+        icon: <Sparkles className="w-4 h-4 text-purple-400" />,
+        badgeGrad: "from-purple-600/30 to-purple-700/20",
+    },
+    ENTERPRISE: {
+        label: "Enterprise", color: "text-gold",
+        bg: "bg-gold/8", border: "border-gold/30", glow: "shadow-[0_0_30px_rgba(250,204,21,0.15)]",
         icon: <Crown className="w-4 h-4 text-gold" />,
-        features: ["Unlimited AI Scans", "Unlimited Hand Analyses", "Full Poker HUD Suite", "Priority Neural Processing"],
+        badgeGrad: "from-gold/30 to-amber-600/20",
     },
 };
 
-function UsageBar({ label, remaining, limit, color = "gold" }: { label: string; remaining: number; limit: number; color?: string }) {
-    const pct = limit > 0 ? Math.round(((limit - remaining) / limit) * 100) : 0;
-    const barColor = color === "gold" ? "bg-gold" : "bg-blue-400";
-    const textColor = color === "gold" ? "text-gold" : "text-blue-400";
+// ─── Sub-components ──────────────────────────────────────────────────────────
+function UsageBar({ label, used, limit, color = "gold" }: { label: string; used: number; limit: number; color?: string }) {
+    const pct = limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0;
+    const barColor = color === "gold" ? "bg-gold" : color === "blue" ? "bg-blue-400" : "bg-purple-400";
+    const textColor = color === "gold" ? "text-gold" : color === "blue" ? "text-blue-400" : "text-purple-400";
+    const warningColor = pct > 80 ? "bg-red-500" : barColor;
     return (
         <div className="space-y-1.5">
             <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{label}</span>
-                <span className={`text-[10px] font-black font-mono ${textColor}`}>{remaining} / {limit}</span>
-            </div>
-            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                <div
-                    className={`h-full ${barColor} rounded-full transition-all duration-700`}
-                    style={{ width: `${pct}%` }}
-                />
-            </div>
-        </div>
-    );
-}
-
-function getPlaystyleColor(style: string) {
-    switch (style?.toUpperCase()) {
-        case 'LAG': return 'text-red-400 bg-red-500/10 border-red-500/30';
-        case 'TAG': return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
-        case 'NIT': return 'text-green-400 bg-green-500/10 border-green-500/30';
-        case 'FISH': return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
-        case 'WHALE': return 'text-gold bg-gold/10 border-gold/30 animate-pulse';
-        case 'MANIAC': return 'text-purple-400 bg-purple-500/10 border-purple-500/30';
-        default: return 'text-gray-400 bg-gray-500/10 border-gray-500/30';
-    }
-}
-
-function MiniPlayerRow({ player, isStrong = false }: { player: any; isStrong?: boolean }) {
-    const aggression = player.ai_aggression_score ?? player.aggression_score ?? 0;
-    const style = player.ai_playstyle || player.playstyle || 'UNKNOWN';
-    return (
-        <div className={`flex items-center justify-between px-3 py-2 rounded-xl border bg-black/30 ${isStrong ? 'border-red-500/10' : 'border-gold/10'} hover:border-white/20 transition-all`}>
-            <div className="flex items-center gap-2.5 min-w-0">
-                <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isStrong ? 'bg-red-400' : 'bg-gold'}`} />
-                <span className="text-xs font-bold text-white truncate">{player.name}</span>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded border font-black uppercase tracking-wide ${getPlaystyleColor(style)}`}>
-                    {style}
+                <span className={`text-[10px] font-black font-mono ${textColor}`}>
+                    {limit === -1 ? "∞ Unlimited" : `${limit - used} left / ${limit}`}
                 </span>
             </div>
-            <div className="flex items-center gap-2 shrink-0 ml-2">
-                {aggression > 60
-                    ? <AlertTriangle className="w-3 h-3 text-red-400" />
-                    : aggression > 30
-                        ? <Crosshair className="w-3 h-3 text-yellow-400" />
-                        : <ShieldAlert className="w-3 h-3 text-green-400" />
-                }
-                <span className={`text-[10px] font-black font-mono ${isStrong ? 'text-red-400' : 'text-white'}`}>{aggression}%</span>
-            </div>
+            {limit !== -1 && (
+                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                        className={`h-full ${warningColor} rounded-full transition-all duration-700`}
+                        style={{ width: `${pct}%` }}
+                    />
+                </div>
+            )}
         </div>
     );
 }
 
-export function ProfileHUDModal({ isOpen, onClose, user, stats, topWhales = [], topRegs = [] }: ProfileHUDModalProps) {
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
+function CategoryDot({ category }: { category: string }) {
+    const map: Record<string, string> = {
+        EXPLOIT: "bg-red-400",
+        LEAK: "bg-yellow-400",
+        TELL: "bg-purple-400",
+        GENERAL: "bg-gray-500",
+    };
+    return <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${map[category?.toUpperCase()] ?? "bg-gray-500"}`} />;
+}
 
-    const tier = user?.premium_tier?.toUpperCase() || "FREE";
-    const plan = PLAN_CONFIG[tier] || PLAN_CONFIG.FREE;
-    const displayName = user?.email?.split("@")[0] || "HERO";
-    const resetsAtDate = stats?.aiUsage?.resetsAt
-        ? new Date(stats.aiUsage.resetsAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+function NoteRow({ note }: { note: any }) {
+    const isAI = note.is_ai_generated;
+    const timeAgo = (() => {
+        const diff = Date.now() - new Date(note.created_at).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 60) return `${mins}m ago`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return `${hrs}h ago`;
+        return `${Math.floor(hrs / 24)}d ago`;
+    })();
+
+    return (
+        <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-black/30 border border-white/5 hover:border-white/10 transition-all group">
+            <div className="mt-0.5 shrink-0">
+                <CategoryDot category={note.category} />
+            </div>
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-[10px] font-black text-white/60 uppercase tracking-wide truncate">
+                        {note.player?.name ?? "Unknown Player"}
+                    </span>
+                    {isAI && <Bot className="w-2.5 h-2.5 text-blue-400 shrink-0" />}
+                </div>
+                <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">{note.content}</p>
+            </div>
+            <span className="text-[9px] text-gray-600 font-bold shrink-0 mt-0.5">{timeAgo}</span>
+        </div>
+    );
+}
+
+// ─── Main Modal ───────────────────────────────────────────────────────────────
+export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps) {
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [profile, setProfile] = useState<{
+        user: any; plan: any; stats: any; recentNotes: any[];
+    } | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
+
+    // Fetch real profile data when modal opens
+    useEffect(() => {
+        if (!isOpen || !user) return;
+        setLoading(true);
+        setError(false);
+        getUserProfile()
+            .then((data) => {
+                if (data) setProfile(data);
+                else setError(true);
+            })
+            .catch(() => setError(true))
+            .finally(() => setLoading(false));
+    }, [isOpen, user]);
+
+    // Reset on close
+    useEffect(() => {
+        if (!isOpen) { setProfile(null); setError(false); }
+    }, [isOpen]);
+
+    const tier = (profile?.user?.premium_tier ?? user?.premium_tier ?? "FREE").toUpperCase();
+    const theme = TIER_THEME[tier] ?? TIER_THEME.FREE;
+    const plan = profile?.plan;
+    const stats = profile?.stats;
+    const recentNotes: any[] = profile?.recentNotes ?? [];
+    const displayName = (profile?.user?.email ?? user?.email ?? "HERO").split("@")[0];
+    const email = profile?.user?.email ?? user?.email ?? "";
+
+    const expiryDate = profile?.user?.subscription_expiry
+        ? new Date(profile.user.subscription_expiry).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
         : null;
+
+    // Usage derived from plan limits & stats
+    const aiUsed = (plan?.ai_limit ?? 0) - (0); // will use real usage when available
+    const handOcrUsed = 0;
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
@@ -135,128 +165,222 @@ export function ProfileHUDModal({ isOpen, onClose, user, stats, topWhales = [], 
 
     return (
         <div
-            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-end sm:justify-end sm:pr-6 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-end sm:pr-6 bg-black/70 backdrop-blur-sm"
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
-            {/* Slide-in panel from right */}
-            <div className="bg-[#0e0e0e] border border-white/10 w-full sm:w-[360px] max-h-[95vh] rounded-t-2xl sm:rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.8)] flex flex-col animate-in slide-in-from-right-8 sm:slide-in-from-right-8 duration-300 overflow-hidden">
-                {/* Gold accent top */}
+            {/* Panel */}
+            <div className="bg-[#0a0a0a] border border-white/10 w-full sm:w-[480px] max-h-[92vh] rounded-t-2xl sm:rounded-2xl shadow-[0_40px_100px_rgba(0,0,0,0.9)] flex flex-col animate-in slide-in-from-right-8 duration-300 overflow-hidden">
+
+                {/* Gold top accent */}
                 <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-gold/60 to-transparent shrink-0" />
 
-                {/* Header */}
-                <div className="px-5 pt-5 pb-4 border-b border-white/5 flex items-start justify-between shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/30 to-amber-700/30 border border-gold/30 flex items-center justify-center shadow-[0_0_15px_rgba(250,204,21,0.15)]">
-                            <span className="text-sm font-black text-gold">{displayName.charAt(0).toUpperCase()}</span>
+                {/* ── Header ── */}
+                <div className="px-6 pt-6 pb-5 border-b border-white/5 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-4">
+                        {/* Avatar */}
+                        <div className="relative">
+                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${theme.badgeGrad} border ${theme.border} flex items-center justify-center ${theme.glow}`}>
+                                <span className={`text-xl font-black ${theme.color}`}>{displayName.charAt(0).toUpperCase()}</span>
+                            </div>
+                            {/* Online dot */}
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#0a0a0a]" />
                         </div>
                         <div>
-                            <p className="text-sm font-black text-white uppercase tracking-tight">{displayName}</p>
-                            <p className="text-[10px] text-gray-500 font-medium">{user?.email}</p>
+                            <p className="text-base font-black text-white uppercase tracking-tight">{displayName}</p>
+                            <p className="text-[11px] text-gray-500 font-medium mt-0.5">{email}</p>
+                            <div className={`inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-0.5 rounded-full ${theme.bg} ${theme.border} border`}>
+                                {theme.icon}
+                                <span className={`text-[9px] font-black uppercase tracking-widest ${theme.color}`}>
+                                    {plan?.name ?? tier}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                    <button
+                        onClick={onClose}
+                        className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                    >
                         <X className="w-4 h-4" />
                     </button>
                 </div>
 
-                {/* Scrollable body */}
-                <div className="overflow-y-auto scrollbar-hide flex-1 p-5 space-y-5">
+                {/* ── Scrollable body ── */}
+                <div className="overflow-y-auto scrollbar-hide flex-1 px-6 py-5 space-y-5">
 
-                    {/* ── Plan Badge ── */}
-                    <div className={`p-4 rounded-2xl border ${plan.bg} ${plan.border} ${plan.glow}`}>
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                {plan.icon}
-                                <span className={`text-xs font-black uppercase tracking-widest ${plan.color}`}>{plan.label}</span>
-                            </div>
-                            {resetsAtDate && (
-                                <span className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Resets {resetsAtDate}</span>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            {plan.features.map((f, i) => (
-                                <div key={i} className="flex items-center gap-2">
-                                    <div className={`w-1 h-1 rounded-full ${plan.color.replace('text-', 'bg-')}`} />
-                                    <span className="text-[10px] text-gray-400 font-medium">{f}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* ── Usage Bars ── */}
-                    {(stats?.aiUsage || stats?.ocrUsage) && (
-                        <div className="bg-black/40 border border-white/5 rounded-2xl p-4 space-y-4">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                                <Zap className="w-3 h-3 text-gold" /> Usage This Cycle
-                            </span>
-                            {stats?.aiUsage && (
-                                <UsageBar label="AI Scans Used" remaining={stats.aiUsage.remaining} limit={stats.aiUsage.limit} color="gold" />
-                            )}
-                            {stats?.ocrUsage && (
-                                <UsageBar label="OCR Hand Analyses" remaining={stats.ocrUsage.remaining} limit={stats.ocrUsage.limit} color="blue" />
-                            )}
+                    {/* Loading state */}
+                    {loading && (
+                        <div className="flex items-center justify-center py-10 gap-3">
+                            <Loader2 className="w-5 h-5 text-gold/60 animate-spin" />
+                            <span className="text-[11px] text-gray-600 font-bold uppercase tracking-widest">Loading profile...</span>
                         </div>
                     )}
 
-                    {/* ── Upgrade CTA ── */}
-                    {plan.upgrade && (
-                        <a
-                            href={plan.upgrade.href}
-                            className="group flex items-center justify-between w-full px-5 py-4 bg-gradient-to-r from-gold/15 to-amber-700/10 border border-gold/30 rounded-2xl hover:from-gold/25 hover:to-amber-600/20 transition-all shadow-[0_0_20px_rgba(250,204,21,0.05)] hover:shadow-[0_0_30px_rgba(250,204,21,0.15)]"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-xl bg-gold/20 flex items-center justify-center">
-                                    <Crown className="w-4 h-4 text-gold" />
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-xs font-black text-gold uppercase tracking-wider">{plan.upgrade.label}</p>
-                                    <p className="text-[9px] text-gray-500 font-medium">Unlock full neural power</p>
-                                </div>
-                            </div>
-                            <ArrowUpRight className="w-4 h-4 text-gold/60 group-hover:text-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                        </a>
+                    {/* Error state */}
+                    {error && !loading && (
+                        <div className="flex items-center gap-2 p-4 rounded-xl bg-red-500/5 border border-red-500/15">
+                            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                            <span className="text-xs text-red-400">Failed to load profile data.</span>
+                        </div>
                     )}
 
-                    {/* ── Poker HUD – Top Targets ── */}
-                    {(topWhales.length > 0 || topRegs.length > 0) && (
-                        <div className="space-y-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                                <Brain className="w-3 h-3 text-gold" /> Poker HUD Targets
-                            </span>
-
-                            {topWhales.slice(0, 3).length > 0 && (
-                                <div className="space-y-1.5">
-                                    <p className="text-[9px] text-gold/70 font-black uppercase tracking-widest flex items-center gap-1.5">
-                                        <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                                        Fish Targets
-                                    </p>
-                                    {topWhales.slice(0, 3).map((p: any) => (
-                                        <MiniPlayerRow key={p.id} player={p} />
-                                    ))}
+                    {!loading && (
+                        <>
+                            {/* ── Stats Row ── */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-black/40 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-1">
+                                    <Users className="w-5 h-5 text-gold/60 mb-1" />
+                                    <span className="text-2xl font-black text-white">{stats?.totalPlayers ?? "—"}</span>
+                                    <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Players Tracked</span>
                                 </div>
+                                <div className="bg-black/40 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-1">
+                                    <StickyNote className="w-5 h-5 text-blue-400/60 mb-1" />
+                                    <span className="text-2xl font-black text-white">{stats?.totalNotes ?? "—"}</span>
+                                    <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Notes Written</span>
+                                </div>
+                            </div>
+
+                            {/* ── Plan Card ── */}
+                            <div className={`p-5 rounded-2xl border ${theme.bg} ${theme.border} ${theme.glow} space-y-4`}>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        {theme.icon}
+                                        <span className={`text-sm font-black uppercase tracking-widest ${theme.color}`}>
+                                            {plan?.name ?? tier} Plan
+                                        </span>
+                                    </div>
+                                    {plan?.price !== undefined && (
+                                        <span className="text-[10px] text-gray-500 font-black">
+                                            {plan.price === 0 ? "Free" : `$${plan.price}${plan.period ?? "/mo"}`}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Features from real DB */}
+                                {plan?.features?.length > 0 && (
+                                    <div className="space-y-2">
+                                        {plan.features.map((f: string, i: number) => (
+                                            <div key={i} className="flex items-center gap-2">
+                                                <div className={`w-1 h-1 rounded-full ${theme.color.replace("text-", "bg-")}`} />
+                                                <span className="text-[11px] text-gray-400 font-medium">{f}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Usage bars from plan limits */}
+                                {plan && (
+                                    <div className="pt-1 space-y-3 border-t border-white/5">
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-600 flex items-center gap-1.5">
+                                            <Zap className="w-3 h-3 text-gold" /> Monthly Limits
+                                        </span>
+                                        {plan.ai_limit > 0 && (
+                                            <UsageBar
+                                                label="AI Analysis"
+                                                used={aiUsed}
+                                                limit={plan.ai_limit}
+                                                color="gold"
+                                            />
+                                        )}
+                                        {plan.hand_ocr_limit > 0 && (
+                                            <UsageBar
+                                                label="Hand OCR"
+                                                used={handOcrUsed}
+                                                limit={plan.hand_ocr_limit}
+                                                color="blue"
+                                            />
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Subscription expiry */}
+                                {expiryDate && (
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <Calendar className="w-3 h-3 text-gray-600" />
+                                        <span className="text-[10px] text-gray-500 font-bold">
+                                            Renews {expiryDate}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* ── Upgrade CTA (not for elite/enterprise) ── */}
+                            {(tier === "FREE" || tier === "PRO") && (
+                                <a
+                                    href="/pricing"
+                                    className="group flex items-center justify-between w-full px-5 py-4 bg-gradient-to-r from-gold/12 to-amber-700/8 border border-gold/25 rounded-2xl hover:from-gold/22 hover:to-amber-600/16 transition-all shadow-[0_0_20px_rgba(250,204,21,0.04)] hover:shadow-[0_0_30px_rgba(250,204,21,0.12)]"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-xl bg-gold/15 flex items-center justify-center">
+                                            <Crown className="w-4 h-4 text-gold" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-xs font-black text-gold uppercase tracking-wider">
+                                                {tier === "FREE" ? "Upgrade to Pro" : "Upgrade to Elite"}
+                                            </p>
+                                            <p className="text-[9px] text-gray-500 font-medium mt-0.5">Unlock full neural power</p>
+                                        </div>
+                                    </div>
+                                    <ArrowUpRight className="w-4 h-4 text-gold/50 group-hover:text-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                                </a>
                             )}
 
-                            {topRegs.slice(0, 3).length > 0 && (
-                                <div className="space-y-1.5">
-                                    <p className="text-[9px] text-red-400/70 font-black uppercase tracking-widest flex items-center gap-1.5 mt-2">
-                                        <span className="w-1 h-1 rounded-full bg-red-400" />
-                                        Reg Opponents
-                                    </p>
-                                    {topRegs.slice(0, 3).map((p: any) => (
-                                        <MiniPlayerRow key={p.id} player={p} isStrong />
-                                    ))}
+                            {/* ── Recent Notes ── */}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                                        <PenLine className="w-3 h-3 text-gold" /> Recent Notes
+                                    </span>
+                                    <a
+                                        href="/players"
+                                        className="flex items-center gap-1 text-[9px] text-gray-600 hover:text-gold transition-colors font-bold uppercase tracking-wider"
+                                    >
+                                        View all <ChevronRight className="w-2.5 h-2.5" />
+                                    </a>
                                 </div>
-                            )}
-                        </div>
+
+                                {recentNotes.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {recentNotes.map((note: any) => (
+                                            <NoteRow key={note.id} note={note} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-2xl bg-black/30 border border-white/5">
+                                        <FileText className="w-7 h-7 text-gray-700" />
+                                        <p className="text-[11px] text-gray-600 font-bold">No notes yet</p>
+                                        <a href="/players" className="text-[10px] text-gold/70 hover:text-gold transition-colors font-bold uppercase tracking-wider">
+                                            Add your first player →
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* ── Quick Links ── */}
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { label: "Hand History", icon: Brain, href: "/history" },
+                                    { label: "Pricing", icon: CreditCard, href: "/pricing" },
+                                ].map(({ label, icon: Icon, href }) => (
+                                    <a
+                                        key={label}
+                                        href={href}
+                                        className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-black/30 border border-white/5 hover:border-white/15 hover:bg-white/3 transition-all group"
+                                    >
+                                        <Icon className="w-4 h-4 text-gray-600 group-hover:text-gold transition-colors" />
+                                        <span className="text-xs font-bold text-gray-500 group-hover:text-white transition-colors">{label}</span>
+                                    </a>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </div>
 
                 {/* ── Footer: Logout ── */}
-                <div className="px-5 pb-5 pt-3 border-t border-white/5 shrink-0">
+                <div className="px-6 pb-6 pt-4 border-t border-white/5 shrink-0">
                     <button
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-red-500/8 border border-red-500/15 text-red-400 hover:bg-red-500/18 hover:border-red-500/35 hover:text-red-300 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-40"
                     >
                         <LogOut className="w-4 h-4" />
                         {isLoggingOut ? "Logging out..." : "Log Out"}

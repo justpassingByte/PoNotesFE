@@ -437,24 +437,29 @@ export async function updateAISettings(data: any): Promise<any> {
     }
 }
 /**
- * Server Action: preview AI prompts based on UI config.
+ * Server Action: get current user's full profile (plan, stats, recent notes)
  */
-export async function getAIPreviewAction(data: any): Promise<any> {
+export async function getUserProfile() {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
+    if (!token) return null;
+
     try {
-        const res = await fetch(`${API.settings}/ai/preview`, { 
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                ...(token ? { "Authorization": `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify(data)
+        const res = await fetch(`${API.base}/api/auth/me`, {
+            cache: "no-store",
+            headers: { "Authorization": `Bearer ${token}` }
         });
+        if (!res.ok) return null;
         const json = await res.json();
-        return json.success ? json.data : null;
-    } catch (err) {
-        console.error("Failed to fetch AI preview", err);
+        if (!json.success) return null;
+        return {
+            user: json.user,
+            plan: json.plan,
+            stats: json.stats,
+            recentNotes: json.recentNotes ?? [],
+        };
+    } catch {
         return null;
     }
 }
+

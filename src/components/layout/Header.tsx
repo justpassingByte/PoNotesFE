@@ -12,15 +12,9 @@ import { useLoginModal } from '@/context/LoginModalContext';
 export function Header({
     onSettingsClick: externalSettingsClick,
     user: user,
-    stats,
-    topWhales,
-    topRegs,
 }: {
     onSettingsClick?: () => void;
     user?: { email: string; premium_tier: string } | null;
-    stats?: any;
-    topWhales?: any[];
-    topRegs?: any[];
 }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isAITuningOpen, setIsAITuningOpen] = useState(false);
@@ -172,9 +166,6 @@ export function Header({
                 isOpen={isProfileOpen}
                 onClose={() => setIsProfileOpen(false)}
                 user={user}
-                stats={stats}
-                topWhales={topWhales}
-                topRegs={topRegs}
             />
         </>
     );
