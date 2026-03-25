@@ -35,6 +35,7 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     const [newPlatformName, setNewPlatformName] = useState('');
     const [isAddingPlatform, setIsAddingPlatform] = useState(false);
     const [platformError, setPlatformError] = useState('');
+    const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchTemplates();
@@ -351,63 +352,113 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
                     {loadingPlatforms ? (
                         <div className="text-center text-gray-500 py-12 text-sm animate-pulse">Loading networks...</div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {platforms.length === 0 && (
-                                <div className="col-span-full text-center py-12 border border-dashed border-white/5 rounded-2xl bg-white/5">
-                                    <p className="text-xs text-gray-500">No platforms registered.</p>
-                                </div>
-                            )}
-                            {platforms.map((p: Platform) => (
-                                <div key={p.id} className="flex flex-col p-5 bg-[#111318] border border-gray-700 rounded-2xl group hover:border-gold/50 transition-all relative">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 bg-gold/10 border border-gold/20 rounded-lg flex items-center justify-center text-gold">
-                                                <Globe className="w-4 h-4" />
+                        <div className="space-y-6">
+                            {/* Platform Navigation */}
+                            <div className="flex flex-wrap gap-2 mb-6 pb-4 border-b border-white/5">
+                                {platforms.map((p) => (
+                                    <button
+                                        key={p.id}
+                                        onClick={() => setSelectedPlatformId(p.id)}
+                                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+                                            selectedPlatformId === p.id
+                                                ? 'bg-gold text-black border-gold shadow-lg shadow-gold/20'
+                                                : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30 hover:bg-white/10'
+                                        }`}
+                                    >
+                                        {p.name}
+                                    </button>
+                                ))}
+                                {platforms.length === 0 && (
+                                    <p className="text-xs text-gray-500 italic">No platforms registered.</p>
+                                )}
+                            </div>
+
+                            {/* Selected Platform Content */}
+                            {selectedPlatformId ? (
+                                (() => {
+                                    const p = platforms.find(p => p.id === selectedPlatformId);
+                                    if (!p) return null;
+                                    const relevantTemplates = ocrTemplates.filter(t => 
+                                        t.name.toUpperCase().includes(p.name.toUpperCase().replace(/\s+/g, '_')) || 
+                                        t.name.toUpperCase().includes(p.name.split(' ')[0].toUpperCase())
+                                    );
+
+                                    return (
+                                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                            <div className="flex items-center justify-between mb-6">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-gold/10 border border-gold/20 rounded-xl flex items-center justify-center text-gold">
+                                                        <Globe className="w-5 h-5" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-lg font-bold text-white tracking-tight">{p.name}</h4>
+                                                        <p className="text-xs text-gray-500">{relevantTemplates.length} templates synced</p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleDeletePlatform(p.id)}
+                                                    className="px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-1.5"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    Remove Platform
+                                                </button>
                                             </div>
-                                            <span className="text-sm font-bold text-white tracking-wide">{p.name}</span>
-                                        </div>
-                                        <button
-                                            onClick={() => handleDeletePlatform(p.id)}
-                                            className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                                            title="Delete platform"
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    </div>
-                                    {/* OCR Templates list for this platform */}
-                                    <div className="mt-2 space-y-2 flex-1">
-                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">OCR Box Templates</span>
-                                        {loadingOcr ? (
-                                            <div className="py-2 text-center text-xs text-gray-500 animate-pulse">Loading templates...</div>
-                                        ) : ocrTemplates.filter(t => t.name.toUpperCase().includes(p.name.toUpperCase().replace(/\s+/g, '_')) || t.name.toUpperCase().includes(p.name.split(' ')[0].toUpperCase())).length > 0 ? (
-                                            <div className="space-y-1.5">
-                                                {ocrTemplates
-                                                    .filter(t => t.name.toUpperCase().includes(p.name.toUpperCase().replace(/\s+/g, '_')) || t.name.toUpperCase().includes(p.name.split(' ')[0].toUpperCase()))
-                                                    .map((t, idx) => (
-                                                    <div key={idx} className="flex items-center justify-between bg-[#0d0f13] border border-gray-700/50 rounded-lg px-3 py-2">
-                                                        <div className="flex flex-col">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-xs font-mono text-gray-300 truncate">{t.name.split('_')[0]}</span>
-                                                                <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold tracking-wider ${t.type === 'anchor' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                                {relevantTemplates.map((t, idx) => (
+                                                    <div key={idx} className="group relative bg-[#111318] border border-gray-800 rounded-xl overflow-hidden hover:border-gold/50 transition-all">
+                                                        {/* Image Preview */}
+                                                        <div className="aspect-square bg-black/40 flex items-center justify-center p-2 relative">
+                                                            <img 
+                                                                src={`${API.base}/api/ocr/templates/${t.type === 'card' ? 'card' : 'anchor'}/${t.name}`}
+                                                                alt={t.name}
+                                                                className="max-w-full max-h-full object-contain"
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect width="18" height="18" x="3" y="3" rx="2" ry="2"%3E%3C/rect%3E%3Ccircle cx="9" cy="9" r="2"%3E%3C/circle%3E%3Cpath d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"%3E%3C/path%3E%3C/svg%3E';
+                                                                }}
+                                                            />
+                                                            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button 
+                                                                    onClick={() => handleDeleteOcrTemplate(t.type === 'card' ? 'cards' : 'anchors', t.name)}
+                                                                    className="p-1.5 bg-black/80 text-red-400 hover:text-red-300 rounded-lg backdrop-blur-sm"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Label */}
+                                                        <div className="p-2 border-t border-gray-800">
+                                                            <div className="flex items-center justify-between gap-1 mb-1">
+                                                                <span className="text-[10px] font-black text-gray-300 truncate">{t.name.split('_')[0]}</span>
+                                                                <span className={`text-[8px] px-1 py-0.5 rounded font-black tracking-tighter uppercase shrink-0 ${
+                                                                    t.type === 'anchor' 
+                                                                        ? 'bg-purple-500/20 text-purple-400' 
+                                                                        : 'bg-blue-500/20 text-blue-400'
+                                                                }`}>
                                                                     {t.type}
                                                                 </span>
                                                             </div>
-                                                            <span className="text-[9px] text-gray-600 font-mono mt-0.5">{t.name}</span>
+                                                            <span className="text-[8px] text-gray-600 font-mono truncate block">{t.name}</span>
                                                         </div>
-                                                        <button onClick={() => handleDeleteOcrTemplate(t.type === 'card' ? 'cards' : 'anchors', t.name)} className="text-gray-500 hover:text-red-400 ml-2 shrink-0">
-                                                            <Trash2 className="w-3 h-3" />
-                                                        </button>
                                                     </div>
                                                 ))}
+                                                {relevantTemplates.length === 0 && (
+                                                    <div className="col-span-full py-12 text-center border border-dashed border-white/5 rounded-2xl bg-white/5">
+                                                        <p className="text-xs text-gray-500 italic">No templates recorded for this platform yet.</p>
+                                                    </div>
+                                                )}
                                             </div>
-                                        ) : (
-                                            <div className="py-4 text-center border border-dashed border-gray-700/50 rounded-lg bg-[#0d0f13]">
-                                                <span className="text-[10px] text-gray-600 block">No templates synced</span>
-                                            </div>
-                                        )}
-                                    </div>
+                                        </div>
+                                    );
+                                })()
+                            ) : (
+                                <div className="py-24 text-center border border-dashed border-white/5 rounded-3xl bg-white/[0.02]">
+                                    <Globe className="w-12 h-12 text-gray-700 mx-auto mb-4 opacity-20" />
+                                    <h4 className="text-gray-400 font-medium">Select a platform to view templates</h4>
+                                    <p className="text-xs text-gray-600 mt-2">Sync OCR box templates and card anchors per network</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     )}
                 </>

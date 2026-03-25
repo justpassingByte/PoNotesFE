@@ -67,17 +67,17 @@ function CardBadge({ card, onClick }: { card: string; onClick?: () => void }) {
     return (
         <Tag
             onClick={onClick}
-            className={`flex flex-col justify-between w-8 h-12 shrink-0 rounded-md shadow-[0_2px_4px_rgba(0,0,0,0.4)] px-[3px] py-[2px] text-[11px] font-bold leading-none transition-all
-                ${isUnknown ? 'border border-dashed border-gray-600 bg-[#1a1d23]/50' : 'border border-gray-700 bg-[#16191f]'}
-                ${onClick ? 'hover:-translate-y-1 hover:shadow-md cursor-pointer' : ''}`}
+            className={`flex flex-col justify-between w-9 h-14 shrink-0 rounded-lg shadow-lg px-2 py-1.5 text-xs font-black leading-none transition-all
+                ${isUnknown ? 'border-2 border-dashed border-gray-700 bg-black/40 text-gray-600' : 'border-2 border-gray-300 bg-white text-black'}
+                ${onClick ? 'hover:-translate-y-1 hover:border-gold cursor-pointer' : ''}`}
         >
-            {/* TOP */}
-            <div className={`text-left tracking-tighter ${isUnknown ? "text-gray-500" : isRed ? "text-red-500" : "text-gray-200"}`}>
-                {isUnknown ? '?' : <>{displayRank}<span className="text-[9px]">{displaySuit}</span></>}
+            {/* TOP RANK */}
+            <div className={`text-left tracking-tighter ${isUnknown ? "text-gray-600" : isRed ? "text-red-600" : "text-black"}`}>
+                {isUnknown ? '?' : displayRank}
             </div>
 
-            {/* CENTER */}
-            <div className={`text-center text-lg ${isUnknown ? "text-gray-500" : isRed ? "text-red-500" : "text-gray-200"}`}>
+            {/* CENTER SUIT */}
+            <div className={`text-center text-xl ${isUnknown ? "text-gray-600" : isRed ? "text-red-600" : "text-black"}`}>
                 {isUnknown ? '?' : displaySuit}
             </div>
         </Tag>

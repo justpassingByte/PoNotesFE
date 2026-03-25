@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ShieldAlert, Crosshair, AlertTriangle, Brain, Plus, FileText, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShieldAlert, Crosshair, AlertTriangle, Brain, Plus, FileText, MessageSquare, ChevronDown, ChevronUp, Users } from 'lucide-react';
 import { HighlightKeywords } from '@/components/ui/HighlightKeywords';
 
 export interface PlayerHUDProps {
@@ -67,14 +67,21 @@ export function PlayerHUD({
             
             {/* ROW 1: HEADER & STATS */}
             <div className="flex justify-between items-start mb-5">
-                <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-xl text-white tracking-tight leading-none mb-2 truncate">{name}</h3>
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                        <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">{platformName || 'Unknown'}</span>
+                <div className="flex gap-3 min-w-0 flex-1">
+                    {/* Hardcoded Avatar */}
+                    <div className="w-12 h-12 rounded-full bg-black/40 flex items-center justify-center border border-gray-800 flex-shrink-0">
+                        <Users className="w-6 h-6 text-gray-500" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-xl text-white tracking-tight leading-none mb-2 truncate">{name}</h3>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                            <span className="text-xs text-gray-500 font-bold uppercase tracking-widest leading-none block">{platformName || 'Unknown'}</span>
+                        </div>
                     </div>
                 </div>
-                <span className={`px-2 py-0.5 text-[10px] font-black rounded border ${getTagStyle(displayTag)} uppercase tracking-widest whitespace-nowrap flex-shrink-0`}>
+                <span className={`px-2 py-0.5 text-[10px] font-black rounded border ${getTagStyle(displayTag)} uppercase tracking-widest whitespace-nowrap flex-shrink-0 mt-1`}>
                     {displayTag}
                 </span>
             </div>

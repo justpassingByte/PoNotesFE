@@ -25,6 +25,7 @@ export const API = {
   refreshProfile: `${API_BASE_URL}/api/players/profile/refresh`,
   usage: `${API_BASE_URL}/api/usage`,
   ocrTemplates: `${API_BASE_URL}/api/ocr/templates`,
+  ocrTemplateImage: (type: string, filename: string) => `${API_BASE_URL}/api/ocr/templates/${type}/${filename}`,
   ocrTemplateDelete: (type: string, filename: string) => `${API_BASE_URL}/api/ocr/templates/${type}/${filename}`,
 
   // Hand Analysis

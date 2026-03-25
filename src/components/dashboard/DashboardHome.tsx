@@ -138,38 +138,41 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
             </Modal>
 
             {/* 1. Welcome & Primary Action */}
-            <div className="relative overflow-hidden rounded-xl bg-[#111318] shadow-2xl border border-gray-800 p-6 sm:p-7 mb-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="relative overflow-hidden rounded-2xl bg-[#111318] shadow-xl border border-gray-800 p-8 sm:p-10 mb-8">
+                {/* Minimal Accent */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[100px] -mr-32 -mt-32 rounded-full"></div>
+
+                <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                     <div className="space-y-4 flex-1">
-                        <div className="space-y-2">
-                            <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[9px] font-bold uppercase tracking-widest border border-emerald-500/20">
-                                <Sparkles className="w-2.5 h-2.5" />
-                                Online
+                        <div className="space-y-3">
+                            <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[11px] font-black uppercase tracking-widest border border-emerald-500/20">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                Neural Link Established
                             </div>
-                            <h1 className="text-3xl font-bold text-white tracking-tight">
-                                Hero <span className="text-amber-400">{displayName}</span>
+                            <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tighter leading-tight uppercase">
+                                Welcome Back, <span className="text-white underline decoration-gold/30">{displayName}</span>
                             </h1>
-                            <p className="text-gray-400 max-w-md leading-relaxed text-xs sm:text-sm">
-                                Scan complete. High-priority targets identified.
+                            <p className="text-gray-400 max-w-lg leading-relaxed text-sm sm:text-lg font-medium">
+                                Tracking <span className="text-white font-bold">{stats.totalCount}</span> active opponents. All systems synchronized.
                             </p>
                         </div>
                     </div>
                     
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-4">
                         <button 
                             onClick={() => setIsAITuningOpen(true)}
-                            className="group flex-1 sm:flex-none flex items-center justify-center gap-3 px-6 py-3 bg-[#1a1d24] border border-gray-700 text-white font-bold rounded-xl hover:border-gray-500 transition-colors"
+                            className="group flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-white/5 border border-white/10 text-white font-black rounded-xl hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98]"
                         >
-                            <Brain className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm uppercase tracking-wider">AI TUNING</span>
+                            <Brain className="w-5 h-5 text-gray-400 group-hover:text-gold transition-colors" />
+                            <span className="text-sm uppercase tracking-widest">Neural Tuning</span>
                         </button>
 
                         <Link 
                             href="/analyzer"
-                            className="group flex-1 sm:flex-none flex items-center justify-center gap-3 px-6 py-3 bg-amber-500 text-black font-bold rounded-xl hover:bg-amber-400 transition-colors"
+                            className="group flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-amber-500 text-black font-black rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)] active:scale-[0.98]"
                         >
-                            <Zap className="w-4 h-4 fill-current" />
-                            <span className="text-sm uppercase tracking-wider">NEW HAND SCAN</span>
+                            <Zap className="w-5 h-5 fill-current" />
+                            <span className="text-sm uppercase tracking-widest">New Hand Analysis</span>
                         </Link>
                     </div>
                 </div>
@@ -179,13 +182,13 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
                 {/* Col 1: Top WHALE Targets */}
-                <div className="space-y-3">
-                    <div className="flex items-center gap-2 px-1">
-                        <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-                        <h2 className="text-[10px] font-bold text-white uppercase tracking-wider">Top Whales</h2>
-                        <div className="h-[1px] flex-1 bg-gray-800"></div>
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2.5 px-1">
+                        <ShieldAlert className="w-4 h-4 text-gray-500" />
+                        <h2 className="text-xs font-black text-white uppercase tracking-widest">Priority Targets</h2>
+                        <div className="h-[1px] flex-1 bg-gray-800/60 ml-2"></div>
                     </div>
-                    <div className="space-y-2.5">
+                    <div className="space-y-3">
                         {(topWhales.length > 0 ? topWhales : MOCK_WHALES).map(player => (
                             <PlayerCard key={player.id} player={player} />
                         ))}
@@ -193,13 +196,13 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 </div>
 
                 {/* Col 2: Top REG Targets */}
-                <div className="space-y-3">
-                    <div className="flex items-center gap-2 px-1">
-                        <Target className="w-3.5 h-3.5 text-blue-400" />
-                        <h2 className="text-[10px] font-bold text-white uppercase tracking-wider">Top Regs</h2>
-                        <div className="h-[1px] flex-1 bg-gray-800"></div>
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2.5 px-1">
+                        <Target className="w-4 h-4 text-gray-500" />
+                        <h2 className="text-xs font-black text-white uppercase tracking-widest">Elite Regs</h2>
+                        <div className="h-[1px] flex-1 bg-gray-800/60 ml-2"></div>
                     </div>
-                    <div className="space-y-2.5">
+                    <div className="space-y-3">
                         {(topRegs.length > 0 ? topRegs : MOCK_REGS).map(player => (
                             <PlayerCard key={player.id} player={player} isStrong />
                         ))}
@@ -280,23 +283,16 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
 
 function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: boolean }) {
     const getTagStyle = (style: string) => {
-        switch (style?.toUpperCase()) {
-            case 'LAG': return 'bg-red-500/10 text-red-500 border-red-500/20';
-            case 'TAG': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-            case 'NIT': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-            case 'FISH': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-            case 'WHALE': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-            case 'MANIAC': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
-            case 'CALLING STATION': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
-            default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
-        }
+        const s = style?.toUpperCase();
+        if (s === 'MANIAC' || s === 'LAG') return 'bg-red-500/5 text-red-500/80 border-red-500/20';
+        return 'bg-white/5 text-gray-400 border-gray-800';
     };
     const displayTag = player.ai_playstyle || player.playstyle;
     const aggScore = player.ai_aggression_score ?? player.aggression_score;
     const getAggressionColor = (score: number) => {
-        if (score > 60) return 'text-red-400';
-        if (score > 30) return 'text-yellow-400';
-        return 'text-green-400';
+        if (score > 65) return 'text-red-400';
+        if (score < 25) return 'text-gray-500';
+        return 'text-white';
     };
 
     return (
@@ -305,12 +301,19 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
             className="block bg-[#111318] border border-gray-800 rounded-xl p-3 hover:border-gray-600 transition-all group"
         >
             {/* ROW 1: Name + Tag */}
-            <div className="flex justify-between items-start mb-2">
-                <div className="min-w-0 flex-1">
-                    <h4 className="font-bold text-base text-white tracking-tight truncate">{player.name}</h4>
-                    <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">{player.platform?.name || 'Unknown'}</span>
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex gap-3 min-w-0 flex-1">
+                    {/* Hardcoded Avatar */}
+                    <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center border border-gray-800 flex-shrink-0">
+                        <Users className="w-5 h-5 text-gray-500 group-hover:text-gold transition-colors" />
+                    </div>
+                    
+                    <div className="min-w-0">
+                        <h4 className="font-bold text-base text-white tracking-tight truncate leading-tight mb-1">{player.name}</h4>
+                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none block">{player.platform?.name || 'Unknown'}</span>
+                    </div>
                 </div>
-                <span className={`px-2 py-0.5 text-xs font-bold rounded border ${getTagStyle(displayTag)} uppercase tracking-wide whitespace-nowrap flex-shrink-0 ml-2`}>
+                <span className={`px-2 py-0.5 text-[10px] font-black rounded border ${getTagStyle(displayTag)} uppercase tracking-widest whitespace-nowrap flex-shrink-0 ml-2 mt-1`}>
                     {displayTag}
                 </span>
             </div>

@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     ArrowLeft, Pencil, Trash2, Eye, Plus, X, Check, Search, Filter,
-    ChevronDown, Zap, Shield, Target, RefreshCw, AlignLeft, Brain
+    ChevronDown, Zap, Shield, Target, RefreshCw, AlignLeft, Brain, Users
 } from 'lucide-react';
+
 import { Header } from "@/components/layout/Header";
 import { API, apiFetch, apiPost, apiDelete } from "@/lib/api";
 
@@ -516,16 +517,23 @@ export function PlayerProfileClient({
                                 ) : (
                                     <>
                                         <div className="flex justify-between items-start mb-8">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                                    <span className="text-xs text-gray-500 font-mono tracking-widest uppercase">Player Profile</span>
+                                            <div className="flex gap-5">
+                                                {/* Hardcoded Avatar - Balanced Size */}
+                                                <div className="w-16 h-16 rounded-2xl bg-black/40 flex items-center justify-center border border-gray-800 shadow-xl self-start mt-2">
+                                                    <Users className="w-8 h-8 text-gray-700" />
                                                 </div>
-                                                <h1 className="text-4xl font-bold text-white tracking-tight mb-2 truncate max-w-[300px]">{player.name}</h1>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest bg-[#1a1d24] px-2 py-0.5 rounded border border-gray-700">
-                                                        {player.platform.name}
-                                                    </span>
+
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                                        <span className="text-xs text-gray-500 font-mono tracking-widest uppercase">Target Overview</span>
+                                                    </div>
+                                                    <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tighter mb-2 truncate max-w-[300px] leading-tight text-white/90">{player.name}</h1>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest bg-[#1a1d24] px-3 py-1 rounded-lg border border-gray-800 shadow-inner">
+                                                            {player.platform.name}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <button
