@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ShieldAlert, Crosshair, AlertTriangle, Brain, Plus, FileText, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { HighlightKeywords } from '@/components/ui/HighlightKeywords';
 
 export interface PlayerHUDProps {
     id: string;
@@ -64,13 +65,13 @@ export function PlayerHUD({
     return (
         <Link href={`/players/${id}`} className="block bg-[#111318] border border-gray-800 rounded-xl p-4 relative group hover:border-gray-600 transition-colors cursor-pointer no-underline flex flex-col shadow-sm">
             
-            {/* ROW 1: NAME + TAG */}
-            <div className="flex items-start justify-between gap-3 mb-4">
+            {/* ROW 1: HEADER & STATS */}
+            <div className="flex justify-between items-start mb-5">
                 <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-lg text-white tracking-tight leading-none mb-1.5 truncate">{name}</h3>
+                    <h3 className="font-bold text-xl text-white tracking-tight leading-none mb-2 truncate">{name}</h3>
                     <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{platformName || 'Unknown'}</span>
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                        <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">{platformName || 'Unknown'}</span>
                     </div>
                 </div>
                 <span className={`px-2 py-0.5 text-[10px] font-black rounded border ${getTagStyle(displayTag)} uppercase tracking-widest whitespace-nowrap flex-shrink-0`}>
@@ -79,14 +80,16 @@ export function PlayerHUD({
             </div>
 
             {/* ROW 2: RECENT NOTES */}
-            <div className="mb-4">
-                <span className="text-[9px] text-gray-600 font-black uppercase tracking-widest block mb-2 px-1">Intel Logs</span>
+            <div className="mb-5">
+                <span className="text-xs text-gray-600 font-black uppercase tracking-widest block mb-2 px-1">Intel Logs</span>
                 {notes.length > 0 ? (
                     <div className="space-y-1 px-1">
                         {notes.map((note) => (
-                            <div key={note.id} className="flex items-start gap-2 py-1.5 border-b border-gray-800/50 last:border-0">
-                                <MessageSquare className="w-3 h-3 text-gray-700 flex-shrink-0 mt-0.5" />
-                                <span className="text-[11px] text-gray-400 font-medium leading-relaxed line-clamp-2">{note.content}</span>
+                            <div key={note.id} className="flex items-start gap-2.5 py-2.5 border-b border-gray-800/50 last:border-0">
+                                <MessageSquare className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
+                                <span className="text-sm text-gray-300 font-medium leading-relaxed line-clamp-2">
+                                    <HighlightKeywords text={note.content} />
+                                </span>
                             </div>
                         ))}
                     </div>
@@ -99,13 +102,15 @@ export function PlayerHUD({
 
             {/* ROW 3: RANGE ADJUSTMENTS */}
             {allRangeAdj.length > 0 && (
-                <div className="mb-4">
-                    <span className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2 block px-1">Tactical Adjusts</span>
+                <div className="mb-5">
+                    <span className="text-xs text-gray-600 font-black uppercase tracking-widest mb-2 block px-1">Tactical Adjusts</span>
                     <div className={`space-y-1 px-1 ${expanded ? 'max-h-[200px] overflow-y-auto scrollbar-hide' : ''}`}>
                         {visibleAdj.map((adj: string, i: number) => (
-                            <div key={i} className="flex items-start gap-2 py-1">
-                                <Brain className="w-3 h-3 text-gray-700 flex-shrink-0 mt-0.5" />
-                                <span className="text-[10px] text-gray-400 font-medium leading-tight">{adj}</span>
+                            <div key={i} className="flex items-start gap-2.5 py-2">
+                                <Brain className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
+                                <span className="text-sm text-gray-300 font-medium leading-tight">
+                                    <HighlightKeywords text={adj} />
+                                </span>
                             </div>
                         ))}
                     </div>

@@ -37,10 +37,10 @@ export function PlayerListSkeleton() {
             </div>
 
             {/* Grid skeleton - FIXED 3 COLUMNS on large screens */}
-            <div className="bg-gradient-to-b from-card/20 to-transparent border-x border-b border-white/5 rounded-b-2xl p-4 sm:p-8">
+            <div className="bg-[#111318]/20 border-x border-b border-gray-800/50 rounded-b-2xl p-4 sm:p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     {Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="bg-card/40 border border-white/5 rounded-2xl p-6 h-[320px] flex flex-col">
+                        <div key={i} className="bg-[#111318] border border-gray-800 rounded-2xl p-6 h-[320px] flex flex-col">
                             <div className="flex justify-between items-start mb-6">
                                 <div className="space-y-2">
                                     <div className="h-6 w-32 bg-white/10 rounded" />
@@ -50,14 +50,14 @@ export function PlayerListSkeleton() {
                             </div>
                             
                             {/* AI Section Skeleton */}
-                            <div className="bg-white/5 border border-white/5 rounded-2xl p-4 mb-6 grow">
+                            <div className="bg-black/20 border border-gray-800/50 rounded-2xl p-4 mb-6 grow">
                                 <div className="flex justify-between mb-4">
-                                    <div className="h-4 w-24 bg-white/10 rounded" />
-                                    <div className="h-4 w-12 bg-white/5 rounded" />
+                                    <div className="h-4 w-24 bg-gray-800/50 rounded" />
+                                    <div className="h-4 w-12 bg-gray-800/30 rounded" />
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="h-8 w-full bg-black/20 rounded-xl" />
-                                    <div className="h-8 w-full bg-black/20 rounded-xl" />
+                                    <div className="h-8 w-full bg-gray-800/20 rounded-xl" />
+                                    <div className="h-8 w-full bg-gray-800/20 rounded-xl" />
                                 </div>
                             </div>
 

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { AITuningModal } from './AITuningModal';
+import { HighlightKeywords } from '@/components/ui/HighlightKeywords';
 
 interface Player {
     id: string;
@@ -306,8 +307,8 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
             {/* ROW 1: Name + Tag */}
             <div className="flex justify-between items-start mb-2">
                 <div className="min-w-0 flex-1">
-                    <h4 className="font-bold text-sm text-white tracking-tight truncate">{player.name}</h4>
-                    <span className="text-[9px] text-gray-500 font-medium uppercase tracking-wider">{player.platform?.name || 'Unknown'}</span>
+                    <h4 className="font-bold text-base text-white tracking-tight truncate">{player.name}</h4>
+                    <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">{player.platform?.name || 'Unknown'}</span>
                 </div>
                 <span className={`px-2 py-0.5 text-xs font-bold rounded border ${getTagStyle(displayTag)} uppercase tracking-wide whitespace-nowrap flex-shrink-0 ml-2`}>
                     {displayTag}
@@ -316,12 +317,14 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
 
             {/* ROW 2: Range Adjustments (max 2) - Higher Density */}
             {player.ai_profile?.range_adjustments && player.ai_profile.range_adjustments.length > 0 && (
-                <div className="mb-2">
-                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 block px-1">Range Adjustments</span>
+                <div className="mb-3">
+                    <span className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-2 block px-1">Range Adjustments</span>
                     <div className="space-y-1">
                         {player.ai_profile.range_adjustments.slice(0, 2).map((adj: string, i: number) => (
-                            <div key={i} className="flex items-start gap-2 border-l-2 border-gray-700 py-0.5 pl-3">
-                                <span className="text-xs text-gray-300 font-medium leading-tight">{adj}</span>
+                            <div key={i} className="flex items-start gap-2.5 border-l-2 border-gray-700 py-1.5 pl-4">
+                                <span className="text-sm text-gray-300 font-medium leading-tight">
+                                    <HighlightKeywords text={adj} />
+                                </span>
                             </div>
                         ))}
                     </div>
@@ -332,15 +335,15 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
             <div className="border-t border-gray-700/60 pt-2 mt-auto">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1">
-                            <span className={`text-xs font-mono font-bold ${getAggressionColor(aggScore)}`}>
+                        <div className="flex items-center gap-1.5">
+                            <span className={`text-base font-mono font-bold ${getAggressionColor(aggScore)}`}>
                                 {aggScore}%
                             </span>
-                            <span className="text-[8px] text-gray-600 uppercase tracking-wider">AGG</span>
+                            <span className="text-xs text-gray-600 font-black uppercase tracking-wider">AGG</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <FileText className="w-3 h-3 text-gray-600" />
-                            <span className="text-xs font-mono font-bold text-gray-400">{player.notesCount}</span>
+                        <div className="flex items-center gap-1.5">
+                            <FileText className="w-5 h-5 text-gray-600" />
+                            <span className="text-base font-mono font-bold text-gray-400">{player.notesCount}</span>
                         </div>
                     </div>
                     <ArrowRight className="w-3 h-3 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />

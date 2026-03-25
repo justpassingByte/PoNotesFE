@@ -52,49 +52,8 @@ import { fetchStrategy, HandStrategy, SolveRequest } from "@/lib/solverAPI";
 import { Modal } from "@/components/ui/Modal";
 import { TemplateManagerModal } from "@/components/forms/TemplateManagerModal";
 import { buildCategorizedBreakdown, emptyCategorizedBreakdown, type CategorizedBreakdown } from "@/lib/analysis/HandCategoryResolver";
+import { HighlightKeywords } from "@/components/ui/HighlightKeywords";
 
-// Keyword Highlighting Helper
-function HighlightKeywords({ text }: { text: string }) {
-    if (!text) return null;
-    
-    const keywords: Record<string, string> = {
-        fold: 'text-blue-400 font-bold',
-        bet: 'text-red-400 font-bold',
-        raise: 'text-red-500 font-black',
-        '3-bet': 'text-red-500 font-black',
-        '3bet': 'text-red-500 font-black',
-        '4-bet': 'text-red-600 font-black',
-        '4bet': 'text-red-600 font-black',
-        '5-bet': 'text-red-600 font-black',
-        shove: 'text-red-600 font-black underline',
-        'all-in': 'text-red-600 font-black underline',
-        call: 'text-emerald-400 font-bold',
-        check: 'text-gray-400 font-bold',
-        exploit: 'text-amber-400 font-black uppercase tracking-tighter',
-        punish: 'text-amber-400 font-black uppercase tracking-tighter',
-        leak: 'text-rose-400 font-black uppercase tracking-tighter',
-        isolate: 'text-amber-500 font-black bg-amber-500/10 px-1 rounded',
-        'value bet': 'text-emerald-400 font-black',
-        monster: 'text-emerald-500 font-black',
-        bluff: 'text-rose-500 font-black',
-    };
-
-    // Case-insensitive regex for all keywords
-    const regex = new RegExp(`(\\b(?:${Object.keys(keywords).join('|')})\\b)`, 'gi');
-    const parts = text.split(regex);
-
-    return (
-        <>
-            {parts.map((part, i) => {
-                const lowerPart = part.toLowerCase();
-                if (keywords[lowerPart]) {
-                    return <span key={i} className={keywords[lowerPart]}>{part}</span>;
-                }
-                return part;
-            })}
-        </>
-    );
-}
 
 interface Note {
     id: string;
@@ -336,10 +295,10 @@ export function PlayerProfileClient({
                             {/* ANALYSIS HEADER */}
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <Brain className="w-5 h-5 text-gray-400" />
+                                    <Brain className="w-6 h-6 text-gray-400" />
                                     <div>
-                                        <h2 className="text-sm font-bold text-white tracking-wider uppercase">Tactical AI Analysis</h2>
-                                        <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">Exploit Engine</p>
+                                        <h2 className="text-base font-bold text-white tracking-wider uppercase">Tactical AI Analysis</h2>
+                                        <p className="text-xs text-gray-500 font-mono uppercase font-black tracking-widest">Exploit Engine</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -382,24 +341,24 @@ export function PlayerProfileClient({
                                                         return strategyArray.map((move: any, i: number) => (
                                                             <div key={i} className="border-l-2 border-gray-800 pl-4 py-2 mb-4 last:mb-0">
                                                                 <div className="flex items-center gap-2 mb-2">
-                                                                    <span className="text-[10px] text-amber-400 font-bold uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">{move.node || 'GENERAL'}</span>
+                                                                    <span className="text-[11px] text-amber-400 font-bold uppercase tracking-widest bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20">{move.node || 'GENERAL'}</span>
                                                                 </div>
                                                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
                                                                     <div>
-                                                                        <p className="text-[8px] text-gray-500 uppercase font-black">Action</p>
-                                                                        <p className="text-white text-xs font-bold leading-tight mt-1">{move.action || '-'}</p>
+                                                                        <p className="text-[9px] text-gray-500 uppercase font-black">Action</p>
+                                                                        <p className="text-white text-sm font-bold leading-tight mt-1">{move.action || '-'}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-[8px] text-gray-500 uppercase font-black">Range</p>
-                                                                        <p className="text-white text-xs font-bold leading-tight mt-1">{move.range || '-'}</p>
+                                                                        <p className="text-xs text-gray-500 uppercase font-black">Range</p>
+                                                                        <p className="text-sm font-bold leading-tight mt-1.5">{move.range || '-'}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-[8px] text-gray-500 uppercase font-black">Structure</p>
-                                                                        <p className="text-white text-xs font-bold leading-tight mt-1">{move.structure || '-'}</p>
+                                                                        <p className="text-xs text-gray-500 uppercase font-black">Structure</p>
+                                                                        <p className="text-base font-bold leading-tight mt-1.5">{move.structure || '-'}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-[8px] text-gray-500 uppercase font-black">Sizing / Freq</p>
-                                                                        <p className="text-white text-xs font-bold leading-tight mt-1">
+                                                                        <p className="text-xs text-gray-500 uppercase font-black">Sizing / Freq</p>
+                                                                        <p className="text-base font-bold leading-tight mt-1.5">
                                                                             <HighlightKeywords text={move.sizing || '-'} /> ({move.frequency || '-'})
                                                                         </p>
                                                                     </div>
@@ -419,7 +378,7 @@ export function PlayerProfileClient({
 
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-700/60">
                                                 <div className="space-y-2">
-                                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Archetype</p>
+                                                    <p className="text-xs text-gray-500 font-black uppercase tracking-widest">Archetype</p>
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-2 h-2 rounded-full bg-gray-400"></div>
                                                         <span className="text-lg font-bold text-white uppercase tracking-tighter">{player.ai_profile?.archetype || player.playstyle || 'Analyzing'}</span>
@@ -558,11 +517,11 @@ export function PlayerProfileClient({
                                     <>
                                         <div className="flex justify-between items-start mb-8">
                                             <div>
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                                    <span className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">Player Profile</span>
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                                    <span className="text-xs text-gray-500 font-mono tracking-widest uppercase">Player Profile</span>
                                                 </div>
-                                                <h1 className="text-3xl font-bold text-white tracking-tight mb-1 truncate max-w-[200px]">{player.name}</h1>
+                                                <h1 className="text-4xl font-bold text-white tracking-tight mb-2 truncate max-w-[300px]">{player.name}</h1>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest bg-[#1a1d24] px-2 py-0.5 rounded border border-gray-700">
                                                         {player.platform.name}
@@ -673,11 +632,11 @@ export function PlayerProfileClient({
                                         player.notes.map((note) => (
                                             <div key={note.id} className="border-l-2 border-gray-800 pl-4 py-2 hover:border-gray-600 transition-all group relative">
                                                 <div className="flex justify-between items-start mb-1.5">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className="text-[10px] text-amber-500 uppercase tracking-widest font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs text-amber-500 uppercase tracking-widest font-black bg-amber-500/10 px-3 py-1.5 rounded border border-amber-500/20">
                                                             {note.street || 'General'}
                                                         </span>
-                                                        {note.is_ai_generated && <Zap className="w-2.5 h-2.5 text-amber-500" />}
+                                                        {note.is_ai_generated && <Zap className="w-4 h-4 text-amber-500" />}
                                                     </div>
                                                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button onClick={() => { setEditingNoteId(note.id); setEditContent(note.content); setEditStreet(note.street); }} className="text-gray-600 hover:text-gold transition-colors"><Pencil className="w-2.5 h-2.5" /></button>
@@ -694,8 +653,8 @@ export function PlayerProfileClient({
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <p className={`text-[12px] leading-relaxed ${note.is_ai_generated ? 'text-amber-200/90 italic' : 'text-gray-300 font-medium'}`}>
-                                                        {note.content}
+                                                    <p className={`text-base leading-relaxed ${note.is_ai_generated ? 'text-amber-200/90 italic' : 'text-gray-300 font-medium'}`}>
+                                                        <HighlightKeywords text={note.content} />
                                                     </p>
                                                 )}
                                             </div>

@@ -37,8 +37,8 @@ export function DashboardToolbar({
 
             {/* Title row */}
             <div className="flex items-center justify-between">
-                <h2 className="text-lg sm:text-xl font-bold text-white flex items-center tracking-wide">
-                    <Users className="w-5 h-5 mr-2 sm:mr-3 text-gold" />
+                <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center tracking-tight">
+                    <Users className="w-6 h-6 mr-3 text-gold" />
                     OPPONENT HUDS
                 </h2>
             </div>
@@ -50,11 +50,11 @@ export function DashboardToolbar({
                 </div>
                 <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
                     <div className="flex items-center gap-1.5 sm:gap-3 flex-1 sm:flex-none">
-                        <span className="hidden sm:inline text-[10px] text-gray-400 uppercase tracking-widest font-bold shrink-0">Platform:</span>
+                        <span className="hidden sm:inline text-xs text-gray-500 uppercase tracking-widest font-black shrink-0">Platform:</span>
                         <select
                             value={filterPlatform}
                             onChange={(e) => onPlatformFilterChange(e.target.value)}
-                            className="w-full sm:w-auto bg-black/40 border border-gray-800 rounded-full px-3 sm:px-4 py-1.5 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer transition-all hover:bg-black/60 appearance-none"
+                            className="w-full sm:w-auto bg-black/40 border border-gray-800 rounded-lg px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-bold uppercase tracking-widest text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer transition-all hover:bg-black/60 appearance-none"
                         >
                             <option value="All">All Platforms</option>
                             {distinctPlatforms.map(platform => (
@@ -63,11 +63,11 @@ export function DashboardToolbar({
                         </select>
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-3 flex-1 sm:flex-none">
-                        <span className="hidden sm:inline text-[10px] text-gray-400 uppercase tracking-widest font-bold shrink-0">Style:</span>
+                        <span className="hidden sm:inline text-xs text-gray-500 uppercase tracking-widest font-black shrink-0">Style:</span>
                         <select
                             value={filterPlaystyle}
                             onChange={(e) => onFilterChange(e.target.value)}
-                            className="w-full sm:w-auto bg-black/40 border border-gray-800 rounded-full px-3 sm:px-4 py-1.5 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer transition-all hover:bg-black/60 appearance-none"
+                            className="w-full sm:w-auto bg-black/40 border border-gray-800 rounded-lg px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-bold uppercase tracking-widest text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer transition-all hover:bg-black/60 appearance-none"
                         >
                             <option value="All">All ({totalCount})</option>
                             {distinctPlaystyles.map(style => (
@@ -78,40 +78,6 @@ export function DashboardToolbar({
                         </select>
                     </div>
                 </div>
-            </div>
-
-            {/* Export/Import buttons row */}
-            <div className="flex gap-2 sm:gap-3 w-full mt-3 sm:mt-4">
-                <button
-                    onClick={async () => {
-                        try {
-                            const data = await exportPlayersAction();
-                            if (data) {
-                                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = `villainvault-export-${new Date().toISOString().slice(0, 10)}.json`;
-                                a.click();
-                                URL.revokeObjectURL(url);
-                            }
-                        } catch (e) {
-                            console.error("Export failed", e);
-                            alert("Export failed. Please check your session.");
-                        }
-                    }}
-                    className="flex items-center justify-center flex-1 md:flex-none px-3 sm:px-4 py-2 min-h-[44px] bg-white/5 border border-gray-800 rounded-full text-xs text-gray-400 hover:text-white hover:bg-white/10 transition-all font-bold uppercase tracking-widest"
-                >
-                    <Download className="w-3.5 h-3.5 sm:mr-2" />
-                    <span className="hidden sm:inline">Export</span>
-                </button>
-                <button
-                    onClick={onImportClick}
-                    className="flex items-center justify-center flex-1 md:flex-none px-3 sm:px-4 py-2 min-h-[44px] bg-white/5 border border-gray-800 rounded-full text-xs text-gray-400 hover:text-white hover:bg-white/10 transition-all font-bold uppercase tracking-widest"
-                >
-                    <Upload className="w-3.5 h-3.5 sm:mr-2" />
-                    <span className="hidden sm:inline">Import</span>
-                </button>
             </div>
         </div>
     );

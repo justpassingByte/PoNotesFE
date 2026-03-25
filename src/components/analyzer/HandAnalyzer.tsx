@@ -60,16 +60,16 @@ function CardBadge({ card, onClick }: { card: string; onClick?: () => void }) {
         <Tag
             onClick={onClick}
             className={`flex flex-col justify-between w-8 h-12 shrink-0 rounded-md shadow-sm px-[3px] py-[2px] text-[11px] font-bold leading-none transition-all
-                ${isUnknown ? 'border border-dashed border-gray-600 bg-[#1a1d23]/50' : 'border border-gray-600 bg-[#1a1d23]'}
-                ${onClick ? 'hover:-translate-y-1 hover:shadow-md cursor-pointer' : ''}`}
+                ${isUnknown ? 'border border-dashed border-gray-400 bg-white/10' : 'border border-gray-300 bg-white shadow-md'}
+                ${onClick ? 'hover:-translate-y-1 hover:shadow-lg cursor-pointer' : ''}`}
         >
             {/* TOP */}
-            <div className={`text-left tracking-tighter ${isUnknown ? "text-gray-500" : isRed ? "text-red-500" : "text-gray-200"}`}>
+            <div className={`text-left tracking-tighter ${isUnknown ? "text-gray-400" : isRed ? "text-red-600" : "text-black"}`}>
                 {isUnknown ? '?' : <>{displayRank}<span className="text-[9px]">{displaySuit}</span></>}
             </div>
 
             {/* CENTER */}
-            <div className={`text-center text-lg ${isUnknown ? "text-gray-500" : isRed ? "text-red-500" : "text-gray-200"}`}>
+            <div className={`text-center text-lg ${isUnknown ? "text-gray-400" : isRed ? "text-red-600" : "text-black"}`}>
                 {isUnknown ? '?' : displaySuit}
             </div>
         </Tag>
@@ -253,14 +253,14 @@ function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (v: string) 
                             <button key={v} onClick={() => onSelect(v)}
                                 className={`flex flex-col justify-between w-8 h-12 mx-auto rounded-md shadow-sm px-[3px] py-[2px] text-[11px] font-bold leading-none transition-all
                                     ${isSelected
-                                        ? "bg-yellow-500/20 border-2 border-yellow-500 scale-105"
-                                        : "bg-[#1a1d23] border border-gray-600 hover:-translate-y-1 hover:shadow-md cursor-pointer"}`}>
+                                        ? "bg-yellow-400 border-2 border-yellow-600 scale-105"
+                                        : "bg-white border border-gray-300 hover:-translate-y-1 hover:shadow-md cursor-pointer"}`}>
                                 {/* TOP */}
-                                <div className={`text-left tracking-tighter ${isRed ? "text-red-500" : "text-gray-200"}`}>
+                                <div className={`text-left tracking-tighter ${isRed ? "text-red-600" : "text-black"}`}>
                                     {displayRank}<span className="text-[9px]">{displaySuit}</span>
                                 </div>
                                 {/* CENTER */}
-                                <div className={`text-center text-lg ${isRed ? "text-red-500" : "text-gray-200"}`}>
+                                <div className={`text-center text-lg ${isRed ? "text-red-600" : "text-black"}`}>
                                     {displaySuit}
                                 </div>
                             </button>

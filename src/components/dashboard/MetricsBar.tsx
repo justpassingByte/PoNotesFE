@@ -31,14 +31,14 @@ export function MetricsBar({
                     <div className="flex items-center gap-6 sm:gap-8">
                         <div className="flex flex-col items-center">
                             <span className="text-2xl sm:text-3xl font-bold font-mono text-white">{totalCount}</span>
-                            <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Opponents</span>
+                            <span className="text-sm text-gray-500 uppercase font-black tracking-widest mt-1.5">Opponents</span>
                         </div>
 
                         <div className="w-px h-10 bg-white/10"></div>
 
                         <div className="flex flex-col items-center">
                             <span className="text-2xl sm:text-3xl font-bold font-mono text-gold">{totalNotesCount}</span>
-                            <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Notes</span>
+                            <span className="text-sm text-gray-400 uppercase font-black tracking-widest mt-1.5">Notes</span>
                         </div>
                     </div>
 
@@ -46,12 +46,12 @@ export function MetricsBar({
 
                     {/* Playstyle Breakdown — wraps naturally */}
                     <div className="flex flex-col">
-                        <span className="text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Playstyle Breakdown</span>
-                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                        <span className="text-sm text-gray-500 uppercase font-black tracking-widest mb-2 px-1">Playstyle Breakdown</span>
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                             {playstyleEntries.length > 0 ? (
                                 playstyleEntries.map(([style, count]) => (
-                                    <span key={style} className="text-[10px] sm:text-[11px] bg-white/5 border border-white/10 px-2 sm:px-3 py-1 rounded-full text-gray-300 font-medium">
-                                        {style} <strong className="text-white ml-1">{count}</strong>
+                                    <span key={style} className="text-sm bg-white/5 border border-white/10 px-4 py-2 rounded-full text-gray-300 font-bold uppercase tracking-tight">
+                                        {style} <strong className="text-white ml-2 font-mono text-base">{count}</strong>
                                     </span>
                                 ))
                             ) : (
