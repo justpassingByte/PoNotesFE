@@ -439,7 +439,7 @@ export function HandAnalyzer() {
             setParsedHand({ ...parsedHand, parsed_data: { ...handData, board: nb } });
             handleFeedback("edit", { name: old, revised: newVal, index: editingCard.index });
         } else {
-            const np = [...handData.players]; const p = np[editingCard.pIdx!]; const nc = [...(p.hole_cards || [])]; const old = nc[editingCard.index];
+            const np = [...handData.players]; const p = np[editingCard.pIdx!]; const nc = [...(p.hole_cards || [])]; const old = nc[editingCard.index] || "??";
             nc[editingCard.index] = newVal; np[editingCard.pIdx!] = { ...p, hole_cards: nc };
             setParsedHand({ ...parsedHand, parsed_data: { ...handData, players: np } });
             handleFeedback("edit", { name: old, revised: newVal, index: editingCard.index });
@@ -522,14 +522,16 @@ export function HandAnalyzer() {
                         {/* Hole cards line */}
                         {handData.players?.some((p: any) => p.hole_cards?.length > 0) && (
                             <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
-                                {handData.players.filter((p: any) => p.hole_cards?.length > 0).map((p: any, i: number) => (
+                                {handData.players.filter((p: any) => p.hole_cards?.length > 0).map((p: any, i: number) => {
+                                    const paddedHoleCards = p.hole_cards.length === 1 ? [...p.hole_cards, "??"] : p.hole_cards;
+                                    return (
                                     <span key={i} className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm shadow-sm rounded-md px-2 py-2 border border-white/10">
                                         <span className="text-gray-300 font-bold">{p.name}</span>
-                                        {p.hole_cards.map((c: string, ci: number) => (
+                                        {paddedHoleCards.map((c: string, ci: number) => (
                                             <CardBadge key={ci} card={c} onClick={editable ? () => setEditingCard({ type: "hole", index: ci, pIdx: handData.players.indexOf(p) }) : undefined} />
                                         ))}
                                     </span>
-                                ))}
+                                )})}
                                 {handData.winner && <span className="text-green-500 ml-auto font-bold">🏆 {handData.winner}</span>}
                                 {handData.pot != null && <span className="text-gray-500">Pot: {handData.pot}BB</span>}
                             </div>
