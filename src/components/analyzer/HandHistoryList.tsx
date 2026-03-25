@@ -5,6 +5,13 @@ import { Clock, Search, Tag, ChevronRight, Sparkles, Trophy, Calendar, Trash2, I
 import Tesseract from 'tesseract.js';
 import { API, apiFetch, apiDelete } from "@/lib/api";
 
+interface HandAction {
+    player: string;
+    action: string;
+    amount?: number;
+    position?: string;
+}
+
 interface HandSummary {
     id: string;
     hand_hash: string;
@@ -17,18 +24,35 @@ interface HandSummary {
         board?: string[];
         pot?: number;
         winner?: string;
-        players?: any[];
+        players?: { name: string; position?: string; stack?: number; hole_cards?: string[] }[];
+        actions?: {
+            blinds_ante?: HandAction[];
+            preflop?: HandAction[];
+            flop?: HandAction[];
+            turn?: HandAction[];
+            river?: HandAction[];
+        };
+        street_pots?: Record<string, number>;
+        showdown?: Record<string, string[]>;
     };
     ai_analysis?: {
         mistakes?: {
             player: string;
             description: string;
             better_line?: string;
+            gto_deviation_reason?: string;
             severity?: string;
             street?: string;
         }[];
         summary?: string;
         exploit?: string;
+        exploit_suggestions?: string[];
+        reasoning_trace?: string[];
+        final_verdict?: {
+            grade: string;
+            confidence_score?: number;
+            suggestion_type?: 'GTO' | 'Exploit' | 'Balanced';
+        };
     };
     system_logs?: {
         id: string;
@@ -130,12 +154,45 @@ export function HandHistoryList() {
                     hand_id: "PREVIEW HAND",
                     game_type: "NLHE",
                     board: ["9d", "3c", "6h", "4c", "Kc"],
-                    pot: 1947,
+                    pot: 52,
                     winner: "TomDwan",
-                    players: [{ name: "Isildur1", hole_cards: ["Ah", "As"] }, { name: "TomDwan" }]
+                    players: [
+                        { name: "Isildur1", position: "BB", hole_cards: ["Ah", "As"] },
+                        { name: "TomDwan", position: "CO" },
+                        { name: "PatrikA", position: "BTN" }
+                    ],
+                    actions: {
+                        preflop: [
+                            { player: "TomDwan", action: "raise", amount: 2.5, position: "CO" },
+                            { player: "PatrikA", action: "call", amount: 2.5, position: "BTN" },
+                            { player: "Isildur1", action: "call", amount: 1.5, position: "BB" },
+                        ],
+                        flop: [
+                            { player: "Isildur1", action: "check", position: "BB" },
+                            { player: "TomDwan", action: "bet", amount: 5.5, position: "CO" },
+                            { player: "PatrikA", action: "fold", position: "BTN" },
+                            { player: "Isildur1", action: "call", amount: 5.5, position: "BB" },
+                        ],
+                        turn: [
+                            { player: "Isildur1", action: "check", position: "BB" },
+                            { player: "TomDwan", action: "bet", amount: 15, position: "CO" },
+                            { player: "Isildur1", action: "call", amount: 15, position: "BB" },
+                        ],
+                        river: [
+                            { player: "Isildur1", action: "check", position: "BB" },
+                            { player: "TomDwan", action: "all-in", amount: 52, position: "CO" },
+                            { player: "Isildur1", action: "fold", position: "BB" },
+                        ],
+                    },
+                    street_pots: { preflop: 7.5, flop: 18.5, turn: 48.5, river: 52 },
                 },
                 ai_analysis: {
                     summary: "TURN | BTN vs BB check: Range = AQ, KQ, sets. Action = Bet. Sizing = 75%. Frequency = 70%.",
+                    exploit_suggestions: [
+                        "Opponents overfold vs turn aggression",
+                        "Increase bluff frequency with A5s, KJs",
+                        "Overbet river with thin value"
+                    ],
                     mistakes: [
                         {
                             player: "Isildur1",
@@ -144,7 +201,12 @@ export function HandHistoryList() {
                             severity: "moderate",
                             street: "river"
                         }
-                    ]
+                    ],
+                    final_verdict: {
+                        grade: "B+",
+                        confidence_score: 0.82,
+                        suggestion_type: "Exploit"
+                    }
                 },
                 system_logs: [
                     { id: "log1", event_type: "OCR_SCAN", message: "Parsed snapshot with 98% confidence", created_at: new Date().toISOString() },
@@ -401,7 +463,21 @@ export function HandHistoryList() {
                                         {/* ═══ LEFT: Timeline & Analysis (70%) ═══ */}
                                         <div className="lg:col-span-7 space-y-4">
 
-                                            {/* 1. HAND TIMELINE */}
+                                            {/* Hole cards line */}
+                                            {parsed?.players?.some(p => p.hole_cards && p.hole_cards.length > 0) && (
+                                                <div className="flex flex-wrap items-center gap-3 text-xs">
+                                                    {parsed.players!.filter(p => p.hole_cards && p.hole_cards.length > 0).map((p, i) => (
+                                                        <span key={i} className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm shadow-sm rounded-md px-2 py-2 border border-white/10">
+                                                            <span className="text-gray-300 font-bold">{p.name}</span>
+                                                            {p.hole_cards!.map((c, ci) => (
+                                                                <CardBadge key={ci} card={c} />
+                                                            ))}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* 1. HAND TIMELINE — dynamically rendered from parsed_data.actions */}
                                             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 flex flex-col gap-3 font-mono">
                                                 <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest flex items-center gap-2">
                                                     <Clock className="w-3 h-3 text-gold" />
@@ -409,125 +485,132 @@ export function HandHistoryList() {
                                                 </h4>
                                                 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                    {/* PRE-FLOP */}
-                                                    <div className="bg-black/40 border border-white/5 rounded p-3 h-full flex flex-col">
-                                                        <div className="text-yellow-500 font-bold text-[10px] mb-2 border-b border-gray-800 pb-1">
-                                                            PRE-FLOP <span className="text-gray-500">({parsed?.pot ? (parsed.pot * 0.1).toFixed(1) : '7.5'} BB)</span>
-                                                        </div>
-                                                        <div className="space-y-1 text-xs flex-1">
-                                                            <div className="flex justify-between items-center text-gray-400 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">UTG</span><span className="text-gray-500 truncate text-[10px] uppercase">PhilIvey</span></div><span>Fold</span></div>
-                                                            <div className="flex justify-between items-center text-gray-400 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">MP</span><span className="text-gray-500 truncate text-[10px] uppercase">Durrrr</span></div><span>Fold</span></div>
-                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">CO</span><span className="text-white truncate text-[10px] uppercase">TomDwan</span></div><span className="text-orange-400 font-bold">RAISE <span className="text-gray-500 font-normal">to 2.5 BB</span></span></div>
-                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">BTN</span><span className="text-white truncate text-[10px] uppercase">PatrikA</span></div><span className="text-blue-400">CALL <span className="text-gray-500 font-normal">2.5 BB</span></span></div>
-                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
-                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-blue-400">CALL <span className="text-gray-500 font-normal">1.5 BB</span></span>
+                                                    {/* Dynamic street blocks */}
+                                                    {([
+                                                        { key: 'blinds_ante' as const, label: 'BLINDS & ANTE', boardCards: [] as string[] },
+                                                        { key: 'preflop' as const, label: 'PRE-FLOP', boardCards: [] as string[] },
+                                                        { key: 'flop' as const, label: 'FLOP', boardCards: parsed?.board?.slice(0, 3) || [] },
+                                                        { key: 'turn' as const, label: 'TURN', boardCards: parsed?.board?.slice(3, 4) || [] },
+                                                        { key: 'river' as const, label: 'RIVER', boardCards: parsed?.board?.slice(4, 5) || [] },
+                                                    ]).map(({ key, label, boardCards }) => {
+                                                        const streetActions = parsed?.actions?.[key] || [];
+                                                        if (streetActions.length === 0) return null;
+                                                        const streetPot = parsed?.street_pots?.[key];
+                                                        return (
+                                                            <div key={key} className="bg-black/40 border border-white/5 rounded p-3 h-full flex flex-col">
+                                                                <div className="flex justify-between items-center text-yellow-500 font-bold text-[10px] mb-2 border-b border-gray-800 pb-1">
+                                                                    <span>{label} {streetPot != null && <span className="text-gray-500">({streetPot} BB)</span>}</span>
+                                                                    {boardCards.length > 0 && (
+                                                                        <div className="flex gap-1.5 mt-1 relative -top-1">
+                                                                            {boardCards.map((c, i) => <CardBadge key={i} card={c} />)}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="space-y-1 text-xs flex-1">
+                                                                    {streetActions.map((act, i) => {
+                                                                        const actionLower = act.action?.toLowerCase() || '';
+                                                                        const actionColor = actionLower === 'fold' ? 'text-gray-500'
+                                                                            : actionLower === 'check' ? 'text-gray-400'
+                                                                            : actionLower === 'call' ? 'text-blue-400'
+                                                                            : (actionLower === 'bet' || actionLower === 'raise') ? 'text-orange-400 font-bold'
+                                                                            : actionLower === 'all-in' ? 'text-red-500 font-bold'
+                                                                            : 'text-gray-400';
+                                                                        return (
+                                                                            <div key={i} className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded">
+                                                                                <div className="flex items-center gap-2 w-36">
+                                                                                    <span className="w-8 font-bold text-gray-500 text-[10px]">{act.position || ''}</span>
+                                                                                    <span className="text-white truncate text-[10px] uppercase">{act.player}</span>
+                                                                                </div>
+                                                                                <span className={actionColor}>
+                                                                                    {act.action?.toUpperCase() || ''}
+                                                                                    {act.amount != null && <span className="text-gray-500 font-normal ml-1">{act.amount} BB</span>}
+                                                                                </span>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* FLOP */}
-                                                    <div className="bg-black/40 border border-white/5 rounded p-3 h-full flex flex-col">
-                                                        <div className="flex justify-between items-center text-yellow-500 font-bold text-[10px] mb-3 border-b border-gray-800 pb-1">
-                                                            <span>FLOP <span className="text-gray-500">({parsed?.pot ? (parsed.pot * 0.4).toFixed(1) : '11.5'} BB)</span></span>
-                                                            <div className="flex gap-1.5 mt-1 relative -top-1">
-                                                                {parsed?.board && parsed.board.length >= 3 ? parsed.board.slice(0, 3).map((c, i) => <CardBadge key={i} card={c} />) : <><CardBadge card="9d" /><CardBadge card="3c" /><CardBadge card="6h" /></>}
-                                                            </div>
-                                                        </div>
-                                                        <div className="space-y-1 text-xs flex-1">
-                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
-                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-gray-400">CHECK</span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">CO</span><span className="text-white truncate text-[10px] uppercase">TomDwan</span></div><span className="text-orange-400 font-bold">BET <span className="text-gray-500 font-normal">5.5 BB</span></span></div>
-                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">BTN</span><span className="text-white truncate text-[10px] uppercase">PatrikA</span></div><span className="text-gray-500">FOLD</span></div>
-                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
-                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-blue-400">CALL <span className="text-gray-500 font-normal">5.5 BB</span></span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* TURN */}
-                                                    <div className="bg-black/40 border border-white/5 rounded p-3 h-full flex flex-col">
-                                                        <div className="flex justify-between items-center text-yellow-500 font-bold text-[10px] mb-3 border-b border-gray-800 pb-1">
-                                                            <span>TURN <span className="text-gray-500">({parsed?.pot ? (parsed.pot * 0.7).toFixed(1) : '22.5'} BB)</span></span>
-                                                            <div className="flex gap-1.5 mt-1 relative -top-1">
-                                                                {parsed?.board && parsed.board.length >= 4 ? <CardBadge card={parsed.board[3]} /> : <CardBadge card="4c" />}
-                                                            </div>
-                                                        </div>
-                                                        <div className="space-y-1 text-xs flex-1">
-                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
-                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-gray-400">CHECK</span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">CO</span><span className="text-white truncate text-[10px] uppercase">TomDwan</span></div><span className="text-orange-400 font-bold">BET <span className="text-gray-500 font-normal">15 BB</span></span></div>
-                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
-                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-blue-400">CALL <span className="text-gray-500 font-normal">15 BB</span></span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* RIVER */}
-                                                    <div className="bg-black/40 border border-white/5 rounded p-3 h-full flex flex-col">
-                                                        <div className="flex justify-between items-center text-yellow-500 font-bold text-[10px] mb-3 border-b border-gray-800 pb-1">
-                                                            <span>RIVER <span className="text-gray-500">({parsed?.pot || '1947'} BB)</span></span>
-                                                            <div className="flex gap-1.5 mt-1 relative -top-1">
-                                                                {parsed?.board && parsed.board.length >= 5 ? <CardBadge card={parsed.board[4]} /> : <CardBadge card="Kc" />}
-                                                            </div>
-                                                        </div>
-                                                        <div className="space-y-1 text-xs flex-1">
-                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
-                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-gray-400">CHECK</span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">CO</span><span className="text-white truncate text-[10px] uppercase">TomDwan</span></div><span className="text-red-500 font-bold">ALL-IN <span className="text-gray-500 font-normal">1128 BB</span></span></div>
-                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
-                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-gray-500">FOLD</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                        );
+                                                    })}
+                                                    {/* Fallback if no actions at all */}
+                                                    {!parsed?.actions && (
+                                                        <div className="col-span-2 text-center text-gray-600 text-xs py-6">No action data available</div>
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            {/* 2. AI ANALYSIS */}
+                                            {/* 2. AI ANALYSIS — dynamically rendered */}
+                                            {analysis && (
                                             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 space-y-4">
                                                 <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest flex items-center gap-2">
                                                     <Sparkles className="w-3 h-3 text-purple-400" />
                                                     AI Analysis
+                                                    {analysis.final_verdict && (
+                                                        <span className="ml-auto flex items-center gap-2">
+                                                            <span className="text-yellow-400 font-bold text-sm">{analysis.final_verdict.grade}</span>
+                                                            {analysis.final_verdict.confidence_score != null && (
+                                                                <span className="text-gray-600 text-[10px]">{(analysis.final_verdict.confidence_score * 100).toFixed(0)}%</span>
+                                                            )}
+                                                            {analysis.final_verdict.suggestion_type && (
+                                                                <span className={`text-[10px] font-bold uppercase ${analysis.final_verdict.suggestion_type === 'Exploit' ? 'text-purple-400' : 'text-green-500'}`}>
+                                                                    {analysis.final_verdict.suggestion_type}
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                    )}
                                                 </h4>
 
                                                 {/* Strategy Main */}
+                                                {analysis.summary && (
                                                 <div>
                                                     <div className="text-[10px] font-bold text-blue-400 uppercase flex items-center gap-1.5 mb-1.5">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-                                                        Strategy (Main)
+                                                        Strategy
                                                     </div>
                                                     <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
-                                                        {analysis?.summary ? (
-                                                            <div className="whitespace-pre-line">{analysis.summary}</div>
-                                                        ) : (
-                                                            <ul className="space-y-1">
-                                                                <li className="text-yellow-500 font-bold mb-1">TURN | BTN vs BB check:</li>
-                                                                <li className="flex gap-2"><span className="text-gray-500 w-20">• Range</span><span>AQ, KQ, sets</span></li>
-                                                                <li className="flex gap-2"><span className="text-gray-500 w-20">• Action</span><span>Bet</span></li>
-                                                                <li className="flex gap-2"><span className="text-gray-500 w-20">• Sizing</span><span>75%</span></li>
-                                                                <li className="flex gap-2"><span className="text-gray-500 w-20">• Frequency</span><span>70%</span></li>
-                                                            </ul>
-                                                        )}
+                                                        <div className="whitespace-pre-line">{analysis.summary}</div>
                                                     </div>
                                                 </div>
+                                                )}
 
                                                 {/* Exploit */}
+                                                {(analysis.exploit_suggestions?.length || analysis.exploit) && (
                                                 <div>
                                                     <div className="text-[10px] font-bold text-purple-400 uppercase flex items-center gap-1.5 mb-1.5">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"></div>
                                                         Exploit
                                                     </div>
                                                     <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
-                                                        {analysis?.exploit ? analysis.exploit : (
-                                                            <>
-                                                                • Opponents overfold vs turn aggression<br />
-                                                                <span className="text-purple-400">→ Increase bluff frequency (A5s, KJs)</span>
-                                                            </>
-                                                        )}
+                                                        {analysis.exploit_suggestions && analysis.exploit_suggestions.length > 0 ? (
+                                                            <ul className="space-y-1">
+                                                                {analysis.exploit_suggestions.map((s, i) => (
+                                                                    <li key={i} className="text-purple-300">• {s}</li>
+                                                                ))}
+                                                            </ul>
+                                                        ) : analysis.exploit ? (
+                                                            <div className="whitespace-pre-line">{analysis.exploit}</div>
+                                                        ) : null}
                                                     </div>
                                                 </div>
+                                                )}
+
+                                                {/* Reasoning Trace */}
+                                                {analysis.reasoning_trace && analysis.reasoning_trace.length > 0 && (
+                                                <div>
+                                                    <div className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1.5 mb-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-gray-500"></div>
+                                                        Reasoning
+                                                    </div>
+                                                    <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-400 font-mono leading-relaxed space-y-0.5">
+                                                        {analysis.reasoning_trace.map((s, i) => (
+                                                            <div key={i} className="flex gap-2">
+                                                                <span className="text-gray-700 w-4 text-right">{i + 1}.</span>
+                                                                <span>{s}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                )}
 
                                                 {/* Leaks / Mistakes grouped by player */}
                                                 {Object.keys(mistakesByPlayer).length > 0 ? (
@@ -540,10 +623,20 @@ export function HandHistoryList() {
                                                             <div className="space-y-2">
                                                                 {mArr.map((mistake: any, idx: number) => (
                                                                     <div key={idx} className="bg-black/40 border border-red-500/20 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
-                                                                        <span className="text-gray-500">• Error:</span><br />
-                                                                        {mistake.description}<br /><br />
-                                                                        <span className="text-gray-500">• Fix / Exploit:</span><br />
-                                                                        <span className="text-green-400 font-bold">{mistake.better_line || "Play more optimally"}</span>
+                                                                        {mistake.street && <span className="text-yellow-400 font-bold uppercase mr-2">{mistake.street}</span>}
+                                                                        {mistake.severity && (
+                                                                            <span className={`font-bold uppercase mr-2 ${mistake.severity === 'critical' ? 'text-red-500' : mistake.severity === 'moderate' ? 'text-orange-400' : 'text-blue-400'}`}>
+                                                                                {mistake.severity}
+                                                                            </span>
+                                                                        )}
+                                                                        <br />
+                                                                        <span className="text-gray-500">• Error:</span> {mistake.description}
+                                                                        {mistake.better_line && (
+                                                                            <><br /><span className="text-gray-500">• Better:</span> <span className="text-green-400 font-bold">{mistake.better_line}</span></>
+                                                                        )}
+                                                                        {mistake.gto_deviation_reason && (
+                                                                            <><br /><span className="text-purple-400 italic">💡 {mistake.gto_deviation_reason}</span></>
+                                                                        )}
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -556,11 +649,19 @@ export function HandHistoryList() {
                                                             Flawless Play
                                                         </div>
                                                         <div className="bg-black/40 border border-green-500/20 p-3 rounded text-xs text-green-400 font-mono">
-                                                            No significant errors detected in this hand. Well played by all.
+                                                            No significant errors detected in this hand.
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
+                                            )}
+
+                                            {/* No AI analysis yet */}
+                                            {!analysis && (
+                                                <div className="bg-white/5 border border-white/10 rounded-md p-4 text-center text-gray-600 text-xs">
+                                                    No AI analysis available for this hand yet.
+                                                </div>
+                                            )}
 
                                             {/* 3. COLLAPSIBLE SYSTEM LOGS */}
                                             {hand.system_logs && hand.system_logs.length > 0 && (
@@ -595,55 +696,61 @@ export function HandHistoryList() {
 
                                                 <div>
                                                     <span className="text-[10px] text-gray-500 block mb-0.5 uppercase tracking-tighter">Final Pot</span>
-                                                    <span className="text-xl font-bold text-gold">{parsed?.pot || 1947} <span className="text-xs text-amber-700">BB</span></span>
+                                                    <span className="text-xl font-bold text-gold">{parsed?.pot ?? 0} <span className="text-xs text-amber-700">BB</span></span>
                                                 </div>
                                                 <div className="h-[1px] bg-white/5"></div>
                                                 <div>
                                                     <span className="text-[10px] text-gray-500 block mb-0.5 uppercase tracking-tighter">Winner</span>
                                                     <span className="text-sm font-bold text-emerald-400 truncate block">
-                                                        {parsed?.winner ? `🏆 ${parsed.winner}` : "🏆 PlayerX"}
+                                                        {parsed?.winner ? `🏆 ${parsed.winner}` : "—"}
                                                     </span>
                                                 </div>
                                                 <div className="h-[1px] bg-white/5"></div>
                                                 
+                                                {/* Players */}
                                                 <div>
-                                                    <span className="text-[10px] text-gray-500 block mb-1 uppercase tracking-tighter">Results</span>
-                                                    <div className="flex justify-between items-center bg-black/40 px-2 py-1.5 rounded border border-white/5 mb-1">
-                                                        <span className="text-xs text-gray-300">TomDwan</span>
-                                                        <span className="text-xs font-bold text-emerald-400 font-mono">+818 BB</span>
-                                                    </div>
-                                                    <div className="flex justify-between items-center bg-black/40 px-2 py-1.5 rounded border border-white/5">
-                                                        <span className="text-xs text-gray-300">Isildur1</span>
-                                                        <span className="text-xs font-bold text-red-400 font-mono">-818 BB</span>
-                                                    </div>
+                                                    <span className="text-[10px] text-gray-500 block mb-1 uppercase tracking-tighter">Players</span>
+                                                    {parsed?.players && parsed.players.length > 0 ? (
+                                                        parsed.players.map((p, i) => (
+                                                            <div key={i} className="flex justify-between items-center bg-black/40 px-2 py-1.5 rounded border border-white/5 mb-1">
+                                                                <span className="text-xs text-gray-300 flex items-center gap-1.5">
+                                                                    {p.position && <span className="text-gray-600 font-bold text-[10px]">{p.position}</span>}
+                                                                    {p.name}
+                                                                </span>
+                                                                {p.name === parsed.winner && (
+                                                                    <span className="text-xs font-bold text-emerald-400 font-mono">🏆</span>
+                                                                )}
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="text-xs text-gray-600">No player data</div>
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            {/* EXPLOIT QUICK VIEW */}
+                                            {/* EXPLOIT QUICK VIEW — dynamic */}
+                                            {analysis && (analysis.exploit_suggestions?.length || analysis.exploit) && (
                                             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4">
                                                 <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-3 flex items-center gap-2">
                                                     <Tag className="w-3 h-3 text-purple-400" />
                                                     Exploit Quick View
                                                 </h4>
-                                                <div className="space-y-3">
-                                                    <div className="text-xs">
-                                                        <span className="text-gray-500">Target Player: </span>
-                                                        <span className="text-white font-bold bg-white/10 px-1.5 py-0.5 rounded ml-1">TomDwan</span>
-                                                    </div>
-                                                    <div className="text-xs text-gray-300">
-                                                        <span className="text-gray-500 block mb-1">Exploit:</span>
-                                                        <ul className="space-y-1.5 pl-3 border-l-2 border-purple-500/50">
-                                                            <li>Trap more preflop</li>
-                                                            <li>Call wider vs XR</li>
-                                                            <li>Overbet river thin value</li>
-                                                        </ul>
-                                                    </div>
+                                                <div className="text-xs text-gray-300">
+                                                    <span className="text-gray-500 block mb-1">Suggestions:</span>
+                                                    <ul className="space-y-1.5 pl-3 border-l-2 border-purple-500/50">
+                                                        {(analysis.exploit_suggestions || []).map((s, i) => (
+                                                            <li key={i}>{s}</li>
+                                                        ))}
+                                                        {analysis.exploit && !analysis.exploit_suggestions?.length && (
+                                                            <li>{analysis.exploit}</li>
+                                                        )}
+                                                    </ul>
                                                 </div>
                                             </div>
+                                            )}
 
                                             {/* CTA */}
                                             <div className="flex flex-col gap-2 pt-2">
-
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
