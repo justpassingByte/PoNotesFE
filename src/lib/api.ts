@@ -24,6 +24,8 @@ export const API = {
   playerBulk: `${API_BASE_URL}/api/players/bulk`,
   refreshProfile: `${API_BASE_URL}/api/players/profile/refresh`,
   usage: `${API_BASE_URL}/api/usage`,
+  ocrTemplates: `${API_BASE_URL}/api/ocr/templates`,
+  ocrTemplateDelete: (type: string, filename: string) => `${API_BASE_URL}/api/ocr/templates/${type}/${filename}`,
 
   // Hand Analysis
   hands: `${API_BASE_URL}/api/hands`,

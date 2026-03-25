@@ -41,12 +41,13 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
             })
             .catch(err => console.error('Failed to fetch platforms:', err));
 
-        // Fetch quick tags from templates
+        // Fetch quick tags from templates (exclude layout templates)
         apiFetch(API.templates)
             .then(res => res.json())
             .then(json => {
                 if (json.success && json.data) {
-                    setQuickTags(json.data);
+                    const intelligenceTags = json.data.filter((t: QuickTag) => t.category !== 'card_ocr');
+                    setQuickTags(intelligenceTags);
                 }
             })
             .catch(err => console.error('Failed to fetch templates:', err));

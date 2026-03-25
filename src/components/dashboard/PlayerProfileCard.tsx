@@ -62,9 +62,9 @@ export function PlayerProfileCard({ profile }: PlayerProfileCardProps) {
     const tierStyle = getTierStyle(profile.reliability_score);
 
     return (
-        <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.4)] overflow-hidden">
+        <div className="bg-[#111318] border border-gray-800 rounded-2xl shadow-2xl overflow-hidden">
             {/* Top accent */}
-            <div className="h-[2px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+            <div className="h-[2px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
 
             <div className="p-6 space-y-5">
 
@@ -72,23 +72,23 @@ export function PlayerProfileCard({ profile }: PlayerProfileCardProps) {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Shield className="w-5 h-5 text-blue-400" />
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                            Decison Engine Profile
+                        <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                            Decision Engine Profile
                         </h3>
                     </div>
-                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest ${tierStyle.bg} ${tierStyle.border} ${tierStyle.text}`}>
+                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded border text-[10px] font-bold uppercase tracking-widest ${tierStyle.bg} ${tierStyle.border} ${tierStyle.text}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${tierStyle.color} animate-pulse`}></span>
                         {tierStyle.label}
                     </div>
                 </div>
 
                 {/* ── Archetype Badge ── */}
-                <div className={`flex items-center justify-between p-4 rounded-xl border ${archetypeStyle.bg} ${archetypeStyle.border} ${archetypeStyle.glow}`}>
+                <div className={`flex items-center justify-between p-4 rounded-xl border ${archetypeStyle.border} bg-[#1a1d24]`}>
                     <div>
                         <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold block mb-1">
                             Archetype
                         </span>
-                        <span className={`text-lg font-black tracking-wide ${archetypeStyle.text}`}>
+                        <span className={`text-xl font-black tracking-tight ${archetypeStyle.text}`}>
                             {formatArchetypeLabel(profile.archetype)}
                         </span>
                     </div>
@@ -97,7 +97,7 @@ export function PlayerProfileCard({ profile }: PlayerProfileCardProps) {
                             Profile Confidence
                         </span>
                         <div className="flex items-center gap-2">
-                            <div className="w-20 h-2 bg-white/5 rounded-full overflow-hidden">
+                            <div className="w-20 h-1.5 bg-gray-800 rounded-full overflow-hidden">
                                 <div
                                     className={`h-full rounded-full transition-all duration-700 ${profile.confidence > 0.7 ? 'bg-gradient-to-r from-emerald-500 to-green-400' : profile.confidence > 0.4 ? 'bg-gradient-to-r from-yellow-500 to-amber-400' : 'bg-gradient-to-r from-red-500 to-orange-400'}`}
                                     style={{ width: `${Math.round(profile.confidence * 100)}%` }}
@@ -111,24 +111,24 @@ export function PlayerProfileCard({ profile }: PlayerProfileCardProps) {
                 </div>
 
                 {/* ── Core Aggression vs Looseness Grid ── */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-black/30 rounded-lg p-4 border border-white/5 relative overflow-hidden">
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-[#1a1d24] rounded-lg p-4 border border-gray-800 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-16 h-16 bg-red-500/10 rounded-bl-full pointer-events-none"></div>
                         <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold block mb-2">Aggression</span>
                         <div className="flex items-center gap-3">
                             <span className="text-2xl font-mono text-white font-bold">{profile.aggression_score}</span>
-                            <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full bg-gradient-to-r from-orange-500 to-red-500" style={{ width: `${profile.aggression_score}%` }}></div>
+                            <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                                <div className="h-full bg-orange-500" style={{ width: `${profile.aggression_score}%` }}></div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-black/30 rounded-lg p-4 border border-white/5 relative overflow-hidden">
+                    <div className="bg-[#1a1d24] rounded-lg p-4 border border-gray-800 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-bl-full pointer-events-none"></div>
                         <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold block mb-2">Looseness</span>
                         <div className="flex items-center gap-3">
                             <span className="text-2xl font-mono text-white font-bold">{profile.looseness_score}</span>
-                            <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500" style={{ width: `${profile.looseness_score}%` }}></div>
+                            <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500" style={{ width: `${profile.looseness_score}%` }}></div>
                             </div>
                         </div>
                     </div>
@@ -147,7 +147,7 @@ export function PlayerProfileCard({ profile }: PlayerProfileCardProps) {
                             {profile.tendencies.map((tendency, i) => (
                                 <div
                                     key={i}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-felt-light/10 rounded-lg border border-felt-light/20 text-xs font-semibold text-felt-light"
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#1a1d24] rounded border border-gray-700 text-xs font-semibold text-gray-300"
                                 >
                                     <span className="uppercase tracking-wider">{formatTag(tendency.tag)}</span>
                                     <span className="text-[9px] opacity-60 font-mono px-1.5 py-0.5 bg-black/40 rounded">
@@ -173,8 +173,8 @@ export function PlayerProfileCard({ profile }: PlayerProfileCardProps) {
                             { label: "Templates", weight: profile.data_sources.template_weight },
                             { label: "Custom AI", weight: profile.data_sources.custom_note_weight },
                         ].map((src, i) => (
-                            <div key={i} className="text-center p-2 rounded bg-black/40 border border-white/5">
-                                <span className="block text-[9px] text-gray-400 uppercase tracking-wider mb-1">{src.label}</span>
+                            <div key={i} className="text-center p-2 rounded bg-[#1a1d24] border border-gray-800">
+                                <span className="block text-[9px] text-gray-500 uppercase tracking-wider mb-1">{src.label}</span>
                                 <span className="block text-xs font-mono text-gray-300">{(src.weight * 100).toFixed(0)}%</span>
                             </div>
                         ))}

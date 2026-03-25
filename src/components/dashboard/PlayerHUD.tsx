@@ -1,5 +1,8 @@
+"use client";
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { ShieldAlert, Crosshair, AlertTriangle, Trash2, Brain, Plus, History, FileText } from 'lucide-react';
+import { ShieldAlert, Crosshair, AlertTriangle, Brain, Plus, FileText, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 
 export interface PlayerHUDProps {
     id: string;
@@ -12,6 +15,7 @@ export interface PlayerHUDProps {
     ai_aggression_score?: number | null;
     ai_exploit_strategy?: any;
     ai_profile?: any;
+    recentNotes?: { id: string; content: string; created_at: string }[];
     onAddNote?: () => void;
     onDelete?: () => void;
 }
@@ -19,112 +23,132 @@ export interface PlayerHUDProps {
 export function PlayerHUD({ 
     id, name, playstyle, aggressionScore, notesCount, platformName, 
     ai_playstyle, ai_aggression_score, ai_exploit_strategy, ai_profile,
+    recentNotes,
     onAddNote, onDelete 
 }: PlayerHUDProps) {
+    const [expanded, setExpanded] = useState(false);
 
-    // Decide color logic based on playstyle
-    const getPlaystyleColor = (style: string) => {
+    const getTagStyle = (style: string) => {
         switch (style.toUpperCase()) {
-            case 'LAG': return 'bg-red-500/20 text-red-400 border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]';
-            case 'TAG': return 'bg-blue-500/20 text-blue-400 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.2)]';
-            case 'NIT': return 'bg-green-500/20 text-green-400 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.2)]';
-            case 'FISH': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.2)]';
-            case 'WHALE': return 'bg-amber-600/30 text-gold border-gold/50 shadow-[0_0_15px_rgba(255,191,0,0.3)] animate-pulse';
-            case 'MANIAC': return 'bg-purple-500/20 text-purple-400 border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.2)]';
-            default: return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
+            case 'LAG': return 'bg-red-500/20 text-red-400 border-red-500/40';
+            case 'TAG': return 'bg-blue-500/20 text-blue-400 border-blue-500/40';
+            case 'NIT': return 'bg-green-500/20 text-green-400 border-green-500/40';
+            case 'FISH': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40';
+            case 'WHALE': return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+            case 'MANIAC': return 'bg-purple-500/20 text-purple-400 border-purple-500/40';
+            case 'CALLING STATION': return 'bg-orange-500/20 text-orange-400 border-orange-500/40';
+            default: return 'bg-gray-500/20 text-gray-400 border-gray-500/40';
         }
     };
 
     const getAggressionIcon = (score: number) => {
-        if (score > 60) return <AlertTriangle className="w-4 h-4 text-red-500" />;
-        if (score > 30) return <Crosshair className="w-4 h-4 text-yellow-500" />;
-        return <ShieldAlert className="w-4 h-4 text-green-500" />;
+        if (score > 60) return <AlertTriangle className="w-3.5 h-3.5 text-red-400" />;
+        if (score > 30) return <Crosshair className="w-3.5 h-3.5 text-yellow-400" />;
+        return <ShieldAlert className="w-3.5 h-3.5 text-green-400" />;
     };
 
-    const strategy = ai_exploit_strategy || ai_profile?.strategy;
+    const getAggressionColor = (score: number) => {
+        if (score > 60) return 'text-red-400';
+        if (score > 30) return 'text-yellow-400';
+        return 'text-green-400';
+    };
+
     const ai_archetype = ai_playstyle || ai_profile?.archetype;
+    const displayTag = ai_archetype || playstyle;
+    const aggScore = ai_aggression_score ?? aggressionScore;
+    const notes = recentNotes?.slice(0, 2) || [];
+    const allRangeAdj = ai_profile?.range_adjustments || [];
+    const hasExtra = allRangeAdj.length > 3;
+    const visibleAdj = expanded ? allRangeAdj : allRangeAdj.slice(0, 3);
 
     return (
-        <Link href={`/players/${id}`} className="block bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden group hover:bg-card/60 transition-all hover:-translate-y-1 cursor-pointer no-underline min-h-[300px] flex flex-col">
-            {/* Decorative Card Background Element */}
-            <div className="absolute -right-10 -top-10 w-32 h-32 bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-felt-light/20 to-transparent opacity-50 rounded-full pointer-events-none group-hover:opacity-80 transition-opacity"></div>
-
-            <div className="flex justify-between items-start mb-4">
-                <div className="space-y-0.5">
-                    <h3 className="font-black text-xl text-white tracking-tight truncate max-w-[150px]">{name}</h3>
-                    <span className="text-[8px] text-gray-400 font-bold uppercase tracking-[0.1em] block">{platformName || 'Unknown Platform'}</span>
+        <Link href={`/players/${id}`} className="block bg-[#111318] border border-gray-800 rounded-xl p-4 relative group hover:border-gray-600 transition-colors cursor-pointer no-underline flex flex-col shadow-sm">
+            
+            {/* ROW 1: NAME + TAG */}
+            <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-lg text-white tracking-tight leading-none mb-1.5 truncate">{name}</h3>
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{platformName || 'Unknown'}</span>
+                    </div>
                 </div>
-                <div className={`px-2 py-1 text-[9px] font-black rounded-lg border ${getPlaystyleColor(playstyle)} transition-all uppercase tracking-tight shadow-sm`}>
-                    {playstyle}
-                </div>
+                <span className={`px-2 py-0.5 text-[10px] font-black rounded border ${getTagStyle(displayTag)} uppercase tracking-widest whitespace-nowrap flex-shrink-0`}>
+                    {displayTag}
+                </span>
             </div>
 
-            {/* AI HUD Section - HIGHLIGHTED */}
-            {(ai_archetype || (ai_profile?.range_adjustments && ai_profile.range_adjustments.length > 0)) && (
-                <div className="bg-gold/5 border border-gold/10 rounded-2xl p-4 mb-6 shadow-inner">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
-                            <span className="text-[10px] text-gold font-black uppercase tracking-widest">Range Adjustments</span>
-                        </div>
-                        {ai_archetype && (
-                            <span className={`px-1.5 py-0.5 text-[8px] font-black rounded border ${getPlaystyleColor(ai_archetype)}`}>
-                                {ai_archetype}
-                            </span>
-                        )}
+            {/* ROW 2: RECENT NOTES */}
+            <div className="mb-4">
+                <span className="text-[9px] text-gray-600 font-black uppercase tracking-widest block mb-2 px-1">Intel Logs</span>
+                {notes.length > 0 ? (
+                    <div className="space-y-1 px-1">
+                        {notes.map((note) => (
+                            <div key={note.id} className="flex items-start gap-2 py-1.5 border-b border-gray-800/50 last:border-0">
+                                <MessageSquare className="w-3 h-3 text-gray-700 flex-shrink-0 mt-0.5" />
+                                <span className="text-[11px] text-gray-400 font-medium leading-relaxed line-clamp-2">{note.content}</span>
+                            </div>
+                        ))}
                     </div>
+                ) : (
+                    <div className="px-1 py-2 border border-dashed border-gray-800 rounded-lg text-center">
+                        <span className="text-[10px] text-gray-700 italic uppercase">No logs.</span>
+                    </div>
+                )}
+            </div>
 
-                    {/* Range Adjustments - High Value Info for HUD */}
-                    {ai_profile?.range_adjustments && ai_profile.range_adjustments.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-2">
-                            {ai_profile.range_adjustments.slice(0, 3).map((adj: string, i: number) => (
-                                <div key={i} className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-xl px-3 py-2">
-                                    <Brain className="w-3 h-3 text-gold/60 flex-shrink-0" />
-                                    <span className="text-[11px] text-gray-100 font-bold leading-tight">{adj}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-[10px] text-gray-600 italic uppercase tracking-widest text-center py-2">Calculating exploits...</div>
+            {/* ROW 3: RANGE ADJUSTMENTS */}
+            {allRangeAdj.length > 0 && (
+                <div className="mb-4">
+                    <span className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2 block px-1">Tactical Adjusts</span>
+                    <div className={`space-y-1 px-1 ${expanded ? 'max-h-[200px] overflow-y-auto scrollbar-hide' : ''}`}>
+                        {visibleAdj.map((adj: string, i: number) => (
+                            <div key={i} className="flex items-start gap-2 py-1">
+                                <Brain className="w-3 h-3 text-gray-700 flex-shrink-0 mt-0.5" />
+                                <span className="text-[10px] text-gray-400 font-medium leading-tight">{adj}</span>
+                            </div>
+                        ))}
+                    </div>
+                    {hasExtra && (
+                        <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setExpanded(!expanded); }}
+                            className="flex items-center gap-1 text-[9px] text-gray-600 hover:text-amber-500 font-black uppercase tracking-widest transition-colors mt-2 px-1"
+                        >
+                            {expanded ? (
+                                <><ChevronUp className="w-3 h-3" /> Hide</>
+                            ) : (
+                                <><ChevronDown className="w-3 h-3" /> +{allRangeAdj.length - 3} more</>
+                            )}
+                        </button>
                     )}
                 </div>
             )}
 
-            {/* Reverted Metrics (with Labels) */}
-            <div className="space-y-3 mt-auto pt-4 border-t border-white/5">
+            {/* DIVIDER + METRICS */}
+            <div className="border-t border-gray-800 mt-auto pt-3 px-1">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        {getAggressionIcon(ai_aggression_score ?? aggressionScore)}
-                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Aggression</span>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                            {getAggressionIcon(aggScore)}
+                            <span className={`text-xs font-mono font-bold ${getAggressionColor(aggScore)}`}>
+                                {aggScore}%
+                            </span>
+                            <span className="text-[8px] text-gray-700 uppercase font-black tracking-widest">AGG</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 text-gray-700" />
+                            <span className="text-xs font-mono font-bold text-gray-500">{notesCount}</span>
+                        </div>
                     </div>
-                    <span className="text-sm font-black font-mono text-white">
-                        {ai_aggression_score ?? aggressionScore}%
-                    </span>
+                    <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddNote?.(); }}
+                        className="w-7 h-7 flex items-center justify-center border border-gray-800 hover:bg-white/5 text-gray-600 hover:text-amber-500 rounded-lg transition-colors"
+                        title="Log note"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                    </button>
                 </div>
-
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <FileText className="w-3.5 h-3.5 text-gray-500" />
-                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Data Depth</span>
-                    </div>
-                    <span className="text-sm font-black font-mono text-white">{notesCount} Notes</span>
-                </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
-                <div className="flex items-center gap-1.5">
-                    <History className="w-3.5 h-3.5 text-gold/50" />
-                    <span className="text-[8px] font-black tracking-widest text-gold/70">ARCHIVE</span>
-                </div>
-                <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddNote?.(); }}
-                    className="bg-white/5 hover:bg-white/10 text-white p-2 rounded-full transition-all border border-white/10 hover:border-white/20"
-                    title="Quick Note"
-                >
-                    <Plus className="w-3.5 h-3.5" />
-                </button>
             </div>
         </Link>
     );
 }
-

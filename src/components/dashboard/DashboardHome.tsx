@@ -46,6 +46,80 @@ interface DashboardHomeProps {
     topRegs: Player[];
 }
 
+const MOCK_WHALES: Player[] = [
+    {
+        id: 'mock-w1',
+        name: 'SmoothCall_Mike',
+        playstyle: 'CALLING STATION',
+        aggression_score: 38,
+        notesCount: 12,
+        platform: { name: 'GGPoker' },
+        ai_playstyle: 'CALLING STATION',
+        ai_aggression_score: 38,
+        ai_profile: {
+            archetype: 'CALLING STATION',
+            range_adjustments: [
+                'Value bet top pair+ for 3 streets — they call with any pair',
+                'Remove bluffs from river range — station pays off everything',
+            ],
+        },
+    },
+    {
+        id: 'mock-w2',
+        name: 'LimpKing42',
+        playstyle: 'FISH',
+        aggression_score: 22,
+        notesCount: 5,
+        platform: { name: 'PokerStars' },
+        ai_playstyle: 'FISH',
+        ai_aggression_score: 22,
+        ai_profile: {
+            archetype: 'FISH',
+            range_adjustments: [
+                'Isolate preflop to 4x — punish passive limps',
+                'Value bet large on all streets — no fold equity needed',
+            ],
+        },
+    },
+];
+
+const MOCK_REGS: Player[] = [
+    {
+        id: 'mock-r1',
+        name: 'xFishKiller99',
+        playstyle: 'LAG',
+        aggression_score: 72,
+        notesCount: 34,
+        platform: { name: 'PokerStars' },
+        ai_playstyle: 'LAG',
+        ai_aggression_score: 72,
+        ai_profile: {
+            archetype: 'LAG',
+            range_adjustments: [
+                'CO vs BU 3bet: Fold AJo, KQo — Call AQo, TT-QQ — 4bet AK, KK+',
+                'Cbet flop 85% → check-raise dry boards more vs this player',
+            ],
+        },
+    },
+    {
+        id: 'mock-r2',
+        name: 'GTO_Crusher',
+        playstyle: 'TAG',
+        aggression_score: 55,
+        notesCount: 21,
+        platform: { name: '888poker' },
+        ai_playstyle: 'TAG',
+        ai_aggression_score: 55,
+        ai_profile: {
+            archetype: 'TAG',
+            range_adjustments: [
+                'Avoid 3bet bluffing OOP — they call too wide in position',
+                'Check-raise flop more on Axx boards — they overfold cbet',
+            ],
+        },
+    },
+];
+
 export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHomeProps) {
     const [isAITuningOpen, setIsAITuningOpen] = useState(false);
     const displayName = user?.email ? user.email.split('@')[0].toUpperCase() : 'HERO';
@@ -62,46 +136,39 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 <AITuningModal onClose={() => setIsAITuningOpen(false)} />
             </Modal>
 
-            {/* 1. Welcome & Primary Action (Compact) */}
-            <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-card/60 to-card/30 border border-white/5 p-6 sm:p-8 shadow-xl mb-4">
-                <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold/5 blur-[80px] rounded-full"></div>
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            {/* 1. Welcome & Primary Action */}
+            <div className="relative overflow-hidden rounded-xl bg-[#111318] shadow-2xl border border-gray-800 p-6 sm:p-7 mb-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-4 flex-1">
                         <div className="space-y-2">
-                            <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-full bg-gold/10 text-gold text-[9px] font-bold uppercase tracking-[0.2em]">
+                            <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[9px] font-bold uppercase tracking-widest border border-emerald-500/20">
                                 <Sparkles className="w-2.5 h-2.5" />
-                                System Online
+                                Online
                             </div>
                             <h1 className="text-3xl font-bold text-white tracking-tight">
-                                Hero <span className="text-gold">{displayName}</span>
+                                Hero <span className="text-amber-400">{displayName}</span>
                             </h1>
                             <p className="text-gray-400 max-w-md leading-relaxed text-xs sm:text-sm">
-                                Radial scan complete. High-priority targets identified for exploitation.
+                                Scan complete. High-priority targets identified.
                             </p>
                         </div>
                     </div>
                     
-                    <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-3">
                         <button 
                             onClick={() => setIsAITuningOpen(true)}
-                            className="group flex-1 sm:flex-none flex items-center justify-center gap-4 px-8 py-4 bg-white/5 border border-white/10 text-white font-black rounded-2xl hover:bg-white/10 hover:border-gold/30 transition-all hover:scale-[1.02] active:scale-95 shadow-xl"
+                            className="group flex-1 sm:flex-none flex items-center justify-center gap-3 px-6 py-3 bg-[#1a1d24] border border-gray-700 text-white font-bold rounded-xl hover:border-gray-500 transition-colors"
                         >
-                            <div className="bg-gold/20 p-1.5 rounded-lg group-hover:scale-110 transition-transform">
-                                <Brain className="w-5 h-5 text-gold" />
-                            </div>
-                            <span className="text-sm uppercase tracking-wider">AI NEURAL TUNING</span>
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform opacity-0 group-hover:opacity-100" />
+                            <Brain className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm uppercase tracking-wider">AI TUNING</span>
                         </button>
 
                         <Link 
                             href="/analyzer"
-                            className="group flex-1 sm:flex-none flex items-center justify-center gap-4 px-8 py-4 bg-gold text-black font-black rounded-2xl hover:bg-yellow-400 transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
+                            className="group flex-1 sm:flex-none flex items-center justify-center gap-3 px-6 py-3 bg-amber-500 text-black font-bold rounded-xl hover:bg-amber-400 transition-colors"
                         >
-                            <div className="bg-black/10 p-1.5 rounded-lg group-hover:scale-110 transition-transform">
-                                <Zap className="w-5 h-5 fill-current" />
-                            </div>
+                            <Zap className="w-4 h-4 fill-current" />
                             <span className="text-sm uppercase tracking-wider">NEW HAND SCAN</span>
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
                 </div>
@@ -109,50 +176,99 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
 
 
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
-                {/* Top WHALE Targets */}
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                        <div className="flex items-center gap-2">
-                            <ShieldAlert className="w-5 h-5 text-gold animate-pulse" />
-                            <h2 className="text-sm font-black text-white uppercase tracking-[0.2em]">High Value: TOP WHALES</h2>
-                        </div>
-                        <div className="h-[1px] flex-1 bg-gradient-to-r from-gold/30 to-transparent ml-4"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
+                {/* Col 1: Top WHALE Targets */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                        <h2 className="text-[10px] font-bold text-white uppercase tracking-wider">Top Whales</h2>
+                        <div className="h-[1px] flex-1 bg-gray-800"></div>
                     </div>
-                    
-                    <div className="space-y-6">
-                        {topWhales.length > 0 ? (
-                            topWhales.map(player => (
-                                <PlayerCard key={player.id} player={player} />
-                            ))
-                        ) : (
-                            <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-[2rem] opacity-50">
-                                <p className="text-[10px] font-mono uppercase tracking-widest text-gray-500">No Whale Targets Detected</p>
-                            </div>
-                        )}
+                    <div className="space-y-2.5">
+                        {(topWhales.length > 0 ? topWhales : MOCK_WHALES).map(player => (
+                            <PlayerCard key={player.id} player={player} />
+                        ))}
                     </div>
                 </div>
 
-                {/* Top REG Targets */}
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                        <div className="flex items-center gap-2">
-                            <Target className="w-5 h-5 text-blue-400" />
-                            <h2 className="text-sm font-black text-white uppercase tracking-[0.2em]">Opponents: TOP REGS</h2>
-                        </div>
-                        <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent ml-4"></div>
+                {/* Col 2: Top REG Targets */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <Target className="w-3.5 h-3.5 text-blue-400" />
+                        <h2 className="text-[10px] font-bold text-white uppercase tracking-wider">Top Regs</h2>
+                        <div className="h-[1px] flex-1 bg-gray-800"></div>
+                    </div>
+                    <div className="space-y-2.5">
+                        {(topRegs.length > 0 ? topRegs : MOCK_REGS).map(player => (
+                            <PlayerCard key={player.id} player={player} isStrong />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Col 3: Quick Actions */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <Zap className="w-3.5 h-3.5 text-amber-400" />
+                        <h2 className="text-[10px] font-bold text-white uppercase tracking-wider">Quick Actions</h2>
+                        <div className="h-[1px] flex-1 bg-gray-800"></div>
+                    </div>
+                    <div className="space-y-2">
+                        <Link href="/players" className="flex items-center gap-3 p-3 bg-[#111318] border border-gray-700 rounded-xl hover:border-gray-500 transition-colors group">
+                            <div className="w-8 h-8 rounded-lg bg-[#1a1d24] flex items-center justify-center border border-gray-700">
+                                <Users className="w-4 h-4 text-blue-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-white">All Players</p>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-wider">{stats.totalCount} tracked</p>
+                            </div>
+                            <ArrowRight className="w-3.5 h-3.5 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </Link>
+
+                        <Link href="/analyzer" className="flex items-center gap-3 p-3 bg-[#111318] border border-gray-700 rounded-xl hover:border-gray-500 transition-colors group">
+                            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                                <Zap className="w-4 h-4 text-amber-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-white">Hand Scanner</p>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-wider">Upload & analyze</p>
+                            </div>
+                            <ArrowRight className="w-3.5 h-3.5 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </Link>
                     </div>
 
-                    <div className="space-y-6">
-                        {topRegs.length > 0 ? (
-                            topRegs.map(player => (
-                                <PlayerCard key={player.id} player={player} isStrong />
-                            ))
-                        ) : (
-                            <div className="py-12 text-center bg-card/20 border border-dashed border-white/5 rounded-[2rem] opacity-50">
-                                <p className="text-[10px] font-mono uppercase tracking-widest text-gray-500">No Regular Targets Detected</p>
-                            </div>
-                        )}
+                    {/* Playstyle Breakdown */}
+                    <div className="pt-1">
+                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-2 block px-1">Player Breakdown</span>
+                        <div className="space-y-1.5">
+                            {(() => {
+                                const counts = Object.keys(stats.playstyleCounts).length > 0
+                                    ? stats.playstyleCounts
+                                    : { LAG: 4, TAG: 3, FISH: 6, WHALE: 2, NIT: 1, MANIAC: 1 };
+                                const maxCount = Math.max(...Object.values(counts));
+                                const barColorMap: Record<string, string> = {
+                                    LAG: '#ef4444', TAG: '#3b82f6', NIT: '#22c55e',
+                                    FISH: '#eab308', WHALE: '#fbbf24', MANIAC: '#a855f7',
+                                    'CALLING STATION': '#f97316', UNKNOWN: '#6b7280',
+                                };
+                                return Object.entries(counts)
+                                    .sort(([,a], [,b]) => b - a)
+                                    .map(([style, count]) => (
+                                        <div key={style} className="flex items-center gap-2">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide w-[70px] text-right shrink-0">{style}</span>
+                                            <div className="flex-1 h-5 bg-gray-800/50 rounded overflow-hidden">
+                                                <div 
+                                                    className="h-full rounded"
+                                                    style={{ 
+                                                        width: `${maxCount > 0 ? (count / maxCount) * 100 : 0}%`,
+                                                        backgroundColor: barColorMap[style.toUpperCase()] || '#6b7280'
+                                                    }}
+                                                />
+                                            </div>
+                                            <span className="text-[11px] font-mono font-bold text-gray-300 w-5 text-right">{count}</span>
+                                        </div>
+                                    ));
+                            })()}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -162,98 +278,73 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
 }
 
 function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: boolean }) {
-    console.log("Debug PlayerCard DashboardHome:", { id: player.id, name: player.name, ai_profile: player.ai_profile });
+    const getTagStyle = (style: string) => {
+        switch (style?.toUpperCase()) {
+            case 'LAG': return 'bg-red-500/10 text-red-500 border-red-500/20';
+            case 'TAG': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+            case 'NIT': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+            case 'FISH': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+            case 'WHALE': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+            case 'MANIAC': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+            case 'CALLING STATION': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+            default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+        }
+    };
+    const displayTag = player.ai_playstyle || player.playstyle;
+    const aggScore = player.ai_aggression_score ?? player.aggression_score;
+    const getAggressionColor = (score: number) => {
+        if (score > 60) return 'text-red-400';
+        if (score > 30) return 'text-yellow-400';
+        return 'text-green-400';
+    };
+
     return (
         <Link 
             href={`/players/${player.id}`} 
-            className={`p-5 bg-card/60 border border-white/5 rounded-2xl hover:border-gold/30 transition-all group flex flex-col justify-between ${isStrong ? 'hover:border-red-500/30' : 'hover:bg-gold/5'}`}
+            className="block bg-[#111318] border border-gray-800 rounded-xl p-3 hover:border-gray-600 transition-all group"
         >
-            <div className="flex justify-between items-start">
-                <div>
-                    <h4 className="font-bold text-white mb-1 group-hover:text-gold transition-colors">{player.name}</h4>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded border ${
-                            player.playstyle === 'FISH' ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' :
-                            player.playstyle === 'WHALE' ? 'text-gold bg-gold/10 border-gold/30 animate-pulse font-extrabold' :
-                            player.playstyle === 'MANIAC' ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' :
-                            player.playstyle === 'LAG' ? 'text-red-400 bg-red-500/10 border-red-500/20' :
-                            player.playstyle === 'TAG' ? 'text-blue-400 bg-blue-500/10 border-blue-500/20' :
-                            'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                        }`}>
-                            {player.playstyle}
-                        </span>
-                        {player.ai_playstyle && (
-                            <span className="text-[10px] uppercase font-black tracking-widest text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30 flex items-center gap-1">
-                                <span className="w-1 h-1 rounded-full bg-gold animate-pulse"></span>
-                                AI: {player.ai_playstyle}
-                            </span>
-                        )}
-                    </div>
+            {/* ROW 1: Name + Tag */}
+            <div className="flex justify-between items-start mb-2">
+                <div className="min-w-0 flex-1">
+                    <h4 className="font-bold text-sm text-white tracking-tight truncate">{player.name}</h4>
+                    <span className="text-[9px] text-gray-500 font-medium uppercase tracking-wider">{player.platform?.name || 'Unknown'}</span>
                 </div>
-                <div className="text-right flex flex-col items-end">
-                    <span className="text-[8px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">AGGRESSION</span>
-                    <div className={`text-xl font-black font-mono tracking-tighter ${isStrong ? 'text-red-400' : 'text-white'}`}>
-                        {player.ai_aggression_score ?? player.aggression_score}%
-                    </div>
-                </div>
+                <span className={`px-2 py-0.5 text-xs font-bold rounded border ${getTagStyle(displayTag)} uppercase tracking-wide whitespace-nowrap flex-shrink-0 ml-2`}>
+                    {displayTag}
+                </span>
             </div>
 
-            {player.ai_profile?.range_adjustments && player.ai_profile.range_adjustments.length > 0 ? (
-                <div className="mt-4 space-y-2">
-                    <div className="flex items-center gap-1.5 mb-1 text-[8px] font-black text-gold/60 uppercase tracking-widest">
-                        <Zap className="w-2.5 h-2.5" />
-                        Live Range Adjustments
+            {/* ROW 2: Range Adjustments (max 2) - Higher Density */}
+            {player.ai_profile?.range_adjustments && player.ai_profile.range_adjustments.length > 0 && (
+                <div className="mb-2">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 block px-1">Range Adjustments</span>
+                    <div className="space-y-1">
+                        {player.ai_profile.range_adjustments.slice(0, 2).map((adj: string, i: number) => (
+                            <div key={i} className="flex items-start gap-2 border-l-2 border-gray-700 py-0.5 pl-3">
+                                <span className="text-xs text-gray-300 font-medium leading-tight">{adj}</span>
+                            </div>
+                        ))}
                     </div>
-                    {player.ai_profile.range_adjustments.slice(0, 3).map((adj: string, i: number) => (
-                        <div key={i} className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-xl px-3 py-2">
-                            <Brain className="w-3 h-3 text-gold/60 flex-shrink-0" />
-                            <span className="text-[11px] text-gray-100 font-bold leading-tight">{adj}</span>
-                        </div>
-                    ))}
-                </div>
-            ) : player.ai_exploit_strategy ? (
-                <div className={`mt-4 p-3 bg-black/40 rounded-xl border-l-2 ${isStrong ? 'border-red-500/50' : 'border-gold/50 shadow-[0_0_15px_rgba(250,204,21,0.05)]'}`}>
-                    <div className="space-y-2 mt-1.5">
-                        {(() => {
-                            const strat = player.ai_exploit_strategy;
-                            if (!strat) return null;
-                            
-                            const stratArray = Array.isArray(strat) ? strat : (typeof strat === 'object' && strat !== null ? [strat] : null);
-                            
-                            if (stratArray) {
-                                return stratArray.slice(0, 2).map((s: any, i: number) => (
-                                    <div key={i} className="text-[10px] leading-tight flex items-start gap-1">
-                                        <span className="text-gold font-bold shrink-0">{s.node || 'Action'}:</span>
-                                        <span className="text-gray-300">{s.action} ({s.frequency}%)</span>
-                                    </div>
-                                ));
-                            }
-                            return (
-                                <p className="text-[11px] text-gray-300 italic font-medium leading-tight truncate">
-                                    "{String(strat)}"
-                                </p>
-                            );
-                        })()}
-                    </div>
-                </div>
-            ) : (
-                <div className="mt-4 p-4 text-center border border-dashed border-white/5 rounded-xl">
-                    <span className="text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em]">Neural profile pending scan...</span>
                 </div>
             )}
 
-            <div className="mt-4 flex items-center justify-between text-[10px] text-gray-500 font-bold">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5">
-                        <FileText className="w-3 h-3" />
-                        {player.notesCount}
+            {/* FOOTER: Metrics */}
+            <div className="border-t border-gray-700/60 pt-2 mt-auto">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                            <span className={`text-xs font-mono font-bold ${getAggressionColor(aggScore)}`}>
+                                {aggScore}%
+                            </span>
+                            <span className="text-[8px] text-gray-600 uppercase tracking-wider">AGG</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <FileText className="w-3 h-3 text-gray-600" />
+                            <span className="text-xs font-mono font-bold text-gray-400">{player.notesCount}</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                        <History className="w-3 h-3" />
-                        {player.platform?.name || 'Unknown'}
-                    </div>
+                    <ArrowRight className="w-3 h-3 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-gold" />
             </div>
         </Link>
     );
@@ -261,7 +352,7 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
 
 function StatCard({ title, value, icon, color, href }: { title: string, value: number, icon: React.ReactNode, color: string, href: string }) {
     const colors: Record<string, string> = {
-        gold: "text-gold bg-gold/10 border-gold/20",
+        gold: "text-amber-400 bg-amber-500/10 border-amber-500/20",
         blue: "text-blue-400 bg-blue-500/10 border-blue-500/20",
         green: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
         red: "text-rose-400 bg-rose-500/10 border-rose-500/20",
@@ -270,12 +361,12 @@ function StatCard({ title, value, icon, color, href }: { title: string, value: n
     return (
         <Link 
             href={href}
-            className="p-6 bg-card/40 border border-white/5 rounded-3xl group hover:border-white/20 hover:bg-white/[0.02] transition-all"
+            className="p-5 bg-[#111318] border border-gray-800 rounded-xl group hover:border-gray-600 transition-all"
         >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border ${colors[color]}`}>
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 border ${colors[color]}`}>
                 {icon}
             </div>
-            <div className="text-3xl font-black text-white mb-1">{value}</div>
+            <div className="text-2xl font-bold text-white mb-1">{value}</div>
             <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{title}</div>
         </Link>
     );
@@ -284,14 +375,14 @@ function StatCard({ title, value, icon, color, href }: { title: string, value: n
 function ActionButton({ icon, title, desc, href, onClick, disabled = false }: { icon: React.ReactNode, title: string, desc: string, href?: string, onClick?: () => void, disabled?: boolean }) {
     const content = (
         <>
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gold group-hover:scale-110 transition-transform">
+            <div className="w-9 h-9 rounded-lg bg-[#1a1d24] flex items-center justify-center text-gray-400 border border-gray-800">
                 {icon}
             </div>
             <div className="text-left">
-                <div className="text-sm font-bold text-white group-hover:text-gold transition-colors">{title}</div>
-                <div className="text-[10px] text-gray-500 font-medium group-hover:text-gray-400 transition-colors uppercase tracking-tight">{desc}</div>
+                <div className="text-sm font-bold text-white">{title}</div>
+                <div className="text-[10px] text-gray-500 font-medium uppercase tracking-tight">{desc}</div>
             </div>
-            <ArrowRight className="w-4 h-4 text-gray-600 ml-auto group-hover:text-gold group-hover:translate-x-1 transition-all" />
+            <ArrowRight className="w-4 h-4 text-gray-600 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
         </>
     );
 
@@ -300,7 +391,7 @@ function ActionButton({ icon, title, desc, href, onClick, disabled = false }: { 
             <button 
                 onClick={onClick}
                 disabled={disabled}
-                className={`flex items-center gap-4 p-4 rounded-2xl border border-white/5 bg-card/40 hover:bg-white/5 hover:border-white/10 transition-all group ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`flex items-center gap-3 p-4 rounded-xl border border-gray-800 bg-[#111318] hover:border-gray-600 transition-all group ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
                 {content}
             </button>
@@ -310,7 +401,7 @@ function ActionButton({ icon, title, desc, href, onClick, disabled = false }: { 
     return (
         <Link 
             href={disabled ? '#' : (href || '#')}
-            className={`flex items-center gap-4 p-4 rounded-2xl border border-white/5 bg-card/40 hover:bg-white/5 hover:border-white/10 transition-all group ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`flex items-center gap-3 p-4 rounded-xl border border-gray-800 bg-[#111318] hover:border-gray-600 transition-all group ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
             {content}
         </Link>

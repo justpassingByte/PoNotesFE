@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, Edit2, Plus, Globe } from 'lucide-react';
-import { API } from '@/lib/api';
+import { API, apiGet, apiDelete } from '@/lib/api';
 
 interface Template {
     id: string;
@@ -25,6 +25,10 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     const [editId, setEditId] = useState<string | null>(null);
     const [formData, setFormData] = useState({ label: '', category: 'Preflop', weight: 0 });
 
+    // OCR Template state
+    const [ocrTemplates, setOcrTemplates] = useState<{name: string, type: 'card'|'anchor'}[]>([]);
+    const [loadingOcr, setLoadingOcr] = useState(true);
+
     // Platform state
     const [platforms, setPlatforms] = useState<Platform[]>([]);
     const [loadingPlatforms, setLoadingPlatforms] = useState(true);
@@ -35,7 +39,32 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     useEffect(() => {
         fetchTemplates();
         fetchPlatforms();
+        fetchOcrTemplates();
     }, []);
+
+    const fetchOcrTemplates = async () => {
+        try {
+            const res = await apiGet(API.ocrTemplates);
+            const json = await res.json();
+            if (json.success && json.data) {
+                setOcrTemplates(json.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch OCR templates:', err);
+        } finally {
+            setLoadingOcr(false);
+        }
+    };
+
+    const handleDeleteOcrTemplate = async (type: string, filename: string) => {
+        if (!confirm(`Are you sure you want to delete the ${type} template: ${filename}?`)) return;
+        try {
+            const res = await apiDelete(API.ocrTemplateDelete(type, filename));
+            if (res.ok) fetchOcrTemplates();
+        } catch (err) {
+            console.error('Failed to delete OCR template:', err);
+        }
+    };
 
     // --- Templates ---
     const fetchTemplates = async () => {
@@ -329,21 +358,53 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
                                 </div>
                             )}
                             {platforms.map((p: Platform) => (
-                                <div key={p.id} className="flex flex-col p-4 bg-white/[0.03] border border-white/5 rounded-2xl group hover:border-gold/30 hover:bg-gold/[0.02] transition-all relative overflow-hidden">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-8 h-8 bg-gold/10 rounded-lg flex items-center justify-center text-gold">
-                                            <Globe className="w-4 h-4" />
+                                <div key={p.id} className="flex flex-col p-5 bg-[#111318] border border-gray-700 rounded-2xl group hover:border-gold/50 transition-all relative">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-gold/10 border border-gold/20 rounded-lg flex items-center justify-center text-gold">
+                                                <Globe className="w-4 h-4" />
+                                            </div>
+                                            <span className="text-sm font-bold text-white tracking-wide">{p.name}</span>
                                         </div>
-                                        <span className="text-sm font-bold text-white/90">{p.name}</span>
-                                    </div>
-                                    <div className="flex justify-end pt-2 mt-auto border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             onClick={() => handleDeletePlatform(p.id)}
-                                            className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                            className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                                             title="Delete platform"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                         </button>
+                                    </div>
+                                    {/* OCR Templates list for this platform */}
+                                    <div className="mt-2 space-y-2 flex-1">
+                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">OCR Box Templates</span>
+                                        {loadingOcr ? (
+                                            <div className="py-2 text-center text-xs text-gray-500 animate-pulse">Loading templates...</div>
+                                        ) : ocrTemplates.filter(t => t.name.toUpperCase().includes(p.name.toUpperCase().replace(/\s+/g, '_')) || t.name.toUpperCase().includes(p.name.split(' ')[0].toUpperCase())).length > 0 ? (
+                                            <div className="space-y-1.5">
+                                                {ocrTemplates
+                                                    .filter(t => t.name.toUpperCase().includes(p.name.toUpperCase().replace(/\s+/g, '_')) || t.name.toUpperCase().includes(p.name.split(' ')[0].toUpperCase()))
+                                                    .map((t, idx) => (
+                                                    <div key={idx} className="flex items-center justify-between bg-[#0d0f13] border border-gray-700/50 rounded-lg px-3 py-2">
+                                                        <div className="flex flex-col">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-mono text-gray-300 truncate">{t.name.split('_')[0]}</span>
+                                                                <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold tracking-wider ${t.type === 'anchor' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                                                                    {t.type}
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-[9px] text-gray-600 font-mono mt-0.5">{t.name}</span>
+                                                        </div>
+                                                        <button onClick={() => handleDeleteOcrTemplate(t.type === 'card' ? 'cards' : 'anchors', t.name)} className="text-gray-500 hover:text-red-400 ml-2 shrink-0">
+                                                            <Trash2 className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="py-4 text-center border border-dashed border-gray-700/50 rounded-lg bg-[#0d0f13]">
+                                                <span className="text-[10px] text-gray-600 block">No templates synced</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}

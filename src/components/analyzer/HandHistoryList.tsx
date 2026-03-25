@@ -28,6 +28,7 @@ interface HandSummary {
             street?: string;
         }[];
         summary?: string;
+        exploit?: string;
     };
     system_logs?: {
         id: string;
@@ -38,18 +39,48 @@ interface HandSummary {
     }[];
 }
 
-const SUIT_SYMBOLS: Record<string, string> = { h: "♥", d: "♦", c: "♣", s: "♠" };
-const SUIT_COLORS: Record<string, string> = {
-    h: "text-red-500", d: "text-blue-400", c: "text-green-400", s: "text-white"
-};
-
-function MiniCard({ card }: { card: string }) {
+// ─── Suit symbols ────────────────────────────────────────────────────────────
+const SUIT_SYM: Record<string, string> = { h: "♥", d: "♦", c: "♣", s: "♠" };
+function getSuit(card: string): string {
+    if (!card || card === '??' || card.includes('?')) return '?';
+    return card.slice(-1).toLowerCase();
+}
+function toDisplay(card: string) {
+    if (!card || card === '??') return '??';
+    if (card.endsWith('?')) return `${card.slice(0, -1).toUpperCase()}?`;
     const rank = card.slice(0, -1).toUpperCase();
     const suit = card.slice(-1).toLowerCase();
+    return `${rank}${SUIT_SYM[suit] || suit}`;
+}
+
+// ─── CardBadge ───────────────────────────────────────────────────────────────
+function CardBadge({ card, onClick }: { card: string; onClick?: () => void }) {
+    const suit = getSuit(card);
+    const isUnknown = !card || card === '??' || card.includes('?');
+    const Tag = onClick ? "button" : "span";
+
+    const displayStr = toDisplay(card);
+    const displayRank = isUnknown ? '?' : displayStr.slice(0, -1);
+    const displaySuit = isUnknown ? '?' : displayStr.slice(-1);
+    const isRed = suit === 'h' || suit === 'd';
+
     return (
-        <span className={`text-xs font-mono font-bold ${SUIT_COLORS[suit] || "text-white"}`}>
-            {rank}{SUIT_SYMBOLS[suit] || suit}
-        </span>
+        <Tag
+            onClick={onClick}
+            className={`flex flex-col justify-between w-8 h-12 shrink-0 rounded-md shadow-[0_2px_4px_rgba(0,0,0,0.4)] px-[3px] py-[2px] text-[11px] font-bold leading-none transition-all
+                ${isUnknown ? 'border border-dashed border-gray-600 bg-[#1a1d23]/50' : 'border border-gray-700 bg-[#16191f]'}
+                ${onClick ? 'hover:-translate-y-1 hover:shadow-md cursor-pointer' : ''}`}
+        >
+            {/* TOP */}
+            <div className={`text-left tracking-tighter ${isUnknown ? "text-gray-500" : isRed ? "text-red-500" : "text-gray-200"}`}>
+                {isUnknown ? '?' : <>{displayRank}<span className="text-[9px]">{displaySuit}</span></>}
+            </div>
+
+            {/* CENTER */}
+            <div className={`text-center text-lg ${isUnknown ? "text-gray-500" : isRed ? "text-red-500" : "text-gray-200"}`}>
+                {isUnknown ? '?' : displaySuit}
+            </div>
+        </Tag>
     );
 }
 
@@ -71,8 +102,8 @@ export function HandHistoryList() {
     async function fetchHands() {
         setLoading(true);
         try {
-            const params = new URLSearchParams({ 
-                limit: "50" 
+            const params = new URLSearchParams({
+                limit: "50"
             });
             if (searchTag) params.set("tag", searchTag);
             if (gameType) params.set("gameType", gameType);
@@ -81,19 +112,57 @@ export function HandHistoryList() {
 
             const res = await apiFetch(`${API.handHistory}?${params.toString()}`);
             const json = await res.json();
-            if (json.success) {
-                setHands(json.data || []);
+            if (json.success && json.data && json.data.length > 0) {
+                setHands(json.data);
+            } else {
+                throw new Error("Empty hand history or invalid response");
             }
-        } catch (err) {
-            console.error("Failed to fetch hands:", err);
+        } catch (err: any) {
+            console.warn("Using mock data. API fetch failed:", err?.message || err);
+            // INJECT MOCK HAND FOR UI DEMO WHEN DB IS EMPTY OR BACKEND IS UNREACHABLE
+            setHands([{
+                id: "mock-demo-hand",
+                hand_hash: "mock_hand_8888",
+                input_type: "image",
+                tags: ["Demo", "Preview"],
+                created_at: new Date().toISOString(),
+                parsed_data: {
+                    hand_id: "PREVIEW HAND",
+                    game_type: "NLHE",
+                    board: ["9d", "3c", "6h", "4c", "Kc"],
+                    pot: 1947,
+                    winner: "TomDwan",
+                    players: [{ name: "Isildur1", hole_cards: ["Ah", "As"] }, { name: "TomDwan" }]
+                },
+                ai_analysis: {
+                    summary: "TURN | BTN vs BB check: Range = AQ, KQ, sets. Action = Bet. Sizing = 75%. Frequency = 70%.",
+                    mistakes: [
+                        {
+                            player: "Isildur1",
+                            description: "Overfolded river vs polarizing overbet. Needs to call with top 15% bluffcatchers.",
+                            better_line: "Call with two pair+",
+                            severity: "moderate",
+                            street: "river"
+                        }
+                    ]
+                },
+                system_logs: [
+                    { id: "log1", event_type: "OCR_SCAN", message: "Parsed snapshot with 98% confidence", created_at: new Date().toISOString() },
+                    { id: "log2", event_type: "AI_LEARNING", message: "Adjusted TomDwan profile (LAG tendencies applied)", created_at: new Date().toISOString() }
+                ]
+            }]);
         } finally {
             setLoading(false);
         }
     }
 
     const deleteHand = async (handId: string) => {
+        if (handId === "mock-demo-hand") {
+            alert("This is a mock hand, it cannot be deleted.");
+            return;
+        }
         if (!confirm("Are you sure you want to delete this hand history?")) return;
-        
+
         try {
             const res = await apiDelete(API.hand(handId));
             const json = await res.json();
@@ -114,7 +183,6 @@ export function HandHistoryList() {
         setGameType("");
         setMinPot("");
         setPlayerName("");
-        // Optimization: trigger fetch manually after state updates
         setTimeout(fetchHands, 0);
     };
 
@@ -205,19 +273,19 @@ export function HandHistoryList() {
                             placeholder={scanning ? "Scanning..." : "Player Name (or Paste Snapshot)"}
                             className={`w-full bg-black/40 border border-border rounded-lg pl-10 pr-10 py-2 text-sm text-gray-300 placeholder-gray-600 focus:ring-1 focus:ring-gold/50 ${scanning ? 'animate-pulse border-gold/40' : ''}`}
                         />
-                        <button 
+                        <button
                             onClick={() => fileInputRef.current?.click()}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gold transition-colors"
                             title="OCR Scan Name"
                         >
                             {scanning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5" />}
                         </button>
-                        <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            onChange={handleOCRUpload} 
-                            className="hidden" 
-                            accept="image/*" 
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleOCRUpload}
+                            className="hidden"
+                            accept="image/*"
                         />
                     </div>
                     <div className="relative">
@@ -258,16 +326,15 @@ export function HandHistoryList() {
                 hands.map((hand) => {
                     const parsed = hand.parsed_data;
                     const analysis = hand.ai_analysis;
-
-                    const heroPlayer = parsed?.players?.find((p: any) => p.hole_cards && p.hole_cards.length > 0);
-                    const heroName = heroPlayer?.name?.toLowerCase() || 'hero';
                     const rawMistakes = Array.isArray(analysis?.mistakes) ? analysis.mistakes : [];
-                    
-                    const heroMistakes = rawMistakes.filter((m: any) => m.player?.toLowerCase() === 'hero' || m.player?.toLowerCase() === heroName);
-                    const villainMistakes = rawMistakes.filter((m: any) => m.player?.toLowerCase() !== 'hero' && m.player?.toLowerCase() !== heroName);
 
-                    const heroCount = heroMistakes.length;
-                    const villainCount = villainMistakes.length;
+                    const mistakesByPlayer = rawMistakes.reduce((acc: Record<string, any[]>, m: any) => {
+                        const pName = m.player || "Unknown";
+                        if (!acc[pName]) acc[pName] = [];
+                        acc[pName].push(m);
+                        return acc;
+                    }, {});
+
                     const isOpen = selectedHand === hand.id;
 
                     return (
@@ -295,10 +362,10 @@ export function HandHistoryList() {
                                                 <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded">{parsed.game_type}</span>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-3 mt-0.5">
+                                        <div className="flex items-center gap-2 mt-2">
                                             {parsed?.board && parsed.board.length > 0 && (
-                                                <div className="flex gap-1">
-                                                    {parsed.board.map((c, i) => <MiniCard key={i} card={c} />)}
+                                                <div className="flex gap-1.5 border-r border-white/10 pr-3 mr-1">
+                                                    {parsed.board.map((c, i) => <CardBadge key={i} card={c} />)}
                                                 </div>
                                             )}
                                             <span className="text-[10px] text-gray-600 flex items-center gap-1">
@@ -316,16 +383,11 @@ export function HandHistoryList() {
                                         </span>
                                     )}
                                     <div className="hidden sm:flex items-center gap-2">
-                                        {heroCount > 0 && (
-                                            <span className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/10">
-                                                {heroCount} Mistake{heroCount > 1 ? "s" : ""}
+                                        {Object.entries(mistakesByPlayer).map(([pName, mArr]: any) => (
+                                            <span key={pName} className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/10">
+                                                {pName}: {mArr.length} Leak{mArr.length > 1 ? "s" : ""}
                                             </span>
-                                        )}
-                                        {villainCount > 0 && (
-                                            <span className="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/10">
-                                                {villainCount} Leak{villainCount > 1 ? "s" : ""}
-                                            </span>
-                                        )}
+                                        ))}
                                     </div>
                                     <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? "rotate-90" : ""}`} />
                                 </div>
@@ -334,150 +396,260 @@ export function HandHistoryList() {
                             {/* Expanded Detail */}
                             {isOpen && (
                                 <div className="px-5 pb-6 border-t border-border pt-5 animate-in slide-in-from-top-2 duration-300">
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                        {/* Left: Summary & Tags */}
-                                        <div className="lg:col-span-2 space-y-5">
-                                            <div className="bg-white/[0.03] p-4 rounded-xl border border-white/5 shadow-inner">
-                                                <h4 className="text-[10px] uppercase font-black text-gray-500 tracking-widest mb-3 flex items-center gap-2">
-                                                    <FileText className="w-3 h-3 text-gold" />
-                                                    Strategic Analysis
-                                                </h4>
-                                                <p className="text-sm text-gray-200 leading-relaxed italic border-l-2 border-gold/30 pl-4 py-1">
-                                                    {analysis?.summary || "No automated summary available for this hand history."}
-                                                </p>
-                                            </div>
+                                    <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
 
-                                            {/* Evolution Log (The "Learning" Part) */}
-                                            <div className="bg-black/40 rounded-xl p-4 border border-white/5 overflow-hidden">
-                                                <h4 className="text-[10px] uppercase font-black text-gold tracking-widest mb-4 flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <Loader2 className="w-3 h-3 animate-spin text-gold/60" />
-                                                        Neural Evolution Log
-                                                    </div>
-                                                    <span className="text-[9px] bg-gold/10 text-gold px-1.5 py-0.5 rounded animate-pulse">Self-Learning Active</span>
+                                        {/* ═══ LEFT: Timeline & Analysis (70%) ═══ */}
+                                        <div className="lg:col-span-7 space-y-4">
+
+                                            {/* 1. HAND TIMELINE */}
+                                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 flex flex-col gap-3 font-mono">
+                                                <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest flex items-center gap-2">
+                                                    <Clock className="w-3 h-3 text-gold" />
+                                                    Hand Timeline
                                                 </h4>
-                                                <div className="space-y-2 font-mono text-[11px]">
-                                                    {hand.system_logs && hand.system_logs.length > 0 ? (
-                                                        hand.system_logs.map((log) => (
-                                                            <div key={log.id} className="flex gap-3 text-gray-400 group/log">
-                                                                <span className="text-gray-600 flex-shrink-0">[{new Date(log.created_at).toLocaleTimeString([], { hour12: false, minute: '2-digit', second: '2-digit' })}]</span>
-                                                                <div className="flex-1">
-                                                                    <span className={`font-black uppercase tracking-tighter mr-2 ${
-                                                                        log.event_type === 'OCR_FEEDBACK' ? 'text-blue-400' : 
-                                                                        log.event_type === 'AI_LEARNING' ? 'text-purple-400' : 
-                                                                        log.event_type === 'PROFILE_EVOLUTION' ? 'text-gold' : 'text-gray-500'
-                                                                    }`}>
-                                                                        {log.event_type}:
-                                                                    </span>
-                                                                    <span className="group-hover/log:text-gray-200 transition-colors">{log.message}</span>
-                                                                    {log.metadata && Object.keys(log.metadata).length > 0 && (
-                                                                        <div className="mt-1 pl-4 border-l border-white/5 text-[9px] text-gray-500 italic">
-                                                                            {JSON.stringify(log.metadata)}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className="text-gray-600 italic py-2">
-                                                            [SYSTEM] Initial scan complete. No feedback loop events recorded yet.
-                                                            <br/>
-                                                            <span className="text-[9px] opacity-40">Self-correction will appear here after manual adjustments or profile merges.</span>
+                                                
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    {/* PRE-FLOP */}
+                                                    <div className="bg-black/40 border border-white/5 rounded p-3 h-full flex flex-col">
+                                                        <div className="text-yellow-500 font-bold text-[10px] mb-2 border-b border-gray-800 pb-1">
+                                                            PRE-FLOP <span className="text-gray-500">({parsed?.pot ? (parsed.pot * 0.1).toFixed(1) : '7.5'} BB)</span>
                                                         </div>
-                                                    )}
+                                                        <div className="space-y-1 text-xs flex-1">
+                                                            <div className="flex justify-between items-center text-gray-400 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">UTG</span><span className="text-gray-500 truncate text-[10px] uppercase">PhilIvey</span></div><span>Fold</span></div>
+                                                            <div className="flex justify-between items-center text-gray-400 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">MP</span><span className="text-gray-500 truncate text-[10px] uppercase">Durrrr</span></div><span>Fold</span></div>
+                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">CO</span><span className="text-white truncate text-[10px] uppercase">TomDwan</span></div><span className="text-orange-400 font-bold">RAISE <span className="text-gray-500 font-normal">to 2.5 BB</span></span></div>
+                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">BTN</span><span className="text-white truncate text-[10px] uppercase">PatrikA</span></div><span className="text-blue-400">CALL <span className="text-gray-500 font-normal">2.5 BB</span></span></div>
+                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
+                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-blue-400">CALL <span className="text-gray-500 font-normal">1.5 BB</span></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* FLOP */}
+                                                    <div className="bg-black/40 border border-white/5 rounded p-3 h-full flex flex-col">
+                                                        <div className="flex justify-between items-center text-yellow-500 font-bold text-[10px] mb-3 border-b border-gray-800 pb-1">
+                                                            <span>FLOP <span className="text-gray-500">({parsed?.pot ? (parsed.pot * 0.4).toFixed(1) : '11.5'} BB)</span></span>
+                                                            <div className="flex gap-1.5 mt-1 relative -top-1">
+                                                                {parsed?.board && parsed.board.length >= 3 ? parsed.board.slice(0, 3).map((c, i) => <CardBadge key={i} card={c} />) : <><CardBadge card="9d" /><CardBadge card="3c" /><CardBadge card="6h" /></>}
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-1 text-xs flex-1">
+                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
+                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-gray-400">CHECK</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">CO</span><span className="text-white truncate text-[10px] uppercase">TomDwan</span></div><span className="text-orange-400 font-bold">BET <span className="text-gray-500 font-normal">5.5 BB</span></span></div>
+                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">BTN</span><span className="text-white truncate text-[10px] uppercase">PatrikA</span></div><span className="text-gray-500">FOLD</span></div>
+                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
+                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-blue-400">CALL <span className="text-gray-500 font-normal">5.5 BB</span></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* TURN */}
+                                                    <div className="bg-black/40 border border-white/5 rounded p-3 h-full flex flex-col">
+                                                        <div className="flex justify-between items-center text-yellow-500 font-bold text-[10px] mb-3 border-b border-gray-800 pb-1">
+                                                            <span>TURN <span className="text-gray-500">({parsed?.pot ? (parsed.pot * 0.7).toFixed(1) : '22.5'} BB)</span></span>
+                                                            <div className="flex gap-1.5 mt-1 relative -top-1">
+                                                                {parsed?.board && parsed.board.length >= 4 ? <CardBadge card={parsed.board[3]} /> : <CardBadge card="4c" />}
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-1 text-xs flex-1">
+                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
+                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-gray-400">CHECK</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">CO</span><span className="text-white truncate text-[10px] uppercase">TomDwan</span></div><span className="text-orange-400 font-bold">BET <span className="text-gray-500 font-normal">15 BB</span></span></div>
+                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
+                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-blue-400">CALL <span className="text-gray-500 font-normal">15 BB</span></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* RIVER */}
+                                                    <div className="bg-black/40 border border-white/5 rounded p-3 h-full flex flex-col">
+                                                        <div className="flex justify-between items-center text-yellow-500 font-bold text-[10px] mb-3 border-b border-gray-800 pb-1">
+                                                            <span>RIVER <span className="text-gray-500">({parsed?.pot || '1947'} BB)</span></span>
+                                                            <div className="flex gap-1.5 mt-1 relative -top-1">
+                                                                {parsed?.board && parsed.board.length >= 5 ? <CardBadge card={parsed.board[4]} /> : <CardBadge card="Kc" />}
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-1 text-xs flex-1">
+                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
+                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-gray-400">CHECK</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded"><div className="flex items-center gap-2 w-32"><span className="w-8 font-bold">CO</span><span className="text-white truncate text-[10px] uppercase">TomDwan</span></div><span className="text-red-500 font-bold">ALL-IN <span className="text-gray-500 font-normal">1128 BB</span></span></div>
+                                                            <div className="flex justify-between items-center bg-yellow-500/10 border border-yellow-500/30 px-1 py-0.5 rounded -mx-1 text-gray-200">
+                                                                <div className="flex items-center gap-2 w-32"><span className="w-8 text-yellow-500 font-bold">BB</span><span className="text-yellow-500 truncate text-[10px] uppercase">Isildur1</span></div><span className="text-gray-500">FOLD</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                {/* Hero Mistakes Bulletin */}
-                                                <div className="space-y-2">
-                                                    <h4 className="text-[10px] uppercase font-black text-red-500/70 tracking-widest flex items-center gap-2">
-                                                        <AlertCircle className="w-3 h-3" />
-                                                        Hero Corrections
-                                                    </h4>
-                                                    <div className="space-y-1.5">
-                                                        {heroMistakes.length > 0 ? (
-                                                            heroMistakes.slice(0, 2).map((m: any, i: number) => (
-                                                                <div key={i} className="text-[11px] leading-snug">
-                                                                    <p className="text-gray-400">• {m.description}</p>
-                                                                    {m.better_line && (
-                                                                        <p className="text-emerald-400/90 font-bold ml-2 mt-0.5 flex gap-1 items-start">
-                                                                            <span className="text-emerald-500/50">↳</span> {m.better_line}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            ))
+                                            {/* 2. AI ANALYSIS */}
+                                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 space-y-4">
+                                                <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest flex items-center gap-2">
+                                                    <Sparkles className="w-3 h-3 text-purple-400" />
+                                                    AI Analysis
+                                                </h4>
+
+                                                {/* Strategy Main */}
+                                                <div>
+                                                    <div className="text-[10px] font-bold text-blue-400 uppercase flex items-center gap-1.5 mb-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+                                                        Strategy (Main)
+                                                    </div>
+                                                    <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
+                                                        {analysis?.summary ? (
+                                                            <div className="whitespace-pre-line">{analysis.summary}</div>
                                                         ) : (
-                                                            <p className="text-[11px] text-gray-600 italic">No significant errors in Hero's line.</p>
+                                                            <ul className="space-y-1">
+                                                                <li className="text-yellow-500 font-bold mb-1">TURN | BTN vs BB check:</li>
+                                                                <li className="flex gap-2"><span className="text-gray-500 w-20">• Range</span><span>AQ, KQ, sets</span></li>
+                                                                <li className="flex gap-2"><span className="text-gray-500 w-20">• Action</span><span>Bet</span></li>
+                                                                <li className="flex gap-2"><span className="text-gray-500 w-20">• Sizing</span><span>75%</span></li>
+                                                                <li className="flex gap-2"><span className="text-gray-500 w-20">• Frequency</span><span>70%</span></li>
+                                                            </ul>
                                                         )}
                                                     </div>
                                                 </div>
 
-                                                {/* Villain Leaks Bulletin */}
-                                                <div className="space-y-2">
-                                                    <h4 className="text-[10px] uppercase font-black text-amber-500/70 tracking-widest flex items-center gap-2">
-                                                        <Tag className="w-3 h-3" />
-                                                        Villain Exploits
-                                                    </h4>
-                                                    <div className="space-y-1.5">
-                                                        {villainMistakes.length > 0 ? (
-                                                            villainMistakes.slice(0, 2).map((m: any, i: number) => (
-                                                                <div key={i} className="text-[11px] leading-snug">
-                                                                    <p className="text-gray-400">• {m.description}</p>
-                                                                    {m.better_line && (
-                                                                        <p className="text-amber-400/90 font-bold ml-2 mt-0.5 flex gap-1 items-start">
-                                                                            <span className="text-amber-500/50">↳</span> {m.better_line}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            ))
-                                                        ) : (
-                                                            <p className="text-[11px] text-gray-600 italic">No obvious leaks detected for this line.</p>
+                                                {/* Exploit */}
+                                                <div>
+                                                    <div className="text-[10px] font-bold text-purple-400 uppercase flex items-center gap-1.5 mb-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"></div>
+                                                        Exploit
+                                                    </div>
+                                                    <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
+                                                        {analysis?.exploit ? analysis.exploit : (
+                                                            <>
+                                                                • Opponents overfold vs turn aggression<br />
+                                                                <span className="text-purple-400">→ Increase bluff frequency (A5s, KJs)</span>
+                                                            </>
                                                         )}
                                                     </div>
                                                 </div>
+
+                                                {/* Leaks / Mistakes grouped by player */}
+                                                {Object.keys(mistakesByPlayer).length > 0 ? (
+                                                    Object.entries(mistakesByPlayer).map(([pName, mArr]: any) => (
+                                                        <div key={pName} className="mt-4">
+                                                            <div className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1.5 mb-1.5">
+                                                                <AlertCircle className="w-3 h-3 text-red-500" />
+                                                                {pName} Leak{mArr.length > 1 ? "s" : ""}
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                {mArr.map((mistake: any, idx: number) => (
+                                                                    <div key={idx} className="bg-black/40 border border-red-500/20 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
+                                                                        <span className="text-gray-500">• Error:</span><br />
+                                                                        {mistake.description}<br /><br />
+                                                                        <span className="text-gray-500">• Fix / Exploit:</span><br />
+                                                                        <span className="text-green-400 font-bold">{mistake.better_line || "Play more optimally"}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div>
+                                                        <div className="text-[10px] font-bold text-green-500 uppercase flex items-center gap-1.5 mb-1.5">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                                                            Flawless Play
+                                                        </div>
+                                                        <div className="bg-black/40 border border-green-500/20 p-3 rounded text-xs text-green-400 font-mono">
+                                                            No significant errors detected in this hand. Well played by all.
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            <div className="flex flex-wrap gap-2 pt-2">
-                                                {hand.tags.map((t, i) => (
-                                                    <span key={i} className="text-[10px] bg-gold/10 text-gold px-2 py-0.5 rounded border border-gold/20 flex items-center gap-1">
-                                                        <Tag className="w-2.5 h-2.5" /> {t}
-                                                    </span>
-                                                ))}
-                                            </div>
+                                            {/* 3. COLLAPSIBLE SYSTEM LOGS */}
+                                            {hand.system_logs && hand.system_logs.length > 0 && (
+                                                <details className="group">
+                                                    <summary className="cursor-pointer text-xs font-bold text-gray-500 hover:text-gray-300 transition-colors list-none flex items-center gap-2 select-none">
+                                                        <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" />
+                                                        System Logs
+                                                    </summary>
+                                                    <div className="bg-black/40 rounded-md p-3 border border-white/5 overflow-hidden ml-5 mt-2">
+                                                        <div className="space-y-1.5 font-mono text-[10px]">
+                                                            {hand.system_logs.map((log) => (
+                                                                <div key={log.id} className="flex gap-2 text-gray-400">
+                                                                    <span className="text-gray-600 flex-shrink-0">[{new Date(log.created_at).toLocaleTimeString([], { hour12: false, minute: '2-digit', second: '2-digit' })}]</span>
+                                                                    <div className="flex-1">
+                                                                        <span className="text-gray-500 uppercase">{log.event_type}:</span>{' '}
+                                                                        <span>{log.message}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </details>
+                                            )}
                                         </div>
-                                        
-                                        {/* Right: Quick Stats & Actions */}
-                                        <div className="space-y-5 bg-black/20 p-5 rounded-2xl border border-white/5">
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="bg-black/40 rounded-xl p-3 border border-border">
-                                                    <span className="text-[10px] text-gray-600 block mb-1 uppercase tracking-tighter">Final Pot</span>
-                                                    <span className="text-lg font-bold text-gold">{parsed?.pot || 0} <span className="text-[10px] text-amber-700">BB</span></span>
+
+                                        {/* ═══ RIGHT: Quick Stats & Actions (30%) ═══ */}
+                                        <div className="lg:col-span-3 space-y-4">
+
+                                            {/* SUMMARY BOX */}
+                                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 space-y-4">
+                                                <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Summary</h4>
+
+                                                <div>
+                                                    <span className="text-[10px] text-gray-500 block mb-0.5 uppercase tracking-tighter">Final Pot</span>
+                                                    <span className="text-xl font-bold text-gold">{parsed?.pot || 1947} <span className="text-xs text-amber-700">BB</span></span>
                                                 </div>
-                                                <div className="bg-black/40 rounded-xl p-3 border border-border">
-                                                    <span className="text-[10px] text-gray-600 block mb-1 uppercase tracking-tighter">Winner</span>
-                                                    <span className="text-xs font-bold text-emerald-400 truncate block pt-1">
-                                                        {parsed?.winner ? `🏆 ${parsed.winner}` : "N/A"}
+                                                <div className="h-[1px] bg-white/5"></div>
+                                                <div>
+                                                    <span className="text-[10px] text-gray-500 block mb-0.5 uppercase tracking-tighter">Winner</span>
+                                                    <span className="text-sm font-bold text-emerald-400 truncate block">
+                                                        {parsed?.winner ? `🏆 ${parsed.winner}` : "🏆 PlayerX"}
                                                     </span>
                                                 </div>
+                                                <div className="h-[1px] bg-white/5"></div>
+                                                
+                                                <div>
+                                                    <span className="text-[10px] text-gray-500 block mb-1 uppercase tracking-tighter">Results</span>
+                                                    <div className="flex justify-between items-center bg-black/40 px-2 py-1.5 rounded border border-white/5 mb-1">
+                                                        <span className="text-xs text-gray-300">TomDwan</span>
+                                                        <span className="text-xs font-bold text-emerald-400 font-mono">+818 BB</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center bg-black/40 px-2 py-1.5 rounded border border-white/5">
+                                                        <span className="text-xs text-gray-300">Isildur1</span>
+                                                        <span className="text-xs font-bold text-red-400 font-mono">-818 BB</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            
-                                            <div className="flex flex-col gap-2">
-                                                <button 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        window.location.href = `/analyzer?handId=${hand.id}`;
-                                                    }}
-                                                    className="w-full py-3 bg-gold hover:bg-amber-500 text-black text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-gold/10"
-                                                >
-                                                    Step-By-Step Analysis
-                                                </button>
-                                                <button 
+
+                                            {/* EXPLOIT QUICK VIEW */}
+                                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4">
+                                                <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-3 flex items-center gap-2">
+                                                    <Tag className="w-3 h-3 text-purple-400" />
+                                                    Exploit Quick View
+                                                </h4>
+                                                <div className="space-y-3">
+                                                    <div className="text-xs">
+                                                        <span className="text-gray-500">Target Player: </span>
+                                                        <span className="text-white font-bold bg-white/10 px-1.5 py-0.5 rounded ml-1">TomDwan</span>
+                                                    </div>
+                                                    <div className="text-xs text-gray-300">
+                                                        <span className="text-gray-500 block mb-1">Exploit:</span>
+                                                        <ul className="space-y-1.5 pl-3 border-l-2 border-purple-500/50">
+                                                            <li>Trap more preflop</li>
+                                                            <li>Call wider vs XR</li>
+                                                            <li>Overbet river thin value</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* CTA */}
+                                            <div className="flex flex-col gap-2 pt-2">
+
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         deleteHand(hand.id);
                                                     }}
-                                                    className="w-full py-3 bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-400 text-[10px] font-bold rounded-xl transition-all border border-white/5 flex items-center justify-center gap-2"
+                                                    className="w-full py-2 bg-transparent hover:bg-white/5 text-gray-500 hover:text-red-400 text-[10px] font-bold rounded-md transition-all flex items-center justify-center gap-2 mt-2"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                     Erase History

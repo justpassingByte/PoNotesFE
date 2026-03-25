@@ -1,7 +1,8 @@
 "use client";
 
-import { Users } from "lucide-react";
+import { Users, Download, Upload } from "lucide-react";
 import { OCRSearchInput } from "@/components/layout/OCRSearchInput";
+import { exportPlayersAction } from "@/app/actions";
 
 interface DashboardToolbarProps {
     totalCount: number;
@@ -13,6 +14,7 @@ interface DashboardToolbarProps {
     onSearchChange: (query: string) => void;
     onFilterChange: (style: string) => void;
     onPlatformFilterChange: (platform: string) => void;
+    onImportClick: () => void;
 }
 
 export function DashboardToolbar({
@@ -25,12 +27,13 @@ export function DashboardToolbar({
     onSearchChange,
     onFilterChange,
     onPlatformFilterChange,
+    onImportClick,
 }: DashboardToolbarProps) {
     const distinctPlaystyles = Object.keys(playstyleCounts);
 
     return (
-        <div className="bg-card/40 backdrop-blur-2xl border border-white/5 rounded-t-2xl p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 mt-6 sm:mt-8 shadow-[0_4px_20px_rgba(0,0,0,0.3)] relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent"></div>
+        <div className="mb-6 sm:mb-8 p-4 sm:p-5 bg-[#111318] border border-gray-800 rounded-2xl shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent"></div>
 
             {/* Title row */}
             <div className="flex items-center justify-between">
@@ -41,7 +44,7 @@ export function DashboardToolbar({
             </div>
 
             {/* Controls row */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full mt-3 sm:mt-4">
                 <div className="w-full sm:flex-1 sm:max-w-md">
                     <OCRSearchInput onSearch={onSearchChange} />
                 </div>
@@ -51,7 +54,7 @@ export function DashboardToolbar({
                         <select
                             value={filterPlatform}
                             onChange={(e) => onPlatformFilterChange(e.target.value)}
-                            className="w-full sm:w-auto bg-black/50 border border-white/10 rounded-full px-3 sm:px-4 py-1.5 min-h-[44px] sm:min-h-0 text-sm text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer backdrop-blur-md transition-all hover:bg-black/70 appearance-none"
+                            className="w-full sm:w-auto bg-black/40 border border-gray-800 rounded-full px-3 sm:px-4 py-1.5 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer transition-all hover:bg-black/60 appearance-none"
                         >
                             <option value="All">All Platforms</option>
                             {distinctPlatforms.map(platform => (
@@ -64,7 +67,7 @@ export function DashboardToolbar({
                         <select
                             value={filterPlaystyle}
                             onChange={(e) => onFilterChange(e.target.value)}
-                            className="w-full sm:w-auto bg-black/50 border border-white/10 rounded-full px-3 sm:px-4 py-1.5 min-h-[44px] sm:min-h-0 text-sm text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer backdrop-blur-md transition-all hover:bg-black/70 appearance-none"
+                            className="w-full sm:w-auto bg-black/40 border border-gray-800 rounded-full px-3 sm:px-4 py-1.5 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer transition-all hover:bg-black/60 appearance-none"
                         >
                             <option value="All">All ({totalCount})</option>
                             {distinctPlaystyles.map(style => (
@@ -75,6 +78,40 @@ export function DashboardToolbar({
                         </select>
                     </div>
                 </div>
+            </div>
+
+            {/* Export/Import buttons row */}
+            <div className="flex gap-2 sm:gap-3 w-full mt-3 sm:mt-4">
+                <button
+                    onClick={async () => {
+                        try {
+                            const data = await exportPlayersAction();
+                            if (data) {
+                                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `villainvault-export-${new Date().toISOString().slice(0, 10)}.json`;
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }
+                        } catch (e) {
+                            console.error("Export failed", e);
+                            alert("Export failed. Please check your session.");
+                        }
+                    }}
+                    className="flex items-center justify-center flex-1 md:flex-none px-3 sm:px-4 py-2 min-h-[44px] bg-white/5 border border-gray-800 rounded-full text-xs text-gray-400 hover:text-white hover:bg-white/10 transition-all font-bold uppercase tracking-widest"
+                >
+                    <Download className="w-3.5 h-3.5 sm:mr-2" />
+                    <span className="hidden sm:inline">Export</span>
+                </button>
+                <button
+                    onClick={onImportClick}
+                    className="flex items-center justify-center flex-1 md:flex-none px-3 sm:px-4 py-2 min-h-[44px] bg-white/5 border border-gray-800 rounded-full text-xs text-gray-400 hover:text-white hover:bg-white/10 transition-all font-bold uppercase tracking-widest"
+                >
+                    <Upload className="w-3.5 h-3.5 sm:mr-2" />
+                    <span className="hidden sm:inline">Import</span>
+                </button>
             </div>
         </div>
     );

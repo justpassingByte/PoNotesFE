@@ -38,28 +38,40 @@ function toDisplay(card: string) {
 
 // ─── Suit color maps ─────────────────────────────────────────────────────────
 const SUIT_STYLES: Record<string, { bg: string; border: string; text: string; glow: string }> = {
-    h: { bg: 'bg-red-950/60',   border: 'border-red-700/80',   text: 'text-red-400',   glow: 'shadow-red-900/40' },
-    d: { bg: 'bg-blue-950/60',  border: 'border-blue-700/80',  text: 'text-blue-400',  glow: 'shadow-blue-900/40' },
+    h: { bg: 'bg-red-950/60', border: 'border-red-700/80', text: 'text-red-400', glow: 'shadow-red-900/40' },
+    d: { bg: 'bg-blue-950/60', border: 'border-blue-700/80', text: 'text-blue-400', glow: 'shadow-blue-900/40' },
     c: { bg: 'bg-emerald-950/60', border: 'border-emerald-700/80', text: 'text-emerald-400', glow: 'shadow-emerald-900/40' },
-    s: { bg: 'bg-gray-800/80',  border: 'border-gray-500/60',  text: 'text-gray-200',  glow: 'shadow-gray-700/30' },
+    s: { bg: 'bg-gray-800/80', border: 'border-gray-500/60', text: 'text-gray-200', glow: 'shadow-gray-700/30' },
     '?': { bg: 'bg-yellow-950/40', border: 'border-yellow-600/60 border-dashed', text: 'text-yellow-400', glow: '' },
 };
 
 // ─── CardBadge ───────────────────────────────────────────────────────────────
 function CardBadge({ card, onClick }: { card: string; onClick?: () => void }) {
     const suit = getSuit(card);
-    const style = SUIT_STYLES[suit] || SUIT_STYLES['?'];
     const isUnknown = !card || card === '??' || card.includes('?');
     const Tag = onClick ? "button" : "span";
+
+    const displayStr = toDisplay(card);
+    const displayRank = isUnknown ? '?' : displayStr.slice(0, -1);
+    const displaySuit = isUnknown ? '?' : displayStr.slice(-1);
+    const isRed = suit === 'h' || suit === 'd';
+
     return (
         <Tag
             onClick={onClick}
-            className={`inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded border shadow-sm transition-all
-                ${style.bg} ${style.border} ${style.text} ${style.glow}
-                ${isUnknown ? 'animate-pulse cursor-pointer' : ''}
-                ${onClick ? 'hover:brightness-125 hover:scale-105 cursor-pointer' : ''}`}
+            className={`flex flex-col justify-between w-8 h-12 shrink-0 rounded-md shadow-sm px-[3px] py-[2px] text-[11px] font-bold leading-none transition-all
+                ${isUnknown ? 'border border-dashed border-gray-600 bg-[#1a1d23]/50' : 'border border-gray-600 bg-[#1a1d23]'}
+                ${onClick ? 'hover:-translate-y-1 hover:shadow-md cursor-pointer' : ''}`}
         >
-            {toDisplay(card)}
+            {/* TOP */}
+            <div className={`text-left tracking-tighter ${isUnknown ? "text-gray-500" : isRed ? "text-red-500" : "text-gray-200"}`}>
+                {isUnknown ? '?' : <>{displayRank}<span className="text-[9px]">{displaySuit}</span></>}
+            </div>
+
+            {/* CENTER */}
+            <div className={`text-center text-lg ${isUnknown ? "text-gray-500" : isRed ? "text-red-500" : "text-gray-200"}`}>
+                {isUnknown ? '?' : displaySuit}
+            </div>
         </Tag>
     );
 }
@@ -181,7 +193,7 @@ function StreetBlock({ label, pot, boardCards, actions, editable, onSetEditingCa
     if (actions.length === 0 && !editable) return null;
 
     return (
-        <div className="border border-gray-700 hover:border-gray-500 transition-colors rounded-md px-3 py-2 min-h-[120px] bg-[#0f1115]">
+        <div className="bg-black/40 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-colors rounded-md px-3 py-2 min-h-[120px]">
             {/* HEADER */}
             <div className="flex items-center gap-2 border-b border-gray-800 pb-1 mb-1 text-yellow-400">
                 <span className="font-bold text-xs">{label}</span>
@@ -222,24 +234,35 @@ const SUITS = ["h", "d", "c", "s"];
 
 function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (v: string) => void; onCancel: () => void; currentVal?: string }) {
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onCancel}>
-            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-w-sm w-full font-mono shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onCancel}>
+            <div className="bg-black/50 backdrop-blur-md border border-white/10 rounded-lg p-4 max-w-sm w-full font-mono shadow-2xl" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between mb-3">
-                    <span className="text-xs text-gray-500 uppercase font-bold">Pick card</span>
-                    <button onClick={onCancel} className="text-gray-600 hover:text-white text-xs">✕</button>
+                    <span className="text-xs text-gray-400 uppercase font-bold">Pick card</span>
+                    <button onClick={onCancel} className="text-gray-400 hover:text-white text-xs">✕</button>
                 </div>
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="grid grid-cols-4 gap-2">
                     {RANKS.flatMap(r => SUITS.map(s => {
                         const v = `${r}${s}`;
-                        const suitStyle = SUIT_STYLES[s] || SUIT_STYLES['s'];
+                        const isRed = s === 'h' || s === 'd';
                         const isSelected = currentVal === v;
+                        const displayStr = toDisplay(v);
+                        const displayRank = displayStr.slice(0, -1);
+                        const displaySuit = displayStr.slice(-1);
+
                         return (
                             <button key={v} onClick={() => onSelect(v)}
-                                className={`h-8 text-xs rounded-md border font-bold transition-all
+                                className={`flex flex-col justify-between w-8 h-12 mx-auto rounded-md shadow-sm px-[3px] py-[2px] text-[11px] font-bold leading-none transition-all
                                     ${isSelected
-                                        ? "bg-yellow-400 text-black border-yellow-300 scale-105"
-                                        : `${suitStyle.bg} ${suitStyle.text} ${suitStyle.border} hover:brightness-125 hover:scale-105`}`}>
-                                {toDisplay(v)}
+                                        ? "bg-yellow-500/20 border-2 border-yellow-500 scale-105"
+                                        : "bg-[#1a1d23] border border-gray-600 hover:-translate-y-1 hover:shadow-md cursor-pointer"}`}>
+                                {/* TOP */}
+                                <div className={`text-left tracking-tighter ${isRed ? "text-red-500" : "text-gray-200"}`}>
+                                    {displayRank}<span className="text-[9px]">{displaySuit}</span>
+                                </div>
+                                {/* CENTER */}
+                                <div className={`text-center text-lg ${isRed ? "text-red-500" : "text-gray-200"}`}>
+                                    {displaySuit}
+                                </div>
                             </button>
                         );
                     }))}
@@ -436,11 +459,12 @@ export function HandAnalyzer() {
 
     // ─── RENDER ──────────────────────────────────────────────────────────────
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start bg-[#0f1115] text-gray-200 p-4 rounded-lg" style={{ fontFamily: "'JetBrains Mono', monospace", fontVariantNumeric: "tabular-nums" }}>
+        <>
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start bg-black/40 shadow-2xl backdrop-blur-sm border border-white/10 text-gray-200 p-4 rounded-xl" style={{ fontFamily: "'JetBrains Mono', monospace", fontVariantNumeric: "tabular-nums" }}>
 
             {/* ═══ LEFT: Input ═══ */}
             <div className={`xl:col-span-3 ${handData ? "xl:sticky xl:top-20" : ""}`}>
-                <div className="bg-black border border-gray-800 rounded p-3 text-sm">
+                <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-xl p-3 text-sm shadow-xl">
                     <div className="flex gap-2 mb-2">
                         <button onClick={() => setInputType("text")} className={`text-xs px-2 py-1 rounded ${inputType === "text" ? "bg-gray-800 text-white" : "text-gray-600"}`}>TXT</button>
                         <button onClick={() => setInputType("image")} className={`text-xs px-2 py-1 rounded ${inputType === "image" ? "bg-gray-800 text-white" : "text-gray-600"}`}>IMG</button>
@@ -499,8 +523,8 @@ export function HandAnalyzer() {
                         {handData.players?.some((p: any) => p.hole_cards?.length > 0) && (
                             <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
                                 {handData.players.filter((p: any) => p.hole_cards?.length > 0).map((p: any, i: number) => (
-                                    <span key={i} className="flex items-center gap-1.5 bg-gray-900/50 rounded px-2 py-1 border border-gray-800">
-                                        <span className="text-gray-400 font-medium">{p.name}</span>
+                                    <span key={i} className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm shadow-sm rounded-md px-2 py-2 border border-white/10">
+                                        <span className="text-gray-300 font-bold">{p.name}</span>
                                         {p.hole_cards.map((c: string, ci: number) => (
                                             <CardBadge key={ci} card={c} onClick={editable ? () => setEditingCard({ type: "hole", index: ci, pIdx: handData.players.indexOf(p) }) : undefined} />
                                         ))}
@@ -545,7 +569,7 @@ export function HandAnalyzer() {
 
                 {/* ═══ ANALYSIS ═══ */}
                 {analysis && (
-                    <div className="bg-black text-sm p-4 mt-2 space-y-4">
+                    <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-lg shadow-xl text-sm p-5 mt-2 space-y-4">
                         {/* Grade + Summary */}
                         <div>
                             <div className="flex items-center gap-3 mb-2">
@@ -615,6 +639,7 @@ export function HandAnalyzer() {
                     </div>
                 )}
             </div>
+        </div>
 
             {/* Card picker */}
             {editingCard && (
@@ -624,6 +649,6 @@ export function HandAnalyzer() {
                     onCancel={() => setEditingCard(null)}
                 />
             )}
-        </div>
+        </>
     );
 }

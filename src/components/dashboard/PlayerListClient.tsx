@@ -13,6 +13,64 @@ import { ImportJsonModal } from "@/components/forms/ImportJsonModal";
 import { TemplateManagerModal } from "@/components/forms/TemplateManagerModal";
 import { loadMorePlayers, fetchFirstPage, deletePlayerAction } from "@/app/actions";
 
+// Mock players shown when no real data exists (demo / not logged in)
+const MOCK_PLAYERS: Player[] = [
+    {
+        id: 'mock-1',
+        name: 'xFishKiller99',
+        playstyle: 'LAG',
+        aggression_score: 72,
+        notesCount: 34,
+        platform: { id: 'p1', name: 'PokerStars' },
+        ai_playstyle: 'LAG',
+        ai_aggression_score: 72,
+        ai_profile: {
+            archetype: 'LAG',
+            range_adjustments: [
+                'CO vs BU 3bet: Fold AJo, KQo — Call AQo, TT-QQ — 4bet AK, KK+',
+                'Cbet flop 85% → check-raise dry boards more vs this player',
+            ],
+        },
+        recentNotes: [
+            { id: 'n1', content: 'Opens 40% BTN, folds to 3bet 65% — exploit with wider 3bet range IP', created_at: '2026-03-25T10:00:00Z' },
+            { id: 'n2', content: 'Overbet shoves river with missed draws — call wider on wet boards', created_at: '2026-03-24T18:00:00Z' },
+        ],
+    },
+    {
+        id: 'mock-2',
+        name: 'SmoothCall_Mike',
+        playstyle: 'CALLING STATION',
+        aggression_score: 38,
+        notesCount: 12,
+        platform: { id: 'p2', name: 'GGPoker' },
+        ai_playstyle: 'CALLING STATION',
+        ai_aggression_score: 38,
+        ai_profile: {
+            archetype: 'CALLING STATION',
+            range_adjustments: [
+                'Value bet top pair+ for 3 streets — they call with any pair',
+                'Remove bluffs from river range — station pays off everything',
+            ],
+        },
+        recentNotes: [
+            { id: 'n3', content: 'Called 3 streets with bottom pair on AKQ board — pure station', created_at: '2026-03-25T08:00:00Z' },
+            { id: 'n4', content: 'Never folds to c-bet, even on dry boards — value bet relentlessly', created_at: '2026-03-23T14:00:00Z' },
+        ],
+    },
+    {
+        id: 'mock-3',
+        name: 'TightIsRight',
+        playstyle: 'NIT',
+        aggression_score: 15,
+        notesCount: 3,
+        platform: { id: 'p3', name: '888poker' },
+        ai_playstyle: 'NIT',
+        ai_aggression_score: 15,
+        ai_profile: null,
+        recentNotes: [],
+    },
+];
+
 // Define strict typing for Player matching the Backend return signature
 export interface Player {
     id: string;
@@ -25,6 +83,7 @@ export interface Player {
     ai_aggression_score?: number | null;
     ai_exploit_strategy?: any;
     ai_profile?: any;
+    recentNotes?: { id: string; content: string; created_at: string }[];
 }
 
 export interface PaginationMeta {
@@ -146,14 +205,15 @@ export function PlayerListClient({
     const platformNames = initialPlatforms.map(p => p.name);
 
     return (
-        <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0f2e1e] via-[#020202] to-black">
+        <div className="flex-1 flex flex-col h-screen overflow-hidden bg-transparent">
             <Header user={user} onSettingsClick={() => setSettingsOpen(true)} />
 
-            <div className="flex-1 overflow-y-auto pt-20 sm:pt-32 px-4 sm:px-8 pb-8 relative scrollbar-hide">
+            <div className="flex-1 overflow-y-auto pt-20 sm:pt-24 px-4 sm:px-6 pb-6 relative scrollbar-hide">
                 {/* Decorative background */}
                 <div className="absolute inset-0 pointer-events-none opacity-5 flex items-center justify-center">
                     <div className="w-[500px] h-[500px] rounded-full bg-felt-light blur-3xl"></div>
                 </div>
+
 
                 <div className="max-w-7xl mx-auto relative z-10">
                     {/* Metrics Bar */}
@@ -176,21 +236,20 @@ export function PlayerListClient({
                         onSearchChange={setSearchQuery}
                         onFilterChange={setFilterPlaystyle}
                         onPlatformFilterChange={setFilterPlatform}
+                        onImportClick={() => setImportModalOpen(true)}
                     />
 
                     {/* Player Grid */}
-                    <div className="bg-gradient-to-b from-card/20 to-transparent border-x border-b border-white/5 rounded-b-2xl p-4 sm:p-8 shadow-inner overflow-hidden">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                    <div className="bg-[#111318]/20 border-x border-b border-gray-800/50 rounded-b-2xl p-4 sm:p-6 shadow-inner overflow-hidden">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 
-                            {players.length === 0 && !isLoading ? (
+                            {players.length === 0 && !isLoading && (searchQuery || filterPlaystyle !== 'All' || filterPlatform !== 'All') ? (
                                 <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-border rounded-lg bg-card/20">
                                     <p>No players found.</p>
-                                    {(searchQuery || filterPlaystyle !== 'All' || filterPlatform !== 'All') && <p className="text-xs mt-1">Try different filters.</p>}
+                                    <p className="text-xs mt-1">Try different filters.</p>
                                 </div>
                             ) : (
-                                players.map((player) => {
-                                    console.log("Debug PlayerListClient:", { id: player.id, name: player.name, ai_profile: player.ai_profile });
-                                    return (
+                                (players.length > 0 ? players : MOCK_PLAYERS).map((player) => (
                                     <PlayerHUD
                                         key={player.id}
                                         id={player.id}
@@ -203,14 +262,14 @@ export function PlayerListClient({
                                         ai_aggression_score={player.ai_aggression_score}
                                         ai_exploit_strategy={player.ai_exploit_strategy}
                                         ai_profile={player.ai_profile}
+                                        recentNotes={player.recentNotes}
                                         onAddNote={() => {
                                             setActivePlayerForNote(player);
                                             setNoteModalOpen(true);
                                         }}
                                         onDelete={() => handleDeletePlayer(player.id)}
                                     />
-                                    );
-                                })
+                                ))
                             )}
                         </div>
 

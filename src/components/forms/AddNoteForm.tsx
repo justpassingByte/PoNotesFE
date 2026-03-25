@@ -19,7 +19,8 @@ export function AddNoteForm({ playerId, onSuccess, onCancel }: { playerId: strin
             .then(res => res.json())
             .then(json => {
                 if (json.success && json.data) {
-                    setTemplates(json.data);
+                    const intelligenceTags = json.data.filter((t: Template) => t.category !== 'card_ocr');
+                    setTemplates(intelligenceTags);
                 }
             })
             .catch(err => console.error("Failed to fetch templates:", err));
