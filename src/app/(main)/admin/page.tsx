@@ -20,7 +20,8 @@ import {
     Plus,
     Search,
     Heart,
-    Filter
+    Filter,
+    User
 } from "lucide-react";
 
 interface Stats {
@@ -311,34 +312,38 @@ export default function AdminDashboard() {
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         {users.map((user) => (
-                                            <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
+                                            <tr key={user.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center text-gold text-xs font-bold ring-1 ring-gold/20">
-                                                            {user.email[0].toUpperCase()}
+                                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center border border-white/10 shrink-0">
+                                                            <User className="w-4 h-4 text-gray-400" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-medium text-white">{user.email}</p>
-                                                            <p className="text-[10px] text-gray-600 font-mono tracking-tighter">{user.id.slice(0, 8)}</p>
+                                                            <p className="text-sm font-bold text-white group-hover:text-gold transition-colors">{user.email}</p>
+                                                            <p className="text-[10px] text-gray-500 uppercase tracking-widest">{user.id.substring(0, 8)}...</p>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`text-[10px] font-bold px-2 py-1 rounded inline-flex items-center gap-1 ${
                                                         user.premium_tier === 'FREE' ? 'bg-gray-500/10 text-gray-400' :
-                                                        user.premium_tier === 'PRO' ? 'bg-gold/10 text-gold' : 'bg-purple-500/10 text-purple-400'
+                                                        user.premium_tier === 'PRO' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'
                                                     }`}>
-                                                        {user.premium_tier}
-                                                        {user.is_admin && <Shield className="w-3 h-3 ml-1" />}
+                                                        {plans.find(p => p.id === user.premium_tier)?.name || user.premium_tier}
+                                                        {user.is_admin && <Shield className="w-3 h-3 ml-1 text-gold" />}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-xs font-mono text-gray-300">{user._count.hands} hands</td>
-                                                <td className="px-6 py-4 text-xs text-gray-300">
-                                                    {user.subscription_expiry ? new Date(user.subscription_expiry).toLocaleDateString() : 'N/A'}
+                                                <td className="px-6 py-4">
+                                                    <span className={`text-xs ${user.subscription_expiry && new Date(user.subscription_expiry) < new Date() ? 'text-red-400' : 'text-gray-400'}`}>
+                                                        {user.subscription_expiry ? new Date(user.subscription_expiry).toLocaleDateString() : '—'}
+                                                    </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <button onClick={() => handleUpdateUser(user.id, 'PRO', 30)} className="text-[10px] bg-white/5 hover:bg-gold/20 text-gray-400 hover:text-gold px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
+                                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={() => handleUpdateUser(user.id, 'FREE', 0)} className="text-[10px] bg-white/5 hover:bg-gray-500/20 text-gray-400 px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
+                                                            FREE
+                                                        </button>
+                                                        <button onClick={() => handleUpdateUser(user.id, 'PRO', 30)} className="text-[10px] bg-white/5 hover:bg-blue-500/20 text-gray-400 hover:text-blue-400 px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
                                                             +PRO
                                                         </button>
                                                         <button onClick={() => handleUpdateUser(user.id, 'PRO_PLUS', 30)} className="text-[10px] bg-white/5 hover:bg-purple-500/20 text-gray-400 hover:text-purple-400 px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">

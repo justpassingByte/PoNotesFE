@@ -14,7 +14,7 @@ export function Header({
     user: user,
 }: {
     onSettingsClick?: () => void;
-    user?: { email: string; premium_tier: string } | null;
+    user?: { email: string; premium_tier: string; plan_name?: string } | null;
 }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isAITuningOpen, setIsAITuningOpen] = useState(false);
@@ -91,7 +91,7 @@ export function Header({
                             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-gold/60 to-amber-700/60 flex items-center justify-center">
                                 <span className="text-[9px] font-black text-black">{user.email.charAt(0).toUpperCase()}</span>
                             </div>
-                            <span className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-gold">{user.premium_tier}</span>
+                            <span className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-gold">{user.plan_name || user.premium_tier}</span>
                         </button>
                     ) : (
                         <button
@@ -124,7 +124,7 @@ export function Header({
                                 className="flex items-center justify-between px-4 py-3 mb-2 bg-gold/5 rounded-xl border border-gold/20 hover:bg-gold/10 transition-all"
                             >
                                 <span className="text-xs text-gray-400">{user.email}</span>
-                                <span className="text-[10px] text-gold font-bold uppercase tracking-widest">{user.premium_tier}</span>
+                                <span className="text-[10px] text-gold font-bold uppercase tracking-widest">{user.plan_name || user.premium_tier}</span>
                             </button>
                         )}
                         {navLinks.map((link) => (

@@ -473,9 +473,17 @@ export function HandAnalyzer() {
                         <textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="Paste hand history..."
                             className="w-full h-20 bg-transparent border border-gray-800 rounded p-2 text-xs text-gray-400 placeholder-gray-700 resize-none focus:outline-none" />
                     ) : (
-                        <div onClick={() => fileInputRef.current?.click()} className="h-16 border border-dashed border-gray-800 rounded flex items-center justify-center cursor-pointer hover:border-gray-600 text-xs text-gray-600">
-                            {imagePreview ? "✓ loaded — click to change" : "Drop / Paste / Click"}
-                            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                        <div className="space-y-2">
+                            <div onClick={() => fileInputRef.current?.click()} className="h-16 border border-dashed border-gray-800 rounded flex items-center justify-center cursor-pointer hover:border-gray-600 text-xs text-gray-600 transition-colors">
+                                {imagePreview ? "✓ loaded — click to change" : "Drop / Paste / Click"}
+                                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                            </div>
+                            {imagePreview && (
+                                <div className="rounded-lg overflow-hidden border border-gray-800 relative group bg-black mt-2 shadow-inner">
+                                    <img src={imagePreview} alt="Hand preview" className="w-full h-auto block" />
+                                    <button onClick={(e) => { e.stopPropagation(); setImagePreview(null); }} className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white w-7 h-7 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md backdrop-blur-md border border-white/10">✕</button>
+                                </div>
+                            )}
                         </div>
                     )}
                     <button onClick={handleParse} disabled={isParsing || isAnalyzing}

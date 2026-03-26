@@ -12,7 +12,7 @@ import { getUserProfile } from "@/app/actions";
 interface ProfileHUDModalProps {
     isOpen: boolean;
     onClose: () => void;
-    user?: { email: string; premium_tier: string } | null;
+    user?: { email: string; premium_tier: string; plan_name?: string } | null;
 }
 
 // ─── Plan Theming ────────────────────────────────────────────────────────────
@@ -143,6 +143,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
     const tier = (profile?.user?.premium_tier ?? user?.premium_tier ?? "FREE").toUpperCase();
     const theme = TIER_THEME[tier] ?? TIER_THEME.FREE;
     const plan = profile?.plan;
+    const displayTierName = plan?.name ?? user?.plan_name ?? tier;
     const stats = profile?.stats;
     const recentNotes: any[] = profile?.recentNotes ?? [];
     const displayName = (profile?.user?.email ?? user?.email ?? "HERO").split("@")[0];
@@ -191,7 +192,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                             <div className={`inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-0.5 rounded-full ${theme.bg} ${theme.border} border`}>
                                 {theme.icon}
                                 <span className={`text-[9px] font-black uppercase tracking-widest ${theme.color}`}>
-                                    {plan?.name ?? tier}
+                                    {displayTierName}
                                 </span>
                             </div>
                         </div>
@@ -245,7 +246,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                     <div className="flex items-center gap-2">
                                         {theme.icon}
                                         <span className={`text-sm font-black uppercase tracking-widest ${theme.color}`}>
-                                            {plan?.name ?? tier} Plan
+                                            {displayTierName} Plan
                                         </span>
                                     </div>
                                     {plan?.price !== undefined && (
