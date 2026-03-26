@@ -441,7 +441,7 @@ export function HandHistoryList() {
                                 <div className="flex items-center gap-3">
                                     {parsed?.pot !== undefined && (
                                         <span className="text-xs text-gold font-mono font-bold bg-gold/5 px-2 py-1 rounded border border-gold/10">
-                                            {parsed.pot} BB
+                                            {String(parsed.pot).replace(/ ?BB/i, '')} BB
                                         </span>
                                     )}
                                     <div className="hidden sm:flex items-center gap-2">
@@ -696,7 +696,7 @@ export function HandHistoryList() {
 
                                                 <div>
                                                     <span className="text-[10px] text-gray-500 block mb-0.5 uppercase tracking-tighter">Final Pot</span>
-                                                    <span className="text-xl font-bold text-gold">{parsed?.pot ?? 0} <span className="text-xs text-amber-700">BB</span></span>
+                                                    <span className="text-xl font-bold text-gold">{String(parsed?.pot ?? 0).replace(/ ?BB/i, '')} <span className="text-xs text-amber-700">BB</span></span>
                                                 </div>
                                                 <div className="h-[1px] bg-white/5"></div>
                                                 <div>
