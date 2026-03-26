@@ -27,6 +27,9 @@ export const API = {
   ocrTemplates: `${API_BASE_URL}/api/ocr/templates`,
   ocrTemplateImage: (type: string, filename: string) => `${API_BASE_URL}/api/ocr/templates/${type}/${filename}`,
   ocrTemplateDelete: (type: string, filename: string) => `${API_BASE_URL}/api/ocr/templates/${type}/${filename}`,
+  ocrFailedCases: `${API_BASE_URL}/api/ocr/failed-cases`,
+  ocrFailedCaseLabel: `${API_BASE_URL}/api/ocr/failed-cases/label`,
+  ocrFailedCaseImage: (subfolder: string, filename: string) => `${API_BASE_URL}/api/ocr/templates_failed/${subfolder}/${filename}`,
 
   // Hand Analysis
   hands: `${API_BASE_URL}/api/hands`,

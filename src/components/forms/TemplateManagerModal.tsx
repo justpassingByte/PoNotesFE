@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, Edit2, Plus, Globe } from 'lucide-react';
-import { API, apiGet, apiDelete } from '@/lib/api';
+import { API, apiGet, apiPost, apiDelete } from '@/lib/api';
 
 interface Template {
     id: string;
@@ -16,7 +16,7 @@ interface Platform {
 
 export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     // Tab state
-    const [activeTab, setActiveTab] = useState<'tags' | 'platforms'>('tags');
+    const [activeTab, setActiveTab] = useState<'tags' | 'platforms' | 'failed-cases'>('tags');
 
     // Template state
     const [templates, setTemplates] = useState<Template[]>([]);
@@ -37,11 +37,54 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
     const [platformError, setPlatformError] = useState('');
     const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(null);
 
+    // Failed Cases state
+    const [failedCases, setFailedCases] = useState<any[]>([]);
+    const [loadingFailedCases, setLoadingFailedCases] = useState(true);
+    const [labelingFile, setLabelingFile] = useState<string | null>(null);
+    const [labelText, setLabelText] = useState('');
+    const [labelType, setLabelType] = useState<'none' | 'rank' | 'suit'>('none');
+
     useEffect(() => {
         fetchTemplates();
         fetchPlatforms();
         fetchOcrTemplates();
+        fetchFailedCases();
     }, []);
+
+    const fetchFailedCases = async () => {
+        try {
+            const res = await apiGet(API.ocrFailedCases);
+            const json = await res.json();
+            if (json.success && json.data) {
+                setFailedCases(json.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch failed cases:', err);
+        } finally {
+            setLoadingFailedCases(false);
+        }
+    };
+
+    const handleLabelSubmit = async (filename: string) => {
+        if (!labelText.trim()) return;
+        try {
+            const res = await apiPost(API.ocrFailedCaseLabel, {
+                filename,
+                label: labelText.trim(),
+                is_rank: labelType === 'rank',
+                is_suit: labelType === 'suit'
+            });
+            if (res.ok) {
+                setLabelingFile(null);
+                setLabelText('');
+                setLabelType('none');
+                fetchFailedCases();
+                fetchOcrTemplates();
+            }
+        } catch (err) {
+            console.error('Failed to label case:', err);
+        }
+    };
 
     const fetchOcrTemplates = async () => {
         try {
@@ -206,6 +249,15 @@ export function TemplateManagerModal({ onClose }: { onClose: () => void }) {
                 >
                     <Globe className="w-3.5 h-3.5" />
                     Platforms
+                </button>
+                <button
+                    onClick={() => setActiveTab('failed-cases')}
+                    className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5 ${activeTab === 'failed-cases'
+                        ? 'text-gold border-gold'
+                        : 'text-gray-500 border-transparent hover:text-gray-300'
+                        }`}
+                >
+                    Failed Cases
                 </button>
             </div>
 
