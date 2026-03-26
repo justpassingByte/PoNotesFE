@@ -181,14 +181,7 @@ export default function AdminDashboard() {
 
     if (loading) return <div className="flex items-center justify-center min-h-screen text-gold">Loading Admin...</div>;
 
-    const availableFeatures = [
-        { id: 'ai_analysis', label: 'AI Analysis' },
-        { id: 'leak_detection', label: 'Leak Detection' },
-        { id: 'exploit_finder', label: 'Exploit Finder' },
-        { id: 'gto_baseline', label: 'GTO Baseline' },
-        { id: 'vgg_ocr', label: 'Premium OCR' }
-    ];
-
+    // Features are dynamically loaded from and saved to the database.
     return (
         <main className="flex-1 pt-24 px-4 sm:px-8 pb-12 min-h-screen relative overflow-hidden">
             {/* Background Aesthetics */}
@@ -499,29 +492,48 @@ export default function AdminDashboard() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Toggled Features</label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {availableFeatures.map(feat => {
-                                            const isActive = editingPlan.features.includes(feat.label);
-                                            return (
-                                                <button
-                                                    key={feat.id}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const newFeatures = isActive
-                                                            ? editingPlan.features.filter((f: string) => f !== feat.label)
-                                                            : [...editingPlan.features, feat.label];
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center justify-between">
+                                        <span>Plan Features</span>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setEditingPlan({...editingPlan, features: [...editingPlan.features, "New Feature"]})}
+                                            className="text-gold hover:text-yellow-500 flex items-center gap-1 transition-colors"
+                                        >
+                                            <Plus className="w-3 h-3" /> Add Feature
+                                        </button>
+                                    </label>
+                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                        {editingPlan.features.map((feat: string, index: number) => (
+                                            <div key={index} className="flex gap-2">
+                                                <input
+                                                    value={feat}
+                                                    onChange={(e) => {
+                                                        const newFeatures = [...editingPlan.features];
+                                                        newFeatures[index] = e.target.value;
                                                         setEditingPlan({...editingPlan, features: newFeatures});
                                                     }}
-                                                    className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
-                                                        isActive ? 'bg-gold/10 border-gold/50 text-gold' : 'bg-white/5 border-white/10 text-gray-500'
-                                                    }`}
+                                                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-gold/50 text-sm"
+                                                    placeholder="Feature description"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newFeatures = [...editingPlan.features];
+                                                        newFeatures.splice(index, 1);
+                                                        setEditingPlan({...editingPlan, features: newFeatures});
+                                                    }}
+                                                    className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-500 hover:text-red-500 hover:border-red-500/50 transition-all flex items-center justify-center"
+                                                    title="Remove feature"
                                                 >
-                                                    <span className="text-[10px] font-black uppercase tracking-tight">{feat.label}</span>
-                                                    <div className={`w-3 h-3 rounded-full ${isActive ? 'bg-gold' : 'bg-white/10'}`} />
+                                                    <Trash2 className="w-4 h-4" />
                                                 </button>
-                                            )
-                                        })}
+                                            </div>
+                                        ))}
+                                        {(!editingPlan.features || editingPlan.features.length === 0) && (
+                                            <div className="text-xs text-gray-500 italic p-4 text-center border border-dashed border-white/10 rounded-xl">
+                                                No features added. Click "Add Feature" to create one.
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

@@ -457,6 +457,7 @@ export async function getUserProfile() {
             user: json.user,
             plan: json.plan,
             stats: json.stats,
+            usage: json.usage,
             recentNotes: json.recentNotes ?? [],
         };
     } catch {

@@ -116,7 +116,7 @@ function NoteRow({ note }: { note: any }) {
 export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps) {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [profile, setProfile] = useState<{
-        user: any; plan: any; stats: any; recentNotes: any[];
+        user: any; plan: any; stats: any; recentNotes: any[]; usage?: any;
     } | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
@@ -152,9 +152,9 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
         ? new Date(profile.user.subscription_expiry).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
         : null;
 
-    // Usage derived from plan limits & stats
-    const aiUsed = (plan?.ai_limit ?? 0) - (0); // will use real usage when available
-    const handOcrUsed = 0;
+    // Usage derived from plan limits & usage tracking
+    const aiUsed = profile?.usage?.ai?.used ?? 0;
+    const handOcrUsed = profile?.usage?.hand_ocr?.used ?? 0;
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
@@ -273,7 +273,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                         <span className="text-[9px] font-black uppercase tracking-widest text-gray-600 flex items-center gap-1.5">
                                             <Zap className="w-3 h-3 text-gold" /> Monthly Limits
                                         </span>
-                                        {plan.ai_limit > 0 && (
+                                        {plan.ai_limit !== 0 && (
                                             <UsageBar
                                                 label="AI Analysis"
                                                 used={aiUsed}
@@ -281,7 +281,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                                 color="gold"
                                             />
                                         )}
-                                        {plan.hand_ocr_limit > 0 && (
+                                        {plan.hand_ocr_limit !== 0 && (
                                             <UsageBar
                                                 label="Hand OCR"
                                                 used={handOcrUsed}
