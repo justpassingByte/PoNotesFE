@@ -40,6 +40,35 @@ interface HandAnalysis {
 
 }
 
+// ─── Image Compression ──────────────────────────────────────────────────────
+
+const MAX_DIM = 1920;
+const JPEG_QUALITY = 0.7;
+
+function compressImage(file: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            let { width, height } = img;
+            // Cap max dimension to reduce payload
+            if (width > MAX_DIM || height > MAX_DIM) {
+                const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { reject(new Error('Canvas not supported')); return; }
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+    });
+}
+
 // ─── Suit symbols ────────────────────────────────────────────────────────────
 
 const SUIT_SYM: Record<string, string> = { h: "♥", d: "♦", c: "♣", s: "♠" };
@@ -663,9 +692,7 @@ useEffect(() => {
             if (items[i].type.indexOf("image") !== -1) {
                 const blob = items[i].getAsFile();
                 if (!blob) continue;
-                const reader = new FileReader();
-                reader.onload = (ev) => { setImagePreview(ev.target?.result as string); setInputType("image"); };
-                reader.readAsDataURL(blob);
+                compressImage(blob).then(dataUrl => { setImagePreview(dataUrl); setInputType("image"); });
                 break;
             }
         }
@@ -676,9 +703,7 @@ useEffect(() => {
 
 const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    compressImage(file).then(dataUrl => setImagePreview(dataUrl));
 };
 
 const handleParse = async () => {
