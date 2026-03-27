@@ -8,6 +8,7 @@ import { API, apiFetch, apiDelete } from "@/lib/api";
 interface HandAction {
     player: string;
     action: string;
+    sub_action?: string;
     amount?: number;
     position?: string;
 }
@@ -483,7 +484,7 @@ export function HandHistoryList() {
                                                     <Clock className="w-3 h-3 text-gold" />
                                                     Hand Timeline
                                                 </h4>
-                                                
+
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                     {/* Dynamic street blocks */}
                                                     {([
@@ -511,10 +512,10 @@ export function HandHistoryList() {
                                                                         const actionLower = act.action?.toLowerCase() || '';
                                                                         const actionColor = actionLower === 'fold' ? 'text-gray-500'
                                                                             : actionLower === 'check' ? 'text-gray-400'
-                                                                            : actionLower === 'call' ? 'text-blue-400'
-                                                                            : (actionLower === 'bet' || actionLower === 'raise') ? 'text-orange-400 font-bold'
-                                                                            : actionLower === 'all-in' ? 'text-red-500 font-bold'
-                                                                            : 'text-gray-400';
+                                                                                : actionLower === 'call' ? 'text-blue-400'
+                                                                                    : (actionLower === 'bet' || actionLower === 'raise') ? 'text-orange-400 font-bold'
+                                                                                        : actionLower === 'all-in' ? 'text-red-500 font-bold'
+                                                                                            : 'text-gray-400';
                                                                         return (
                                                                             <div key={i} className="flex justify-between items-center text-gray-300 hover:bg-white/5 px-1 py-0.5 rounded">
                                                                                 <div className="flex items-center gap-2 w-36">
@@ -524,6 +525,11 @@ export function HandHistoryList() {
                                                                                 <span className={actionColor}>
                                                                                     {act.action?.toUpperCase() || ''}
                                                                                     {act.amount != null && <span className="text-gray-500 font-normal ml-1">{act.amount} BB</span>}
+                                                                                    {act.sub_action && (
+                                                                                        <span className="ml-1 px-1 rounded bg-red-500/20 text-red-500 text-[8px] font-black uppercase">
+                                                                                            {act.sub_action}
+                                                                                        </span>
+                                                                                    )}
                                                                                 </span>
                                                                             </div>
                                                                         );
@@ -541,119 +547,119 @@ export function HandHistoryList() {
 
                                             {/* 2. AI ANALYSIS — dynamically rendered */}
                                             {analysis && (
-                                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 space-y-4">
-                                                <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest flex items-center gap-2">
-                                                    <Sparkles className="w-3 h-3 text-purple-400" />
-                                                    AI Analysis
-                                                    {analysis.final_verdict && (
-                                                        <span className="ml-auto flex items-center gap-2">
-                                                            <span className="text-yellow-400 font-bold text-sm">{analysis.final_verdict.grade}</span>
-                                                            {analysis.final_verdict.confidence_score != null && (
-                                                                <span className="text-gray-600 text-[10px]">{(analysis.final_verdict.confidence_score * 100).toFixed(0)}%</span>
-                                                            )}
-                                                            {analysis.final_verdict.suggestion_type && (
-                                                                <span className={`text-[10px] font-bold uppercase ${analysis.final_verdict.suggestion_type === 'Exploit' ? 'text-purple-400' : 'text-green-500'}`}>
-                                                                    {analysis.final_verdict.suggestion_type}
-                                                                </span>
-                                                            )}
-                                                        </span>
+                                                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 space-y-4">
+                                                    <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest flex items-center gap-2">
+                                                        <Sparkles className="w-3 h-3 text-purple-400" />
+                                                        AI Analysis
+                                                        {analysis.final_verdict && (
+                                                            <span className="ml-auto flex items-center gap-2">
+                                                                <span className="text-yellow-400 font-bold text-sm">{analysis.final_verdict.grade}</span>
+                                                                {analysis.final_verdict.confidence_score != null && (
+                                                                    <span className="text-gray-600 text-[10px]">{(analysis.final_verdict.confidence_score * 100).toFixed(0)}%</span>
+                                                                )}
+                                                                {analysis.final_verdict.suggestion_type && (
+                                                                    <span className={`text-[10px] font-bold uppercase ${analysis.final_verdict.suggestion_type === 'Exploit' ? 'text-purple-400' : 'text-green-500'}`}>
+                                                                        {analysis.final_verdict.suggestion_type}
+                                                                    </span>
+                                                                )}
+                                                            </span>
+                                                        )}
+                                                    </h4>
+
+                                                    {/* Strategy Main */}
+                                                    {analysis.summary && (
+                                                        <div>
+                                                            <div className="text-[10px] font-bold text-blue-400 uppercase flex items-center gap-1.5 mb-1.5">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+                                                                Strategy
+                                                            </div>
+                                                            <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
+                                                                <div className="whitespace-pre-line">{analysis.summary}</div>
+                                                            </div>
+                                                        </div>
                                                     )}
-                                                </h4>
 
-                                                {/* Strategy Main */}
-                                                {analysis.summary && (
-                                                <div>
-                                                    <div className="text-[10px] font-bold text-blue-400 uppercase flex items-center gap-1.5 mb-1.5">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-                                                        Strategy
-                                                    </div>
-                                                    <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
-                                                        <div className="whitespace-pre-line">{analysis.summary}</div>
-                                                    </div>
-                                                </div>
-                                                )}
-
-                                                {/* Exploit */}
-                                                {(analysis.exploit_suggestions?.length || analysis.exploit) && (
-                                                <div>
-                                                    <div className="text-[10px] font-bold text-purple-400 uppercase flex items-center gap-1.5 mb-1.5">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"></div>
-                                                        Exploit
-                                                    </div>
-                                                    <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
-                                                        {analysis.exploit_suggestions && analysis.exploit_suggestions.length > 0 ? (
-                                                            <ul className="space-y-1">
-                                                                {analysis.exploit_suggestions.map((s, i) => (
-                                                                    <li key={i} className="text-purple-300">• {s}</li>
-                                                                ))}
-                                                            </ul>
-                                                        ) : analysis.exploit ? (
-                                                            <div className="whitespace-pre-line">{analysis.exploit}</div>
-                                                        ) : null}
-                                                    </div>
-                                                </div>
-                                                )}
-
-                                                {/* Reasoning Trace */}
-                                                {analysis.reasoning_trace && analysis.reasoning_trace.length > 0 && (
-                                                <div>
-                                                    <div className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1.5 mb-1.5">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-gray-500"></div>
-                                                        Reasoning
-                                                    </div>
-                                                    <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-400 font-mono leading-relaxed space-y-0.5">
-                                                        {analysis.reasoning_trace.map((s, i) => (
-                                                            <div key={i} className="flex gap-2">
-                                                                <span className="text-gray-700 w-4 text-right">{i + 1}.</span>
-                                                                <span>{s}</span>
+                                                    {/* Exploit */}
+                                                    {(analysis.exploit_suggestions?.length || analysis.exploit) && (
+                                                        <div>
+                                                            <div className="text-[10px] font-bold text-purple-400 uppercase flex items-center gap-1.5 mb-1.5">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"></div>
+                                                                Exploit
                                                             </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                )}
-
-                                                {/* Leaks / Mistakes grouped by player */}
-                                                {Object.keys(mistakesByPlayer).length > 0 ? (
-                                                    Object.entries(mistakesByPlayer).map(([pName, mArr]: any) => (
-                                                        <div key={pName} className="mt-4">
-                                                            <div className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1.5 mb-1.5">
-                                                                <AlertCircle className="w-3 h-3 text-red-500" />
-                                                                {pName} Leak{mArr.length > 1 ? "s" : ""}
+                                                            <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
+                                                                {analysis.exploit_suggestions && analysis.exploit_suggestions.length > 0 ? (
+                                                                    <ul className="space-y-1">
+                                                                        {analysis.exploit_suggestions.map((s, i) => (
+                                                                            <li key={i} className="text-purple-300">• {s}</li>
+                                                                        ))}
+                                                                    </ul>
+                                                                ) : analysis.exploit ? (
+                                                                    <div className="whitespace-pre-line">{analysis.exploit}</div>
+                                                                ) : null}
                                                             </div>
-                                                            <div className="space-y-2">
-                                                                {mArr.map((mistake: any, idx: number) => (
-                                                                    <div key={idx} className="bg-black/40 border border-red-500/20 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
-                                                                        {mistake.street && <span className="text-yellow-400 font-bold uppercase mr-2">{mistake.street}</span>}
-                                                                        {mistake.severity && (
-                                                                            <span className={`font-bold uppercase mr-2 ${mistake.severity === 'critical' ? 'text-red-500' : mistake.severity === 'moderate' ? 'text-orange-400' : 'text-blue-400'}`}>
-                                                                                {mistake.severity}
-                                                                            </span>
-                                                                        )}
-                                                                        <br />
-                                                                        <span className="text-gray-500">• Error:</span> {mistake.description}
-                                                                        {mistake.better_line && (
-                                                                            <><br /><span className="text-gray-500">• Better:</span> <span className="text-green-400 font-bold">{mistake.better_line}</span></>
-                                                                        )}
-                                                                        {mistake.gto_deviation_reason && (
-                                                                            <><br /><span className="text-purple-400 italic">💡 {mistake.gto_deviation_reason}</span></>
-                                                                        )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Reasoning Trace */}
+                                                    {analysis.reasoning_trace && analysis.reasoning_trace.length > 0 && (
+                                                        <div>
+                                                            <div className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1.5 mb-1.5">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-gray-500"></div>
+                                                                Reasoning
+                                                            </div>
+                                                            <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-400 font-mono leading-relaxed space-y-0.5">
+                                                                {analysis.reasoning_trace.map((s, i) => (
+                                                                    <div key={i} className="flex gap-2">
+                                                                        <span className="text-gray-700 w-4 text-right">{i + 1}.</span>
+                                                                        <span>{s}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
                                                         </div>
-                                                    ))
-                                                ) : (
-                                                    <div>
-                                                        <div className="text-[10px] font-bold text-green-500 uppercase flex items-center gap-1.5 mb-1.5">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                                                            Flawless Play
+                                                    )}
+
+                                                    {/* Leaks / Mistakes grouped by player */}
+                                                    {Object.keys(mistakesByPlayer).length > 0 ? (
+                                                        Object.entries(mistakesByPlayer).map(([pName, mArr]: any) => (
+                                                            <div key={pName} className="mt-4">
+                                                                <div className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1.5 mb-1.5">
+                                                                    <AlertCircle className="w-3 h-3 text-red-500" />
+                                                                    {pName} Leak{mArr.length > 1 ? "s" : ""}
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    {mArr.map((mistake: any, idx: number) => (
+                                                                        <div key={idx} className="bg-black/40 border border-red-500/20 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
+                                                                            {mistake.street && <span className="text-yellow-400 font-bold uppercase mr-2">{mistake.street}</span>}
+                                                                            {mistake.severity && (
+                                                                                <span className={`font-bold uppercase mr-2 ${mistake.severity === 'critical' ? 'text-red-500' : mistake.severity === 'moderate' ? 'text-orange-400' : 'text-blue-400'}`}>
+                                                                                    {mistake.severity}
+                                                                                </span>
+                                                                            )}
+                                                                            <br />
+                                                                            <span className="text-gray-500">• Error:</span> {mistake.description}
+                                                                            {mistake.better_line && (
+                                                                                <><br /><span className="text-gray-500">• Better:</span> <span className="text-green-400 font-bold">{mistake.better_line}</span></>
+                                                                            )}
+                                                                            {mistake.gto_deviation_reason && (
+                                                                                <><br /><span className="text-purple-400 italic">💡 {mistake.gto_deviation_reason}</span></>
+                                                                            )}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div>
+                                                            <div className="text-[10px] font-bold text-green-500 uppercase flex items-center gap-1.5 mb-1.5">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                                                                Flawless Play
+                                                            </div>
+                                                            <div className="bg-black/40 border border-green-500/20 p-3 rounded text-xs text-green-400 font-mono">
+                                                                No significant errors detected in this hand.
+                                                            </div>
                                                         </div>
-                                                        <div className="bg-black/40 border border-green-500/20 p-3 rounded text-xs text-green-400 font-mono">
-                                                            No significant errors detected in this hand.
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                                    )}
+                                                </div>
                                             )}
 
                                             {/* No AI analysis yet */}
@@ -706,7 +712,7 @@ export function HandHistoryList() {
                                                     </span>
                                                 </div>
                                                 <div className="h-[1px] bg-white/5"></div>
-                                                
+
                                                 {/* Players */}
                                                 <div>
                                                     <span className="text-[10px] text-gray-500 block mb-1 uppercase tracking-tighter">Players</span>
@@ -730,23 +736,23 @@ export function HandHistoryList() {
 
                                             {/* EXPLOIT QUICK VIEW — dynamic */}
                                             {analysis && (analysis.exploit_suggestions?.length || analysis.exploit) && (
-                                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4">
-                                                <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-3 flex items-center gap-2">
-                                                    <Tag className="w-3 h-3 text-purple-400" />
-                                                    Exploit Quick View
-                                                </h4>
-                                                <div className="text-xs text-gray-300">
-                                                    <span className="text-gray-500 block mb-1">Suggestions:</span>
-                                                    <ul className="space-y-1.5 pl-3 border-l-2 border-purple-500/50">
-                                                        {(analysis.exploit_suggestions || []).map((s, i) => (
-                                                            <li key={i}>{s}</li>
-                                                        ))}
-                                                        {analysis.exploit && !analysis.exploit_suggestions?.length && (
-                                                            <li>{analysis.exploit}</li>
-                                                        )}
-                                                    </ul>
+                                                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4">
+                                                    <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-3 flex items-center gap-2">
+                                                        <Tag className="w-3 h-3 text-purple-400" />
+                                                        Exploit Quick View
+                                                    </h4>
+                                                    <div className="text-xs text-gray-300">
+                                                        <span className="text-gray-500 block mb-1">Suggestions:</span>
+                                                        <ul className="space-y-1.5 pl-3 border-l-2 border-purple-500/50">
+                                                            {(analysis.exploit_suggestions || []).map((s, i) => (
+                                                                <li key={i}>{s}</li>
+                                                            ))}
+                                                            {analysis.exploit && !analysis.exploit_suggestions?.length && (
+                                                                <li>{analysis.exploit}</li>
+                                                            )}
+                                                        </ul>
+                                                    </div>
                                                 </div>
-                                            </div>
                                             )}
 
                                             {/* CTA */}
