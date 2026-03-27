@@ -4,60 +4,62 @@ import React from 'react';
 import Link from 'next/link';
 import { Check, Zap } from 'lucide-react';
 import { useReveal } from '@/hooks/useReveal';
-
-const PLANS = [
-    {
-        id: 'starter',
-        name: 'Starter',
-        price: 29,
-        tagline: 'Bắt đầu cắt lỗ',
-        popular: false,
-        features: [
-            '500 hand phân tích',
-            'Strategy cơ bản (call/fold)',
-            'HUD basic',
-            'Player memory',
-            '1 thiết bị',
-        ],
-    },
-    {
-        id: 'pro',
-        name: 'Pro',
-        price: 59,
-        tagline: 'Được chọn nhiều nhất',
-        popular: true,
-        features: [
-            '2.000 hand phân tích',
-            'Strategy full: frequency + sizing + plan',
-            'HUD exploit + leak detect',
-            'Player modeling',
-            '2 thiết bị',
-            'Priority support',
-        ],
-    },
-    {
-        id: 'elite',
-        name: 'Elite',
-        price: 99,
-        tagline: 'Hổ mọc thêm cánh',
-        popular: false,
-        features: [
-            '5.000+ hand không giới hạn',
-            'Exploit sâu theo từng spot',
-            'Player modeling cực mạnh',
-            'GTO + Population reads',
-            '3 thiết bị',
-            'Onboarding 1-on-1',
-        ],
-    },
-];
-
-const ADDON = { price: 10, hands: 150 };
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export function PricingSection({ isDashboard = false }: { isDashboard?: boolean }) {
     const head = useReveal();
     const cards = useReveal();
     const faq = useReveal();
+    const { t } = useLanguage();
+
+    const PLANS = [
+        {
+            id: 'starter',
+            name: t('landing.pricing_section.tier1_name') || 'Grinder',
+            price: 29,
+            tagline: t('landing.pricing_section.tier1_desc') || 'Bắt đầu cắt lỗ',
+            popular: false,
+            features: [
+                t('landing.pricing_section.tier1_f1') || '500 hand phân tích',
+                t('landing.pricing_section.tier1_f2') || 'Strategy cơ bản (call/fold)',
+                t('landing.pricing_section.tier1_f3') || 'HUD basic',
+                'Player memory',
+                '1 thiết bị',
+            ],
+        },
+        {
+            id: 'pro',
+            name: 'Pro',
+            price: 59,
+            tagline: 'Được chọn nhiều nhất',
+            popular: true,
+            features: [
+                '2.000 hand phân tích',
+                'Strategy full: frequency + sizing + plan',
+                'HUD exploit + leak detect',
+                'Player modeling',
+                '2 thiết bị',
+                'Priority support',
+            ],
+        },
+        {
+            id: 'elite',
+            name: t('landing.pricing_section.tier2_name') || 'High Roller',
+            price: 99,
+            tagline: t('landing.pricing_section.tier2_desc') || 'Hổ mọc thêm cánh',
+            popular: false,
+            features: [
+                t('landing.pricing_section.tier2_f1') || '5.000+ hand không giới hạn',
+                t('landing.pricing_section.tier2_f2') || 'Exploit sâu theo từng spot',
+                t('landing.pricing_section.tier2_f3') || 'Player modeling cực mạnh',
+                'GTO + Population reads',
+                '3 thiết bị',
+                'Onboarding 1-on-1',
+            ],
+        },
+    ];
+
+    const ADDON = { price: 10, hands: 150 };
 
     return (
         <section id="pricing" className={`relative overflow-hidden ${isDashboard ? '' : 'py-24'}`}>
@@ -67,12 +69,14 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                         ref={head.ref as React.RefObject<HTMLDivElement>}
                         className={`reveal mb-16 ${head.visible ? 'is-visible' : ''}`}
                     >
-                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.28em] mb-3">Giá — Rõ, Không Úp Mở</p>
-                        <h2 className="text-3xl sm:text-5xl font-black text-white mb-3">
-                            Chọn Edge Của Bạn
-                        </h2>
+                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.28em] mb-3">
+                            {t('landing.pricing_section.overline') || "Giá — Rõ, Không Úp Mở"}
+                        </p>
+                        <h2 className="text-3xl sm:text-5xl font-black text-white mb-3"
+                            dangerouslySetInnerHTML={{ __html: t('landing.pricing_section.h2') || "Chọn <span class=\"text-yellow-400\">Edge Của Bạn</span>" }}
+                        />
                         <p className="text-white/30 max-w-xl text-sm">
-                            Flexible plans cho mọi stage trong poker career của bạn.
+                            {t('landing.pricing_section.sub') || "Flexible plans cho mọi stage trong poker career của bạn."}
                         </p>
                     </div>
                 )}
@@ -143,8 +147,8 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                             <Zap className="w-4 h-4 text-white/30" />
                         </div>
                         <div>
-                            <p className="text-white/60 font-bold text-sm">Nạp Lẻ</p>
-                            <p className="text-white/25 text-xs">{ADDON.hands} hand · Không cần subscribe</p>
+                            <p className="text-white/60 font-bold text-sm">Addon</p>
+                            <p className="text-white/25 text-xs">{t('landing.pricing_section.addon_hands') || '50K'} {t('landing.pricing_section.addon_text') || 'hand · Không cần subscribe'}</p>
                         </div>
                     </div>
                     <div className="text-right">
@@ -160,9 +164,9 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                         className={`reveal grid sm:grid-cols-3 gap-3 max-w-3xl mx-auto ${faq.visible ? 'is-visible' : ''}`}
                     >
                         {[
-                            { q: 'Có mệt không?', a: 'Không — để Vault nghĩ hộ, bạn bấm theo.' },
-                            { q: 'Có tilt không?', a: 'Vault không biết "thua 3 hand liền là cay".' },
-                            { q: 'Không rành poker?', a: 'Biết luật là đủ. Vault kéo bạn lên dần.' },
+                            { q: t('landing.pricing_section.q1') || 'Có mệt không?', a: t('landing.pricing_section.a1') || 'Không — để Vault nghĩ hộ, bạn bấm theo.' },
+                            { q: t('landing.pricing_section.q2') || 'Có tilt không?', a: t('landing.pricing_section.a2') || 'Vault không biết "thua 3 hand liền là cay".' },
+                            { q: t('landing.pricing_section.q3') || 'Không rành poker?', a: t('landing.pricing_section.a3') || 'Biết luật là đủ. Vault kéo bạn lên dần.' },
                         ].map((item, i) => (
                             <div
                                 key={i}

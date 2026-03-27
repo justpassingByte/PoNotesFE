@@ -3,13 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Menu, X, Sparkles, LayoutDashboard } from 'lucide-react';
-
-const NAV_LINKS = [
-    { name: 'Tính Năng',     id: 'features' },
-    { name: 'Phân Tích HUD', id: 'profiles' },
-    { name: 'Bảng Giá',     id: 'pricing'  },
-    { name: 'Liên Hệ',      id: 'contact'  },
-];
+import { useLanguage } from '@/i18n/LanguageContext';
+import { LanguageSelector } from '@/components/forms/LanguageSelector';
 
 /** Smooth-scroll to a section, accounting for the fixed header height */
 function scrollTo(id: string) {
@@ -21,10 +16,18 @@ function scrollTo(id: string) {
 }
 
 export function LandingHeader({ user }: { user?: { email: string; premium_tier: string } | null }) {
+    const { t } = useLanguage();
     const [isScrolled, setIsScrolled]         = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen]  = useState(false);
     const [activeSection, setActiveSection]    = useState('');
     const [clicking, setClicking]              = useState('');
+
+    const NAV_LINKS = [
+        { name: t('landing.nav.features') || 'Features',     id: 'features' },
+        { name: t('landing.nav.profiles') || 'HUD Profiles', id: 'profiles' },
+        { name: t('landing.nav.pricing') || 'Pricing',      id: 'pricing'  },
+        { name: t('landing.nav.contact') || 'Contact',      id: 'contact'  },
+    ];
 
     // Pill indicator positioning
     const navRef   = useRef<HTMLDivElement>(null);
@@ -136,13 +139,17 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
 
                     <div className="h-4 w-px bg-white/8 mx-3 relative z-10" />
 
+                    <div className="relative z-10 mr-4">
+                        <LanguageSelector />
+                    </div>
+
                     {user ? (
                         <Link
                             href="/dashboard"
                             className="relative z-10 flex items-center gap-2 bg-white/4 border border-white/8 text-white/60 text-sm font-bold px-5 py-2 rounded-full hover:bg-white/8 hover:text-white/80 transition-all"
                         >
                             <LayoutDashboard className="w-4 h-4 text-white/40" />
-                            Dashboard
+                            {t('landing.nav.dashboard') || 'Dashboard'}
                         </Link>
                     ) : (
                         <Link
@@ -150,7 +157,7 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
                             className="relative z-10 flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-sm font-bold px-6 py-2 rounded-full hover:opacity-90 hover:scale-[1.02] transition-all duration-200"
                         >
                             <LayoutDashboard className="w-4 h-4" />
-                            Dashboard
+                            {t('landing.nav.dashboard') || 'Dashboard'}
                         </Link>
                     )}
                 </nav>
@@ -181,14 +188,17 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
                             {link.name}
                         </button>
                     ))}
-                    <div className="pt-2 border-t border-white/6 mt-1">
+                    <div className="pt-2 border-t border-white/6 mt-1 flex flex-col gap-2">
+                        <div className="flex justify-end pr-2 mb-2">
+                            <LanguageSelector />
+                        </div>
                         {user ? (
                             <Link href="/dashboard" className="flex items-center justify-center gap-2 bg-white/6 text-white/70 font-bold py-3 rounded-xl text-sm" onClick={() => setMobileMenuOpen(false)}>
-                                Dashboard
+                                {t('landing.nav.dashboard') || 'Dashboard'}
                             </Link>
                         ) : (
                             <Link href="/dashboard" className="flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold py-3 rounded-xl text-sm" onClick={() => setMobileMenuOpen(false)}>
-                                Dashboard
+                                {t('landing.nav.dashboard') || 'Dashboard'}
                             </Link>
                         )}
                     </div>

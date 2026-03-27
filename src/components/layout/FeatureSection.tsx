@@ -3,21 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { useReveal } from '@/hooks/useReveal';
-
-const PAIN_POINTS = [
-    { text: '"Chắc nó bluff" → call → mất tiền', fix: 'Vault tính xác suất cho bạn' },
-    { text: 'Học GTO xong vào bàn vẫn đánh tâm linh', fix: 'Review tự động sau mỗi hand' },
-    { text: 'Không biết thằng nào là ATM, thằng nào là CHỐT', fix: 'HUD Player Profiling tức thì' },
-];
-
-const FEATURES = [
-    { title: 'Quyết Định < 100ms',          desc: 'Crop ảnh bàn chơi → paste → nhận Call/Fold + range + plan chi tiết. Không cần căng não.' },
-    { title: 'HUD "Bóc Bài" Đối Thủ',        desc: 'Panel riêng: Whale, Reg, hay bạn tự troll mình. Gợi ý exploit cụ thể, không "tùy tình huống".' },
-    { title: 'Càng Chơi Càng Hiểu Hơn',      desc: 'Vault nhớ đối thủ, nhớ leak của bạn, auto-adjust. Bạn hôm sau ≠ bạn hôm nay.' },
-    { title: 'Team AI Có Cá Tính Riêng',      desc: 'Không phải 1 AI nhàm chán. Là team pro mỗi thằng mỗi tính cách — không biết tilt, không biết mệt.' },
-    { title: 'Giảm Leak, Không Đốt Chip Ngu', desc: 'System sửa bạn mỗi ngày — không toxic nhưng cũng không nương tay.' },
-    { title: 'GTO Baseline + Exploit HYBRID', desc: 'GTO cho khung, exploit để hốt tiền, memory để không quên thằng nào ngu.' },
-];
+import { useLanguage } from '@/i18n/LanguageContext';
 
 function RevealBlock({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
     const { ref, visible } = useReveal();
@@ -39,6 +25,22 @@ export function FeatureSection() {
     const hudHead = useReveal();
     const featureHead = useReveal();
     const featureGrid = useReveal();
+    const { t } = useLanguage();
+
+    const PAIN_POINTS = [
+        { text: '"Chắc nó bluff" → call → mất tiền', fix: 'Vault tính xác suất cho bạn' },
+        { text: 'Học GTO xong vào bàn vẫn đánh tâm linh', fix: 'Review tự động sau mỗi hand' },
+        { text: 'Không biết thằng nào là ATM, thằng nào là CHỐT', fix: 'HUD Player Profiling tức thì' },
+    ];
+    
+    const FEATURES = [
+        { title: t('landing.features.f1_title') || 'Quyết Định < 100ms',          desc: t('landing.features.f1_desc') || 'Crop ảnh bàn chơi → paste → nhận Call/Fold + range + plan chi tiết. Không cần căng não.' },
+        { title: t('landing.features.f2_title') || 'HUD "Bóc Bài" Đối Thủ',        desc: t('landing.features.f2_desc') || 'Panel riêng: Whale, Reg, hay bạn tự troll mình. Gợi ý exploit cụ thể, không "tùy tình huống".' },
+        { title: t('landing.features.f3_title') || 'AI Tuning (Tính Năng Mới)',      desc: t('landing.features.f3_desc') || 'Tùy biến AI hoàn toàn. Ép AI trả lời kiểu bảo thủ (GTO) hay điên cuồng (Max Exploit) theo ý bạn bằng các prompt cực mạnh.' },
+        { title: t('landing.features.f4_title') || 'Team AI Có Cá Tính Riêng',      desc: t('landing.features.f4_desc') || 'Không phải 1 AI nhàm chán. Là team pro mỗi thằng mỗi tính cách — không biết tilt, không biết mệt.' },
+        { title: t('landing.features.f5_title') || 'Giảm Leak, Không Đốt Chip Ngu', desc: t('landing.features.f5_desc') || 'System sửa bạn mỗi ngày — không toxic nhưng cũng không nương tay.' },
+        { title: t('landing.features.f6_title') || 'GTO Baseline + Exploit HYBRID', desc: t('landing.features.f6_desc') || 'GTO cho khung, exploit để hốt tiền, memory để không quên thằng nào ngu.' },
+    ];
 
     return (
         <>
@@ -51,15 +53,15 @@ export function FeatureSection() {
                     >
                         {/* Overline — chìm */}
                         <p className="text-white/25 text-xs font-bold uppercase tracking-[0.28em] mb-3">
-                            Pain Point — Nói thẳng, hơi đau nhưng thật
+                            {t('landing.features.pain_overline') || "Pain Point — Nói thẳng, hơi đau nhưng thật"}
                         </p>
                         {/* H2 — nổi */}
-                        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
-                            Bạn đang gamble mà <span className="text-yellow-400">không có edge</span>.
-                        </h2>
+                        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight"
+                            dangerouslySetInnerHTML={{ __html: t('landing.features.pain_h2') || "Bạn đang gamble mà <span className=\"text-yellow-400\">không có edge</span>." }}
+                        />
                         {/* Sub — đọc được */}
                         <p className="text-white/50 mt-3 max-w-lg text-sm leading-relaxed">
-                            Donate đều mỗi ngày, đuối dần và tilt. Thay vì ném tiền cho cá, hãy đưa vào két sắt này.
+                            {t('landing.features.pain_sub') || "Donate đều mỗi ngày, đuối dần và tilt. Thay vì ném tiền cho cá, hãy đưa vào két sắt này."}
                         </p>
                     </div>
 
@@ -93,16 +95,19 @@ export function FeatureSection() {
                             >
                                 {/* Overline — chìm */}
                                 <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">
-                                    UX — Lười vẫn chơi như pro
+                                    {t('landing.features.ux_overline') || "UX — Lười vẫn chơi như pro"}
                                 </p>
                                 {/* H3 — nổi */}
-                                <h3 className="text-2xl sm:text-3xl font-black text-white mb-6 leading-tight">
-                                    Bạn làm 3 thứ.<br />
-                                    <span className="text-yellow-400">Vault làm phần còn lại.</span>
-                                </h3>
+                                <h3 className="text-2xl sm:text-3xl font-black text-white mb-6 leading-tight"
+                                    dangerouslySetInnerHTML={{ __html: t('landing.features.ux_h3') || "Bạn làm 3 thứ.<br/><span className=\"text-yellow-400\">Vault làm phần còn lại.</span>" }}
+                                />
                                 {/* Steps: số chìm, text đọc được */}
                                 <div className="space-y-3 mb-8">
-                                    {['Crop ảnh bàn chơi (flop / turn / action)', 'Paste vào app', 'Liếc màn hình phụ'].map((action, i) => (
+                                    {[
+                                        t('landing.ux_steps.step1') || 'Crop ảnh bàn chơi (flop / turn / action)',
+                                        t('landing.ux_steps.step2') || 'Paste vào app',
+                                        t('landing.ux_steps.step3') || 'Liếc màn hình phụ'
+                                    ].map((action, i) => (
                                         <div key={i} className="flex items-center gap-4">
                                             <span className="text-base font-black text-white/15 w-8 shrink-0 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
                                             <p className="text-white/60 text-sm">{action}</p>
@@ -121,9 +126,9 @@ export function FeatureSection() {
                                     </div>
                                     <div className="text-white/20 pt-1">Range:</div>
                                     {/* Call range = xanh lá */}
-                                    <div className="text-emerald-400/60">– Call: KQ, KJ, draw tốt</div>
+                                    <div className="text-emerald-400/60">– Call: {t('landing.term.call') || 'KQ, KJ, draw tốt'}</div>
                                     {/* Fold range = đỏ nhạt */}
-                                    <div className="text-rose-400/50">– Fold: air, weak pair</div>
+                                    <div className="text-rose-400/50">– Fold: {t('landing.term.fold') || 'air, weak pair'}</div>
                                     <div className="text-white/20 pt-1">Plan:</div>
                                     <div className="text-white/40">– XR strong  •  Brick → call ~%</div>
                                     <div className="text-white/40">– Scare → fold ~%  •  Improve → value ~% pot</div>
@@ -181,34 +186,33 @@ export function FeatureSection() {
                             >
                                 {/* Overline — chìm */}
                                 <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">
-                                    HUD — Bảng vàng "bóc bài"
+                                    {t('landing.hud.overline') || "HUD — Bảng vàng \"bóc bài\""}
                                 </p>
                                 {/* H3 — nổi */}
-                                <h3 className="text-2xl sm:text-3xl font-black text-white mb-6 leading-tight">
-                                    Không nằm trên bàn.<br />
-                                    <span className="text-yellow-400">Panel riêng, nhìn cái hiểu luôn.</span>
-                                </h3>
+                                <h3 className="text-2xl sm:text-3xl font-black text-white mb-6 leading-tight"
+                                    dangerouslySetInnerHTML={{ __html: t('landing.hud.h3') || "Không nằm trên bàn.<br/><span class=\"text-yellow-400\">Panel riêng, nhìn cái hiểu luôn.</span>" }}
+                                />
                                 <div className="space-y-3">
                                     {[
                                         {
-                                            label: 'Top Whales', sub: 'Máy ATM di động',
-                                            stats: ['Overfold turn: VERY HIGH', 'Call river: TOO MUCH'],
-                                            tip: 'Bluff turn nhiều hơn  •  Value bet mỏng river',
-                                            statColor: 'text-rose-400/70',   /* đỏ = điểm yếu của họ */
+                                            label: t('landing.hud.whales_label') || 'Top Whales', sub: t('landing.hud.whales_sub') || 'Máy ATM di động',
+                                            stats: [t('landing.hud.whales_s1') || 'Overfold turn: VERY HIGH', t('landing.hud.whales_s2') || 'Call river: TOO MUCH'],
+                                            tip: t('landing.hud.whales_tip') || 'Bluff turn nhiều hơn  •  Value bet mỏng river',
+                                            statColor: 'text-rose-400/70',
                                             labelColor: 'text-amber-300',
                                         },
                                         {
-                                            label: 'Top Regs',   sub: 'Ăn cơm bằng edge',
-                                            stats: ['Underbluff river: HIGH', 'Overfold vs pressure: HIGH'],
-                                            tip: 'Overbluff river  •  Đè turn mạnh',
-                                            statColor: 'text-sky-400/60',    /* xanh da trời = neutral/reg */
+                                            label: t('landing.hud.regs_label') || 'Top Regs', sub: t('landing.hud.regs_sub') || 'Ăn cơm bằng edge',
+                                            stats: [t('landing.hud.regs_s1') || 'Underbluff river: HIGH', t('landing.hud.regs_s2') || 'Overfold vs pressure: HIGH'],
+                                            tip: t('landing.hud.regs_tip') || 'Overbluff river  •  Đè turn mạnh',
+                                            statColor: 'text-sky-400/60',
                                             labelColor: 'text-sky-300',
                                         },
                                         {
-                                            label: 'Bạn',        sub: 'Đừng tự troll mình',
-                                            stats: ['Overcall river: DETECTED', 'Underbluff: CONFIRMED'],
-                                            tip: 'System sửa bạn mỗi ngày — không nương tay 😄',
-                                            statColor: 'text-emerald-400/60', /* xanh lá = improvement */
+                                            label: t('landing.hud.you_label') || 'Bạn', sub: t('landing.hud.you_sub') || 'Đừng tự troll mình',
+                                            stats: [t('landing.hud.you_s1') || 'Overcall river: DETECTED', t('landing.hud.you_s2') || 'Underbluff: CONFIRMED'],
+                                            tip: t('landing.hud.you_tip') || 'System sửa bạn mỗi ngày — không nương tay 😄',
+                                            statColor: 'text-emerald-400/60',
                                             labelColor: 'text-emerald-300',
                                         },
                                     ].map((item, i) => (
@@ -243,16 +247,17 @@ export function FeatureSection() {
                         className={`reveal mb-12 ${featureHead.visible ? 'is-visible' : ''}`}
                     >
                         {/* Overline — chìm */}
-                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">Kho Kiến Thức</p>
+                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">
+                            {t('landing.what_is.overline') || "Kho Kiến Thức"}
+                        </p>
                         {/* H2 — nổi */}
                         <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
-                            Villiant Vault là gì?
+                            {t('landing.what_is.h2') || "Villiant Vault là gì?"}
                         </h2>
                         {/* Sub — đọc được */}
-                        <p className="text-white/50 mt-3 max-w-lg text-sm leading-relaxed">
-                            Không phải tool. Không phải solver. Không phải HUD VPIP/PFR rối não.{' '}
-                            <span className="text-white font-semibold">2026 rồi</span> — là két sắt + bộ não + team toàn pro không biết tilt.
-                        </p>
+                        <p className="text-white/50 mt-3 max-w-lg text-sm leading-relaxed"
+                           dangerouslySetInnerHTML={{ __html: t('landing.what_is.sub') || "Không phải tool. Không phải solver. Không phải HUD VPIP/PFR rối não. <span class=\"text-white font-semibold\">2026 rồi</span> — là két sắt + bộ não + team toàn pro không biết tilt." }}
+                        />
                     </div>
                     <div
                         ref={featureGrid.ref as React.RefObject<HTMLDivElement>}

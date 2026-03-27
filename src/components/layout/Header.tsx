@@ -8,6 +8,8 @@ import { Modal } from '@/components/ui/Modal';
 import { TemplateManagerModal } from '@/components/forms/TemplateManagerModal';
 import { ProfileHUDModal } from '@/components/layout/ProfileHUDModal';
 import { useLoginModal } from '@/context/LoginModalContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { LanguageSelector } from '@/components/forms/LanguageSelector';
 
 export function Header({
     onSettingsClick: externalSettingsClick,
@@ -21,13 +23,14 @@ export function Header({
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const pathname = usePathname();
     const { openLogin } = useLoginModal();
+    const { t } = useLanguage();
 
     const navLinks = [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Players', href: '/players', icon: User },
-        { name: 'Hand Analyzer', href: '/analyzer', icon: Activity },
-        { name: 'History', href: '/history', icon: History },
-        { name: 'Pricing', href: '/pricing', icon: CreditCard },
+        { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
+        { name: t('nav.players'), href: '/players', icon: User },
+        { name: t('nav.hands'), href: '/analyzer', icon: Activity },
+        { name: t('nav.history'), href: '/history', icon: History },
+        { name: t('nav.admin'), href: '/admin', icon: CreditCard },
     ];
 
     const isActive = (href: string) => pathname === href;
@@ -72,6 +75,7 @@ export function Header({
                 </div>
 
                 <div className="flex items-center space-x-2 md:space-x-3">
+                    <LanguageSelector />
                     {/* Settings gear → opens AITuningModal (same as Dashboard) */}
                     <button
                         onClick={handleSettingsClick}
@@ -145,7 +149,7 @@ export function Header({
                             className="flex items-center gap-3 px-4 py-3 min-h-[44px] text-sm text-gray-300 hover:text-gold hover:bg-gold/5 rounded-xl transition-all border-t border-white/5 mt-2 pt-4"
                         >
                             <Settings className="w-5 h-5 text-gray-400" />
-                            Settings
+                            {t('nav.settings')}
                         </button>
                     </div>
                 </div>
@@ -155,7 +159,7 @@ export function Header({
             <Modal
                 isOpen={isAITuningOpen}
                 onClose={() => setIsAITuningOpen(false)}
-                title="Settings"
+                title={t('settings.title')}
                 size="xl"
             >
                 <TemplateManagerModal onClose={() => setIsAITuningOpen(false)} />

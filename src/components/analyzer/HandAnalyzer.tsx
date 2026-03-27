@@ -9,6 +9,7 @@ import { API } from "@/lib/api";
 import { createNote } from "@/app/actions";
 
 import { useLoginModal } from "@/context/LoginModalContext";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ function compressImage(file: Blob): Promise<string> {
         const img = new Image();
         img.onload = () => {
             let { width, height } = img;
-            // Cap max dimension to reduce payload
+            // Cap max dimension to reduce Base64 payload without losing text sharpness
             if (width > MAX_DIM || height > MAX_DIM) {
                 const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
                 width = Math.round(width * ratio);
@@ -62,7 +63,11 @@ function compressImage(file: Blob): Promise<string> {
             const ctx = canvas.getContext('2d');
             if (!ctx) { reject(new Error('Canvas not supported')); return; }
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+            
+            // CRITICAL: Must use 'image/png' (lossless). 
+            // JPEG artifacts cause OpenCV template matching in engine.py to fail
+            // which triggers the extremely slow multi-scale Binarize Fallback (adding ~10s delay).
+            resolve(canvas.toDataURL('image/png'));
         };
         img.onerror = reject;
         img.src = URL.createObjectURL(file);
@@ -684,6 +689,7 @@ export function HandAnalyzer() {
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { openLogin } = useLoginModal();
+    const { t } = useLanguage();
 useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
         const items = e.clipboardData?.items;
@@ -783,13 +789,13 @@ const streetDefs: { key: string; label: string; cards: string[]; boardStart: num
 
     { key: "blinds_ante", label: "BLINDS & ANTE", cards: [], boardStart: 0 },
 
-    { key: "preflop", label: "PRE-FLOP", cards: [], boardStart: 0 },
+    { key: "preflop", label: t('hands.preflop') || "PRE-FLOP", cards: [], boardStart: 0 },
 
-    { key: "flop", label: "FLOP", cards: board.slice(0, 3), boardStart: 0 },
+    { key: "flop", label: t('hands.flop') || "FLOP", cards: board.slice(0, 3), boardStart: 0 },
 
-    { key: "turn", label: "TURN", cards: board.slice(3, 4), boardStart: 3 },
+    { key: "turn", label: t('hands.turn') || "TURN", cards: board.slice(3, 4), boardStart: 3 },
 
-    { key: "river", label: "RIVER", cards: board.slice(4, 5), boardStart: 4 },
+    { key: "river", label: t('hands.river') || "RIVER", cards: board.slice(4, 5), boardStart: 4 },
 
 ];
 

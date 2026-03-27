@@ -1,0 +1,157 @@
+{
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "loading": "Đang tải...",
+    "success": "Thành công",
+    "error": "Lỗi"
+  },
+  "nav": {
+    "dashboard": "Bảng điều khiển",
+    "players": "Người chơi",
+    "hands": "Ván bài",
+    "settings": "Cài đặt",
+    "admin": "Quản trị viên",
+    "logout": "Đăng xuất",
+    "login": "Đăng nhập / Đăng ký"
+  },
+  "settings": {
+    "title": "Cài đặt ứng dụng",
+    "language": "Ngôn ngữ",
+    "language_en": "English",
+    "language_vi": "Tiếng Việt",
+    "save_language": "Lưu ngôn ngữ đã chọn",
+    "ui_language": "Ngôn ngữ giao diện"
+  },
+  "player": {
+    "live": "Trực tiếp",
+    "back": "Quay lại danh sách",
+    "tactical_ai": "Phân tích chiến thuật AI",
+    "exploit_engine": "Công cụ khai thác",
+    "strategy_analyst": "Phân tích chiến lược",
+    "system_analyzing": "Hệ thống đang phân tích...",
+    "cooldown": "Chờ"
+  },
+  "hands": {
+    "preflop": "Preflop",
+    "flop": "Flop",
+    "turn": "Turn",
+    "river": "River",
+    "showdown": "Showdown",
+    "general": "Chung",
+    "notes": "Ghi chú",
+    "add_note": "Thêm ghi chú",
+    "adding": "Đang thêm..."
+  },
+  "landing": {
+    "nav": {
+      "features": "Tính Năng",
+      "profiles": "Phân Tích HUD",
+      "pricing": "Bảng Giá",
+      "contact": "Liên Hệ",
+      "dashboard": "Dashboard"
+    },
+    "hero": {
+      "badge": "Két Sắt Poker Đầu Tiên của Bạn",
+      "h1_prefix": "Save Money.",
+      "h1_highlight": "Make Profit.",
+      "h1_suffix": "No Tilt.",
+      "subtitle": "Villiant Vault là <span className=\"text-white font-semibold\">bộ não AI</span> tại bàn — không phải solver, lối chơi linh hoạt, <span className=\"text-white/80 font-semibold\">bạn hôm sau ≠ bạn hôm nay</span>.",
+      "quote": "\"Nắm giữ điểm yếu + kho kiến thức và bảo vệ chén cơm của bạn khỏi kẻ xấu\"",
+      "cta_main": "Vào Dashboard",
+      "cta_sub": "Xem Giá",
+      "trust": "Không cần căng não · Lên trình nhanh như HT2",
+      "badge_ai": "AI đang canh gác tiền của bạn",
+      "scroll": "Khám phá"
+    },
+    "features": {
+      "pain_overline": "Pain Point — Nói thẳng, hơi đau nhưng thật",
+      "pain_h2": "Bạn đang gamble mà <span className=\"text-yellow-400\">không có edge</span>.",
+      "pain_sub": "Donate đều mỗi ngày, đuối dần và tilt. Thay vì ném tiền cho cá, hãy đưa vào két sắt này.",
+      "ux_overline": "UX — Lười vẫn chơi như pro",
+      "ux_h3": "Bạn làm 3 thứ.<br/><span className=\"text-yellow-400\">Vault làm phần còn lại.</span>",
+      "f1_title": "Quyết Định < 100ms",
+      "f1_desc": "Crop ảnh bàn chơi → paste → nhận Call/Fold + range + plan chi tiết. Không cần căng não.",
+      "f2_title": "HUD \"Bóc Bài\"",
+      "f2_desc": "Panel riêng: Whale, Reg, hay bạn tự troll mình. Gợi ý exploit cụ thể.",
+      "f3_title": "AI Tuning (Tính Năng Mới)",
+      "f3_desc": "Tùy biến AI hoàn toàn. Ép AI trả lời kiểu bảo thủ (GTO) hay điên cuồng (Max Exploit) theo ý bạn bằng các prompt cực mạnh.",
+      "f4_title": "Team AI Đa Nhân Cách",
+      "f4_desc": "Là một team pro mỗi thằng một tính cách — không biết tilt, không biết mệt.",
+      "f5_title": "Giảm Leak Auto",
+      "f5_desc": "System sửa bạn mỗi ngày — không toxic nhưng cũng không nương tay.",
+      "f6_title": "Hybrid GTO+Exploit",
+      "f6_desc": "GTO cho khung, exploit để hốt tiền, memory bảo vệ bankroll."
+    },
+    "ux_steps": {
+      "step1": "Crop ảnh bàn chơi (flop / turn / action)",
+      "step2": "Paste vào app",
+      "step3": "Liếc màn hình phụ"
+    },
+    "term": {
+      "call": "KQ, KJ, draw tốt",
+      "fold": "air, weak pair"
+    },
+    "hud": {
+      "overline": "HUD — Bảng vàng \"bóc bài\"",
+      "h3": "Không nằm trên bàn.<br/><span class=\"text-yellow-400\">Panel riêng, nhìn cái hiểu luôn.</span>",
+      "whales_label": "Top Whales",
+      "whales_sub": "Máy ATM di động",
+      "whales_s1": "Overfold turn: VERY HIGH",
+      "whales_s2": "Call river: TOO MUCH",
+      "whales_tip": "Bluff turn nhiều hơn • Value bet mỏng river",
+      "regs_label": "Top Regs",
+      "regs_sub": "Ăn cơm bằng edge",
+      "regs_s1": "Underbluff river: HIGH",
+      "regs_s2": "Overfold vs pressure: HIGH",
+      "regs_tip": "Overbluff river • Đè turn mạnh",
+      "you_label": "Bạn",
+      "you_sub": "Đừng tự troll mình",
+      "you_s1": "Overcall river: DETECTED",
+      "you_s2": "Underbluff: CONFIRMED",
+      "you_tip": "System sửa bạn mỗi ngày — không nương tay 😄"
+    },
+    "what_is": {
+      "overline": "Kho Kiến Thức",
+      "h2": "Villiant Vault là gì?",
+      "sub": "Không phải tool. Không phải solver. Không phải HUD VPIP/PFR rối não. <span class=\"text-white font-semibold\">2026 rồi</span> — là két sắt + bộ não + team toàn pro không biết tilt."
+    },
+    "pricing_section": {
+      "overline": "Giá — Rõ, Không Úp Mở",
+      "h2": "Rẻ hơn <span class=\"text-yellow-400\">một cú call ngoo ở river</span>.",
+      "sub": "Đầu tư vào thứ sẽ tự trả tiền cho chính nó ngay trong session đầu tiên.",
+      "tier1_name": "Grinder",
+      "tier1_desc": "Dành cho người chơi mài edge.",
+      "tier1_price": "$29",
+      "tier1_f1": "Cố vấn AI chiến thuật",
+      "tier1_f2": "Phân tích HUD cơ bản",
+      "tier1_f3": "5.000+ hand không giới hạn",
+      "tier1_btn": "Bắt đầu dùng thử",
+      "tier2_name": "High Roller",
+      "tier2_desc": "Dành cho việc nghiền nát limit.",
+      "tier2_price": "$89",
+      "tier2_f1": "Mọi thứ của Grinder",
+      "tier2_f2": "Engine Exploit Sâu",
+      "tier2_f3": "Max GTO/Exploit Tuning AI",
+      "tier2_btn": "Lên High Roller",
+      "addon_hands": "50K",
+      "addon_text": "hand · Không cần subscribe",
+      "faq": "Hỏi Nhanh",
+      "q1": "Có mệt không?",
+      "a1": "Không — để VV nghĩ hộ, bạn bấm theo.",
+      "q2": "Có tilt không?",
+      "a2": "VV không biết \"thua 3 hand liền là cay\".",
+      "q3": "Không rành poker?",
+      "a3": "Biết luật là đủ. VV kéo bạn lên dần."
+    },
+    "contact": {
+      "overline": "Take Action",
+      "h2": "Bạn không phải con bạc — bạn là <span class=\"text-yellow-400 font-black\">DOANH NHÂN</span>.",
+      "sub": "Hãy ngừng việc ném tiền qua cửa sổ và bắt đầu quản lý bankroll như một danh mục đầu tư nghiêm túc.",
+      "btn": "Mở Két Sắt Ngay",
+      "note": "Không cần credit card để bắt đầu. Hủy bất kỳ lúc nào."
+    }
+  }
+}

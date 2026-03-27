@@ -487,3 +487,28 @@ export async function getAIPreviewAction(data: any): Promise<any> {
         return null;
     }
 }
+
+/**
+ * Server Action: update user language.
+ */
+export async function updateUserLanguage(language: string) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    if (!token) return { success: false, error: "Not authenticated" };
+
+    try {
+        const res = await fetch(`${API.base}/api/users/profile`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ language })
+        });
+        const json = await res.json();
+        return json;
+    } catch (err) {
+        console.error("Failed to update user language", err);
+        return { success: false, error: "Network error" };
+    }
+}

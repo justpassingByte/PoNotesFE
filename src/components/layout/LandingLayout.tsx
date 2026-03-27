@@ -1,5 +1,6 @@
 import React from 'react';
 import { LandingHeader } from './LandingHeader';
+import { LandingFooter } from './LandingFooter';
 import { getAuthUser } from '@/lib/auth';
 
 export async function LandingLayout({ children }: { children: React.ReactNode }) {
@@ -30,19 +31,7 @@ export async function LandingLayout({ children }: { children: React.ReactNode })
                 {children}
             </main>
 
-            <footer className="relative z-10 border-t border-white/5 py-10 px-6 mt-8">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                    <span className="font-bold tracking-widest text-sm text-white/50">VILLIANT VAULT &copy; 2026</span>
-                    <div className="flex gap-6 text-xs text-gray-700">
-                        <a href="#" className="hover:text-gray-400 transition-colors">Chính Sách Bảo Mật</a>
-                        <a href="#" className="hover:text-gray-400 transition-colors">Điều Khoản</a>
-                        <a href="#" className="hover:text-gray-400 transition-colors">Cookies</a>
-                    </div>
-                    <div className="text-xs text-gray-700">
-                        Két sắt AI đầu tiên cho poker Việt Nam.
-                    </div>
-                </div>
-            </footer>
+            <LandingFooter />
         </div>
     );
 }

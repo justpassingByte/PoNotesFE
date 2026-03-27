@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useReveal } from '@/hooks/useReveal';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export function HeroSection() {
     const badge = useReveal();
@@ -11,6 +12,7 @@ export function HeroSection() {
     const sub = useReveal();
     const ctas = useReveal();
     const img = useReveal();
+    const { t } = useLanguage();
 
     return (
 
@@ -25,7 +27,7 @@ export function HeroSection() {
                         ref={badge.ref as React.RefObject<HTMLParagraphElement>}
                         className={`reveal text-white/30 text-xs font-bold uppercase tracking-[0.28em] mb-7 ${badge.visible ? 'is-visible' : ''}`}
                     >
-                        Két Sắt Poker Đầu Tiên của Bạn
+                        {t('landing.hero.badge') || "Két Sắt Poker Đầu Tiên của Bạn"}
                     </p>
 
                     {/* Headline — nổi nhất */}
@@ -34,7 +36,7 @@ export function HeroSection() {
                         className={`reveal text-5xl sm:text-7xl font-black text-white leading-[1.05] tracking-tight mb-6 ${headline.visible ? 'is-visible' : ''}`}
                         style={{ transitionDelay: '80ms' }}
                     >
-                        Giữ Tiền.{' '}
+                        {t('landing.hero.h1_prefix') || "Giữ Tiền."}{' '}
                         <br className="hidden sm:block" />
                         <span style={{
                             background: 'linear-gradient(95deg, #ffc400 0%, #ffe680 50%, #ffc400 100%)',
@@ -42,10 +44,10 @@ export function HeroSection() {
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
                         }}>
-                            Tạo Tiền.
+                            {t('landing.hero.h1_highlight') || "Tạo Tiền."}
                         </span>
                         <br />
-                        Không Tilt.
+                        {t('landing.hero.h1_suffix') || "Không Tilt."}
                     </h1>
 
                     <div
@@ -54,14 +56,12 @@ export function HeroSection() {
                         style={{ transitionDelay: '160ms' }}
                     >
                         {/* Sub-headline — đọc được */}
-                        <p className="text-base sm:text-lg text-white/55 max-w-lg leading-relaxed mb-3 mx-auto lg:mx-0">
-                            Villiant Vault là <span className="text-white font-semibold">bộ não AI</span> tại bàn —
-                            không phải solver, lối chơi linh hoạt,{' '}
-                            <span className="text-white/80 font-semibold">bạn hôm sau ≠ bạn hôm nay</span>.
-                        </p>
+                        <p className="text-base sm:text-lg text-white/55 max-w-lg leading-relaxed mb-3 mx-auto lg:mx-0"
+                           dangerouslySetInnerHTML={{ __html: t('landing.hero.subtitle') || "Villiant Vault là <span className=\"text-white font-semibold\">bộ não AI</span> tại bàn — không phải solver, lối chơi linh hoạt, <span className=\"text-white/80 font-semibold\">bạn hôm sau ≠ bạn hôm nay</span>." }}
+                        />
                         {/* Tagline — chìm hẳn */}
                         <p className="text-sm text-white/25 italic mb-10 mx-auto lg:mx-0">
-                            "Nắm giữ điểm yếu + kho kiến thức và bảo vệ chén cơm của bạn khỏi kẻ xấu"
+                            {t('landing.hero.quote') || "\"Nắm giữ điểm yếu + kho kiến thức và bảo vệ chén cơm của bạn khỏi kẻ xấu\""}
                         </p>
                     </div>
 
@@ -76,7 +76,7 @@ export function HeroSection() {
                             className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl font-black text-black text-sm transition-all duration-200 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
                             style={{ background: 'linear-gradient(135deg, #ffc400, #ffdd55)' }}
                         >
-                            Vào Dashboard
+                            {t('landing.hero.cta_main') || "Vào Dashboard"}
                         </Link>
                         <Link
                             href="#pricing"
@@ -88,7 +88,7 @@ export function HeroSection() {
                             }}
                             className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl font-bold text-white/50 text-sm bg-white/4 border border-white/10 hover:bg-white/8 hover:text-white/80 transition-all duration-200"
                         >
-                            Xem Giá
+                            {t('landing.hero.cta_sub') || "Xem Giá"}
                         </Link>
                     </div>
 
@@ -96,12 +96,8 @@ export function HeroSection() {
                     <div
                         className={`reveal flex flex-wrap gap-6 mt-9 justify-center lg:justify-start text-[11px] font-bold text-white/20 uppercase tracking-widest ${ctas.visible ? 'is-visible' : ''}`}
                         style={{ transitionDelay: '320ms' }}
-                    >
-                        <span>Không cần căng não</span>
-                        <span className="text-white/10">·</span>
-                        <span>Lên trình nhanh như HT2</span>
-                    </div>
-
+                        dangerouslySetInnerHTML={{ __html: t('landing.hero.trust')?.replace(' · ', ' <span class="text-white/10">·</span> ') || "Không cần căng não <span class=\"text-white/10\">·</span> Lên trình nhanh như HT2" }}
+                    />
                 </div>
 
                 {/* Right image */}
@@ -126,7 +122,7 @@ export function HeroSection() {
                         {/* Badge bên dưới ảnh — chìm */}
                         <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-white/8 text-[11px] font-bold text-white/25 whitespace-nowrap z-20 backdrop-blur">
                             <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/50 animate-pulse" />
-                            AI đang canh gác tiền của bạn
+                            {t('landing.hero.badge_ai') || "AI đang canh gác tiền của bạn"}
                         </div>
                     </div>
                 </div>
@@ -143,7 +139,7 @@ export function HeroSection() {
                 aria-label="Scroll down"
             >
                 <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.25em] group-hover:text-white/50 transition-colors duration-200">
-                    Khám phá
+                    {t('landing.hero.scroll') || "Khám phá"}
                 </span>
                 <div className="w-6 h-10 rounded-full border border-white/12 flex items-start justify-center pt-2 group-hover:border-white/30 transition-colors duration-200">
                     <div className="w-1 h-2 rounded-full bg-white/25 group-hover:bg-yellow-400/60 animate-bounce transition-colors duration-200" />

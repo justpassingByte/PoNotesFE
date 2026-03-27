@@ -9,13 +9,17 @@ export const metadata = {
   description: "Giảm leak, tăng edge, exploit đúng người đúng lúc. Villiant Vault — két sắt AI đầu tiên cho poker của bạn.",
 };
 
+import { LanguageProvider } from "@/i18n/LanguageContext";
+
 export default function LandingPage() {
   return (
-    <LandingLayout>
-      <HeroSection />
-      <FeatureSection />
-      <PricingSection />
-      <ContactSection />
-    </LandingLayout>
+    <LanguageProvider>
+      <LandingLayout>
+        <HeroSection />
+        <FeatureSection />
+        <PricingSection />
+        <ContactSection />
+      </LandingLayout>
+    </LanguageProvider>
   );
 }

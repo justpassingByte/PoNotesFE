@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { Header } from "@/components/layout/Header";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { API, apiFetch, apiPost, apiDelete } from "@/lib/api";
 
 const STRATEGIES: Record<string, string[]> = {
@@ -133,6 +134,8 @@ export function PlayerProfileClient({
     const [isSolving, setIsSolving] = useState(false);
     const [solveError, setSolveError] = useState<string | null>(null);
     const [isSettingsOpen, setSettingsOpen] = useState(false);
+    
+    const { t } = useLanguage();
 
     // Refresh player data via Server Action
     const refreshPlayer = async () => {
@@ -287,7 +290,7 @@ export function PlayerProfileClient({
                         className="flex items-center text-gray-400 hover:text-white transition-colors group mb-8"
                     >
                         <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                        Back to Players
+                        {t('player.back')}
                     </button>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -298,12 +301,12 @@ export function PlayerProfileClient({
                                 <div className="flex items-center gap-3">
                                     <Brain className="w-6 h-6 text-gray-400" />
                                     <div>
-                                        <h2 className="text-base font-bold text-white tracking-wider uppercase">Tactical AI Analysis</h2>
-                                        <p className="text-xs text-gray-500 font-mono uppercase font-black tracking-widest">Exploit Engine</p>
+                                        <h2 className="text-base font-bold text-white tracking-wider uppercase">{t('player.tactical_ai')}</h2>
+                                        <p className="text-xs text-gray-500 font-mono uppercase font-black tracking-widest">{t('player.exploit_engine')}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Live</span>
+                                    <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">{t('player.live')}</span>
                                     <button onClick={refreshPlayer} className="p-2 text-gray-500 hover:text-white transition-colors">
                                         <RefreshCw className="w-4 h-4" />
                                     </button>
@@ -457,18 +460,18 @@ export function PlayerProfileClient({
                                 {isAnalyzing ? (
                                     <>
                                         <RefreshCw className="w-5 h-5 animate-spin" />
-                                        <span>SYSTEM ANALYZING...</span>
+                                        <span>{t('player.system_analyzing')}</span>
                                     </>
                                 ) : (
                                     cooldown > 0 ? (
                                         <>
                                             <RefreshCw className="w-4 h-4 opacity-50" />
-                                            <span>COOLDOWN: {cooldown}S</span>
+                                            <span>{t('player.cooldown')}: {cooldown}S</span>
                                         </>
                                     ) : (
                                         <>
                                             <Brain className="w-5 h-5" />
-                                            <span>STRATEGY ANALYST</span>
+                                            <span>{t('player.strategy_analyst')}</span>
                                         </>
                                     )
                                 )}
@@ -587,7 +590,7 @@ export function PlayerProfileClient({
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center">
                                         <AlignLeft className="w-4 h-4 text-gray-400 mr-2" />
-                                        <h2 className="text-xs font-bold text-white tracking-wider uppercase">Notes</h2>
+                                        <h2 className="text-xs font-bold text-white tracking-wider uppercase">{t('hands.notes')}</h2>
                                     </div>
                                     <button
                                         onClick={() => setShowAddNote(!showAddNote)}
@@ -626,7 +629,7 @@ export function PlayerProfileClient({
                                             disabled={addingNote || !newNoteContent.trim()}
                                             className="w-full py-2 text-[10px] bg-amber-500 text-black font-bold uppercase tracking-widest rounded-lg hover:bg-amber-400 transition-colors disabled:opacity-50"
                                         >
-                                            {addingNote ? 'Adding...' : 'Add Note'}
+                                            {addingNote ? t('hands.adding') : t('hands.add_note')}
                                         </button>
                                     </div>
                                 )}
