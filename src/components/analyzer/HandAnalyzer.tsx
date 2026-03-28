@@ -43,34 +43,12 @@ interface HandAnalysis {
 
 // ─── Image Compression ──────────────────────────────────────────────────────
 
-const MAX_DIM = 1920;
-const JPEG_QUALITY = 0.7;
-
 function compressImage(file: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-            let { width, height } = img;
-            // Cap max dimension to reduce Base64 payload without losing text sharpness
-            if (width > MAX_DIM || height > MAX_DIM) {
-                const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
-                width = Math.round(width * ratio);
-                height = Math.round(height * ratio);
-            }
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) { reject(new Error('Canvas not supported')); return; }
-            ctx.drawImage(img, 0, 0, width, height);
-            
-            // CRITICAL: Must use 'image/png' (lossless). 
-            // JPEG artifacts cause OpenCV template matching in engine.py to fail
-            // which triggers the extremely slow multi-scale Binarize Fallback (adding ~10s delay).
-            resolve(canvas.toDataURL('image/png'));
-        };
-        img.onerror = reject;
-        img.src = URL.createObjectURL(file);
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
     });
 }
 
