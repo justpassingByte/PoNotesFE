@@ -127,8 +127,8 @@
       "p5_fix": "Automatically weaves notes into real-time strategy",
       "p6_text": "Old HUDs spam raw numbers, creating cognitive overload and bad decisions",
       "p6_fix": "Points out WEAKNESSES & EXPLOITS instantly instead of raw math",
-      "ux_overline": "UX — Play like a pro effortlessly",
-      "ux_h3": "You do 3 things.<br/><span className=\"text-yellow-400\">The Vault does the rest.</span>",
+      "ux_overline": "Hand Analyzer — Review like a Pro",
+      "ux_h3": "Upload hand.<br/><span class=\"text-yellow-400\">AI dissects every mistake.</span>",
       "f1_title": "Decisions < 100ms", "f1_desc": "Crop the table → paste → get Call/Fold + range + detailed plan instantly. No brain damage.",
       "f2_title": "\"X-Ray\" Opponent HUD", "f2_desc": "Dedicated panel: Whale, Reg, or yourself. Get specific exploit suggestions.",
       "f3_title": "AI Tuning (New Feature)", "f3_desc": "Fully customize your AI. Force it to answer conservatively (GTO) or aggressively (Max Exploit) using powerful overriding prompts.",
@@ -137,22 +137,23 @@
       "f6_title": "Hybrid GTO+Exploit", "f6_desc": "GTO for the framework, exploit for the money, memory to protect the bankroll."
     },
     "ux_steps": {
-      "step1": "Crop the table (flop / turn / action)",
-      "step2": "Paste into app",
-      "step3": "Glance at secondary monitor"
+      "step1": "Paste / upload hand history or table screenshot",
+      "step2": "AI analyzes every street — points out leaks & mistakes",
+      "step3": "Get specific exploit strategy for next time"
     },
     "term": {
       "call": "KQ, KJ, good draws",
       "fold": "air, weak pairs"
     },
     "terminal": {
-      "turn": "TURN (vs raise):",
-      "call": "Call:",
-      "fold": "Fold:",
-      "range": "Range:",
-      "plan": "Plan:",
-      "plan_1": "XR strong  •  Brick → call ~%",
-      "plan_2": "Scare → fold ~%  •  Improve → value ~% pot"
+      "header": "AI ANALYSIS OUTPUT:",
+      "mistake": "⚠ TURN — BB check → fold to small bet",
+      "desc": "Too passive, missed river value bet opportunity",
+      "exploit_label": "Exploit Strategy:",
+      "exploit_1": "BET river 75% pot | range: TT+, AQs+ | freq: 80%",
+      "exploit_2": "FOLD turn vs 3x raise | range: weak pairs | freq: 100%",
+      "leak_label": "Leak Detected:",
+      "leak_1": "Passive river play — trigger: check + fold to small bet"
     },
     "dashboard": {
       "overline": "Target Management System",
@@ -165,8 +166,17 @@
       "video_placeholder": "Video Placeholder"
     },
     "hud": {
-      "overline": "HUD — The \"X-Ray\" board",
-      "h3": "Not on the table.<br/><span class=\"text-yellow-400\">Separate panel, instant understanding.</span>",
+      "overline": "HUD — The \"X-Ray\" Panel",
+      "h3": "Not on the table.<br/><span class=\"text-yellow-400\">Dedicated panel, instant clarity.</span>",
+      "detail_sub": "Each opponent gets an active profile — AI analyzes Exploit Strategy, Positional Leaks, Range Adjustments, and auto-notes. You just glance and decide.",
+      "feat1_title": "Exploit Strategy",
+      "feat1_desc": "AI automatically generates exploit strategies per street, position, and specific node. Complete with sizing, range, and frequency.",
+      "feat2_title": "Positional Leaks",
+      "feat2_desc": "Detects leaks by node — passive river, loose turn call, overbet bluff... Each leak comes with a specific trigger.",
+      "feat3_title": "AI Notes",
+      "feat3_desc": "Auto-notes generated from every analyzed hand. Includes board texture, pot type, action line, and severity.",
+      "feat4_title": "Range Adjustments",
+      "feat4_desc": "Specific range adjustment suggestions for each opponent — tighten, widen, overbet, trap — nothing generic.",
       "whales_label": "Top Whales",
       "whales_sub": "Mobile ATMs",
       "whales_s1": "Overfold turn: VERY HIGH",
@@ -280,12 +290,20 @@
         "pt3": "Mapped tightly with GTO fundamentals"
       },
       "phase3": {
-        "title": "Phase 3 - Scale & Automation",
+        "title": "Phase 3 - Release RobinHUD Desktop for Scale and Automation",
         "badge": "Future Vision",
         "desc": "Optimized by actual player pools. More data exponentially increases AI power.",
         "pt1": "Desktop Environment included",
-        "pt2": "Auto table-reading & note-building",
+        "pt2": "Auto table-reading & note-building to collect data for AI scaling",
         "pt3": "Enterprise & Team features"
+      },
+      "phase4": {
+        "title": "Phase 4 - Mobile App",
+        "badge": "Live Weapon",
+        "desc": "Take it to live tournaments. Equipped with an offline/online pocket coach trained on massive data to crush the live scene.",
+        "pt1": "iOS & Android Mobile App",
+        "pt2": "Pocket Coach Offline/Online",
+        "pt3": "Dominate live tournaments"
       },
       "philosophy": {
         "title": "Why Subscription?",

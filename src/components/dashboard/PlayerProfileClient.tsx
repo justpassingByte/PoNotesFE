@@ -56,6 +56,19 @@ import { TemplateManagerModal } from "@/components/forms/TemplateManagerModal";
 import { buildCategorizedBreakdown, emptyCategorizedBreakdown, type CategorizedBreakdown } from "@/lib/analysis/HandCategoryResolver";
 import { HighlightKeywords } from "@/components/ui/HighlightKeywords";
 
+const getTagStyle = (style: string) => {
+    switch (style?.toUpperCase()) {
+        case 'LAG': return { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30', dot: 'bg-red-500' };
+        case 'TAG': return { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30', dot: 'bg-blue-500' };
+        case 'NIT': return { bg: 'bg-green-500/15', text: 'text-green-400', border: 'border-green-500/30', dot: 'bg-green-500' };
+        case 'FISH': return { bg: 'bg-yellow-500/15', text: 'text-yellow-400', border: 'border-yellow-500/30', dot: 'bg-yellow-500' };
+        case 'WHALE': return { bg: 'bg-amber-500/15', text: 'text-amber-300', border: 'border-amber-500/30', dot: 'bg-amber-500' };
+        case 'MANIAC': return { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30', dot: 'bg-purple-500' };
+        case 'CALLING STATION': return { bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/30', dot: 'bg-orange-500' };
+        default: return { bg: 'bg-gray-500/15', text: 'text-gray-400', border: 'border-gray-500/30', dot: 'bg-gray-500' };
+    }
+};
+
 
 interface Note {
     id: string;
@@ -383,10 +396,12 @@ export function PlayerProfileClient({
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-700/60">
                                                 <div className="space-y-2">
                                                     <p className="text-xs text-gray-500 font-black uppercase tracking-widest">{t('player_profile.archetype')}</p>
+                                                    {(() => { const tag = getTagStyle(player.ai_profile?.archetype || player.playstyle || ''); return (
                                                     <div className="flex items-center gap-2">
-                                                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                                                        <span className="text-lg font-bold text-white uppercase tracking-tighter">{player.ai_profile?.archetype || player.playstyle || 'Analyzing'}</span>
+                                                        <div className={`w-2 h-2 rounded-full ${tag.dot}`}></div>
+                                                        <span className={`text-lg font-bold uppercase tracking-tighter ${tag.text}`}>{player.ai_profile?.archetype || player.playstyle || 'Analyzing'}</span>
                                                     </div>
+                                                    ); })()}
                                                 </div>
                                                 <div className="space-y-2">
                                                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{t('player_profile.aggression') ?? "Aggression"}</p>
@@ -550,7 +565,9 @@ export function PlayerProfileClient({
                                         <div className="grid grid-cols-2 gap-2 mb-6">
                                             <div className="p-3 bg-[#1a1d24] rounded-lg border border-gray-800">
                                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t('player_profile.playstyle') || "Playstyle"}</p>
-                                                <p className="text-sm font-bold text-white uppercase tracking-tight">{player.playstyle || t('player_profile.no_data')}</p>
+                                                {(() => { const tag = getTagStyle(player.playstyle || ''); return (
+                                                <span className={`inline-block px-2 py-0.5 text-xs font-bold rounded border ${tag.bg} ${tag.text} ${tag.border} uppercase tracking-tight`}>{player.playstyle || t('player_profile.no_data')}</span>
+                                                ); })()}
                                             </div>
                                             <div className="p-3 bg-[#1a1d24] rounded-lg border border-gray-800">
                                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t('player_profile.aggression') || "Aggression"}</p>

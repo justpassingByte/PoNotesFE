@@ -126,8 +126,8 @@
       "p5_fix": "Tự động lồng note vào gợi ý đánh Real-time",
       "p6_text": "HUD cũ tung 1 rổ số liệu, bắt tự phân tích dẫn tới decision sai",
       "p6_fix": "Ném thẳng ĐIỂM YẾU và CÁCH EXPLOIT thay vì ngồi dịch số",
-      "ux_overline": "UX — Lười vẫn chơi như pro",
-      "ux_h3": "Bạn làm 3 thứ.<br/><span className=\"text-yellow-400\">Vault làm phần còn lại.</span>",
+      "ux_overline": "Hand Analyzer — Review như Pro",
+      "ux_h3": "Upload hand.<br/><span class=\"text-yellow-400\">AI mổ xẻ từng sai lầm.</span>",
       "f1_title": "Quyết Định < 100ms",
       "f1_desc": "Crop ảnh bàn chơi → paste → nhận Call/Fold + range + plan chi tiết. Không cần căng não.",
       "f2_title": "HUD \"Bóc Bài\"",
@@ -142,22 +142,23 @@
       "f6_desc": "GTO cho khung, exploit để hốt tiền, memory bảo vệ bankroll."
     },
     "ux_steps": {
-      "step1": "Crop ảnh bàn chơi (flop / turn / action)",
-      "step2": "Paste vào app",
-      "step3": "Liếc màn hình phụ"
+      "step1": "Paste / upload hand history hoặc ảnh bàn chơi",
+      "step2": "AI phân tích từng street — chỉ ra leak & mistake",
+      "step3": "Nhận chiến thuật exploit cụ thể cho lần sau"
     },
     "term": {
       "call": "KQ, KJ, draw tốt",
       "fold": "air, weak pair"
     },
     "terminal": {
-      "turn": "TURN (vs raise):",
-      "call": "Call:",
-      "fold": "Fold:",
-      "range": "Range:",
-      "plan": "Plan:",
-      "plan_1": "XR strong  •  Brick → call ~%",
-      "plan_2": "Scare → fold ~%  •  Improve → value ~% pot"
+      "header": "AI ANALYSIS OUTPUT:",
+      "mistake": "⚠ TURN — BB check → fold to small bet",
+      "desc": "Quá passive, bỏ lỡ cơ hội value bet river",
+      "exploit_label": "Exploit Strategy:",
+      "exploit_1": "BET river 75% pot | range: TT+, AQs+ | freq: 80%",
+      "exploit_2": "FOLD turn vs 3x raise | range: weak pairs | freq: 100%",
+      "leak_label": "Leak Detected:",
+      "leak_1": "Passive river play — trigger: check + fold to small bet"
     },
     "dashboard": {
       "overline": "Hệ Thống Quản Lý Mục Tiêu",
@@ -172,6 +173,15 @@
     "hud": {
       "overline": "HUD — Bảng vàng \"bóc bài\"",
       "h3": "Không nằm trên bàn.<br/><span class=\"text-yellow-400\">Panel riêng, nhìn cái hiểu luôn.</span>",
+      "detail_sub": "Mỗi đối thủ một hồ sơ riêng — AI phân tích Exploit Strategy, Positional Leaks, Range Adjustments và ghi chú tự động. Bạn chỉ cần nhìn và ra quyết định.",
+      "feat1_title": "Exploit Strategy",
+      "feat1_desc": "AI tự động sinh chiến thuật exploit theo từng street, position, và tình huống cụ thể. Có sizing, range, frequency.",
+      "feat2_title": "Positional Leaks",
+      "feat2_desc": "Phát hiện leak theo node — passive river, loose turn call, overbet bluff... Mỗi leak kèm trigger cụ thể.",
+      "feat3_title": "AI Notes",
+      "feat3_desc": "Ghi chú tự động từ mỗi ván đã phân tích. Kèm board texture, pot type, action line và mức độ nghiêm trọng.",
+      "feat4_title": "Range Adjustments",
+      "feat4_desc": "Gợi ý thay đổi range cụ thể theo từng đối thủ — tighten, widen, overbet, trap — không chung chung.",
       "whales_label": "Top Whales",
       "whales_sub": "Máy ATM di động",
       "whales_s1": "Overfold turn: VERY HIGH",
@@ -285,12 +295,20 @@
         "pt3": "Map chặt chẽ với GTO baseline"
       },
       "phase3": {
-        "title": "Phase 3 - Scale & Auto",
+        "title": "Phase 3 - Release RobinHUD Desktop for Scale & Automation",
         "badge": "Tầm nhìn xa",
         "desc": "Tối ưu theo player pool thực tế. Data càng nhiều AI càng mạnh, edge tăng theo thời gian.",
         "pt1": "Tặng RobinHUD Desktop",
-        "pt2": "Auto đọc bàn & tự build note",
+        "pt2": "Auto đọc bàn & tự build note để thu thập data scale AI",
         "pt3": "Quy mô Enterprise / Team"
+      },
+      "phase4": {
+        "title": "Phase 4 - Mobile App",
+        "badge": "Vũ Khí Live",
+        "desc": "Mobile app mang đi đánh tour, mang cả pocket coach đã được huấn luyện với hàng tá data để càn quét mọi live tournament.",
+        "pt1": "iOS & Android Mobile App",
+        "pt2": "Pocket Coach Offline/Online",
+        "pt3": "Càn quét mọi live tournament"
       },
       "philosophy": {
         "title": "Tại sao lại Subscription?",

@@ -3,7 +3,7 @@
 import React from 'react';
 import { useReveal } from '@/hooks/useReveal';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Sparkles, BrainCircuit, Rocket, ShieldCheck } from 'lucide-react';
+import { Sparkles, BrainCircuit, Rocket, ShieldCheck, Smartphone } from 'lucide-react';
 
 function RevealBlock({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
     const { ref, visible } = useReveal();
@@ -43,6 +43,13 @@ export function RoadmapSection() {
             color: 'text-emerald-400',
             bg: 'bg-emerald-400/10',
             border: 'border-emerald-400/20',
+        },
+        {
+            id: 'phase4',
+            icon: Smartphone,
+            color: 'text-purple-400',
+            bg: 'bg-purple-400/10',
+            border: 'border-purple-400/20',
         }
     ];
 
@@ -77,10 +84,10 @@ export function RoadmapSection() {
                                         
                                         {/* Content Box */}
                                         <div className="w-full md:w-1/2 flex justify-center md:justify-start">
-                                            <div className={`w-full max-w-sm p-6 rounded-2xl border ${phase.border} bg-white/[0.02] backdrop-blur-sm hover:bg-white/[0.04] transition duration-300 relative ${isEven ? 'md:ml-auto md:mr-10' : 'md:mr-auto md:ml-10'}`}>
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <h3 className="text-lg font-bold text-white/90">{t(`landing.roadmap.${phase.id}.title`)}</h3>
-                                                    <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full ${phase.bg} ${phase.color}`}>
+                                            <div className={`w-full max-w-[420px] p-6 rounded-2xl border ${phase.border} bg-white/[0.02] backdrop-blur-sm hover:bg-white/[0.04] transition duration-300 relative ${isEven ? 'md:ml-auto md:mr-8 lg:mr-10' : 'md:mr-auto md:ml-8 lg:ml-10'}`}>
+                                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+                                                    <h3 className="text-lg font-bold text-white/90 leading-snug">{t(`landing.roadmap.${phase.id}.title`)}</h3>
+                                                    <span className={`self-start text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 sm:mt-1 ${phase.bg} ${phase.color}`}>
                                                         {t(`landing.roadmap.${phase.id}.badge`)}
                                                     </span>
                                                 </div>
