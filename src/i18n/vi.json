@@ -600,6 +600,8 @@
     "leak": "lỗi",
     "leaks": "lỗi",
     "no_action_data": "Không có dữ liệu hành động",
-    "no_ai_analysis": "Chưa có phân tích AI cho ván bài này."
+    "no_ai_analysis": "Chưa có phân tích AI cho ván bài này.",
+    "notes": "Ghi chú",
+    "general": "Chung"
   }
 }

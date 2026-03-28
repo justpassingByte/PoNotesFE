@@ -595,6 +595,8 @@
     "leak": "Leak",
     "leaks": "Leaks",
     "no_action_data": "No action data available",
-    "no_ai_analysis": "No AI analysis available for this hand yet."
+    "no_ai_analysis": "No AI analysis available for this hand yet.",
+    "notes": "Note",
+    "general": "General"
   }
 }

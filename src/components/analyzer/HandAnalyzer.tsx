@@ -618,6 +618,82 @@ function ShowdownBlock({ showdownPlayers = [], currency = 'BB', editable = false
 
 }
 
+// ─── Rich Note Builder (mirrors backend logic) ────────────────────────────────
+
+function buildRichNoteContent(mistake: any, handData: any): string {
+    const parts: string[] = [];
+
+    // Detect pot type from preflop actions
+    const preflopActions = handData?.actions?.preflop || [];
+    let raiseCount = 0;
+    for (const act of preflopActions) {
+        const a = (act.action || '').toLowerCase();
+        if (a === 'raise' || a === 'all-in') raiseCount++;
+    }
+    const potType = raiseCount === 0 ? 'Limped Pot' : raiseCount === 1 ? 'SRP' : raiseCount === 2 ? '3bet Pot' : '4bet+ Pot';
+
+    // Board texture
+    const board: string[] = handData?.board || [];
+    const streetLow = (mistake.street || '').toLowerCase();
+    let relevantCards: string[] = [];
+    if (streetLow === 'flop') relevantCards = board.slice(0, 3);
+    else if (streetLow === 'turn') relevantCards = board.slice(0, 4);
+    else if (streetLow === 'river') relevantCards = board.slice(0, 5);
+
+    const suitSym: Record<string, string> = { h: '♥', d: '♦', c: '♣', s: '♠' };
+    const fmtCard = (c: string) => {
+        if (!c || c === '??') return '?';
+        return c.slice(0, -1).toUpperCase() + (suitSym[c.slice(-1).toLowerCase()] || c.slice(-1));
+    };
+    const boardDisplay = relevantCards.length > 0 ? relevantCards.map(fmtCard).join(' ') : '';
+
+    // Texture label
+    let texture = '';
+    if (board.length >= 3) {
+        const flopSuits = board.slice(0, 3).map(c => c.slice(-1).toLowerCase());
+        const unique = new Set(flopSuits).size;
+        if (unique === 3) texture = 'rainbow';
+        else if (unique === 2) texture = 'fd';
+        else if (unique === 1) texture = 'monotone';
+    }
+
+    // Header line
+    let header = potType;
+    if (boardDisplay) header += `, Board [${boardDisplay}]${texture ? ` (${texture})` : ''}`;
+    header += `, ${(mistake.street || 'general').toUpperCase()}`;
+    if (mistake.position) header += ` (${mistake.position})`;
+    parts.push(header);
+
+    // Find facing action + player action
+    const streetActions = handData?.actions?.[streetLow] || [];
+    const playerName = (mistake.player || '').toLowerCase();
+    let lastOpponent = '';
+    for (const a of streetActions) {
+        if ((a.player || '').toLowerCase() === playerName) break;
+        const act = (a.action || '').toUpperCase();
+        lastOpponent = a.amount != null ? `${act} ${a.amount}` : act;
+    }
+    const playerActs = streetActions
+        .filter((a: any) => (a.player || '').toLowerCase() === playerName)
+        .map((a: any) => { const act = (a.action || '').toUpperCase(); return a.amount != null ? `${act} ${a.amount}` : act; })
+        .join(' → ');
+
+    if (lastOpponent) parts.push(`Facing: ${lastOpponent}`);
+    if (playerActs) parts.push(`Action: ${playerActs}`);
+
+    // Blunder
+    const severity = (mistake.severity || 'minor').toUpperCase();
+    parts.push(`❌ [${severity}] ${mistake.description}`);
+
+    // Better line
+    if (mistake.better_line) parts.push(`✅ Better: ${mistake.better_line}`);
+
+    // GTO deviation
+    if (mistake.gto_deviation_reason) parts.push(`💡 ${mistake.gto_deviation_reason}`);
+
+    return parts.join('\n');
+}
+
 // ─── SaveNoteButton ──────────────────────────────────────────────────────────────
 
 function SaveNoteButton({ noteData }: { noteData: { player_name: string; content: string; street: string; note_type: string; source: string; hand_id?: string } }) {
@@ -1104,7 +1180,7 @@ return (
 
                                             <span className="text-white font-bold">{m.player}</span>
 
-                                            <span className="ml-auto"><SaveNoteButton noteData={{ player_name: m.player, content: m.description, street: m.street, note_type: "Custom", source: "ai", hand_id: parsedHand?.id }} /></span>
+                                            <span className="ml-auto"><SaveNoteButton noteData={{ player_name: m.player, content: buildRichNoteContent(m, handData), street: m.street, note_type: "Custom", source: "ai", hand_id: parsedHand?.id }} /></span>
 
                                         </div>
 

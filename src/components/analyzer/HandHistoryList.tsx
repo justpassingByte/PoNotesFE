@@ -454,7 +454,21 @@ export function HandHistoryList() {
                                             </span>
                                         ))}
                                     </div>
-                                    <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+                                    <div className="flex items-center gap-1 border-l border-white/10 pl-3 ml-1">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteHand(hand.id);
+                                            }}
+                                            className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-all flex items-center justify-center"
+                                            title={t('hands.erase_history') || "Delete Hand"}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                        <div className="p-2 flex items-center justify-center">
+                                            <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -758,15 +772,15 @@ export function HandHistoryList() {
                                             )}
 
                                             {/* CTA */}
-                                            <div className="flex flex-col gap-2 pt-2">
+                                            <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         deleteHand(hand.id);
                                                     }}
-                                                    className="w-full py-2 bg-transparent hover:bg-white/5 text-gray-500 hover:text-red-400 text-[10px] font-bold rounded-md transition-all flex items-center justify-center gap-2 mt-2"
+                                                    className="w-full py-2.5 bg-red-500/5 hover:bg-red-500/15 border border-red-500/10 hover:border-red-500/30 text-red-500/70 hover:text-red-400 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2"
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    <Trash2 className="w-4 h-4" />
                                                     {t('hands.erase_history')}
                                                 </button>
                                             </div>
