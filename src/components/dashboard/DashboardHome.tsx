@@ -313,7 +313,7 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
                     
                     <div className="min-w-0">
                         <h4 className="font-bold text-base text-white tracking-tight truncate leading-tight mb-1">{player.name}</h4>
-                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none block">{player.platform?.name || 'Unknown'}</span>
+                        <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none block">{player.platform?.name || t('dashboard.hud.unknown') || 'Unknown'}</span>
                     </div>
                 </div>
                 <span className={`px-2 py-0.5 text-[10px] font-black rounded border ${getTagStyle(displayTag)} uppercase tracking-widest whitespace-nowrap flex-shrink-0 ml-2 mt-1`}>
@@ -345,7 +345,7 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
                             <span className={`text-base font-mono font-bold ${getAggressionColor(aggScore)}`}>
                                 {aggScore}%
                             </span>
-                            <span className="text-xs text-gray-600 font-black uppercase tracking-wider">AGG</span>
+                            <span className="text-xs text-gray-600 font-black uppercase tracking-wider">{t('dashboard.hud.agg') || 'AGG'}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <FileText className="w-5 h-5 text-gray-600" />

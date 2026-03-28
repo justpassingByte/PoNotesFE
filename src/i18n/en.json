@@ -394,6 +394,7 @@
     "sizing_freq": "Sizing / Freq",
     "archetype": "Archetype",
     "aggression": "Aggression",
+    "playstyle": "Playstyle",
     "analysis_mode": "Analysis Mode",
     "hybrid_mode": "GTO-Exploit Hybrid",
     "positional_leaks": "Positional Leaks",

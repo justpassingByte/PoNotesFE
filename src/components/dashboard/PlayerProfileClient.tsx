@@ -389,7 +389,7 @@ export function PlayerProfileClient({
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Aggression</p>
+                                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{t('player_profile.aggression') ?? "Aggression"}</p>
                                                     <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
                                                         <div
                                                             className="h-full bg-amber-500 rounded-full"
@@ -502,14 +502,14 @@ export function PlayerProfileClient({
                                                 onChange={e => setEditPlaystyle(e.target.value)}
                                                 className="w-full bg-black/60 backdrop-blur-md shadow-inner border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-gray-500 transition-all"
                                             >
-                                                <option value="UNKNOWN">Unknown</option>
-                                                <option value="LAG">LAG (Loose Aggressive)</option>
-                                                <option value="TAG">TAG (Tight Aggressive)</option>
-                                                <option value="NIT">NIT (Super Tight)</option>
-                                                <option value="FISH">FISH (Recreational)</option>
+                                                <option value="UNKNOWN">{t('player_form.playstyle_unknown') || "Unknown"}</option>
+                                                <option value="LAG">{t('player_form.playstyle_lag') || "LAG (Loose Aggressive)"}</option>
+                                                <option value="TAG">{t('player_form.playstyle_tag') || "TAG (Tight Aggressive)"}</option>
+                                                <option value="NIT">{t('player_form.playstyle_nit') || "NIT (Super Tight)"}</option>
+                                                <option value="FISH">{t('player_form.playstyle_fish') || "FISH (Recreational)"}</option>
                                                 <option value="WHALE">WHALE (Donor)</option>
-                                                <option value="MANIAC">MANIAC</option>
-                                                <option value="CALLING STATION">STATION</option>
+                                                <option value="MANIAC">{t('player_form.playstyle_maniac') || "MANIAC"}</option>
+                                                <option value="CALLING STATION">{t('player_form.playstyle_calling_station') || "STATION"}</option>
                                             </select>
                                         </div>
                                         <div className="flex gap-2">
@@ -549,11 +549,11 @@ export function PlayerProfileClient({
 
                                         <div className="grid grid-cols-2 gap-2 mb-6">
                                             <div className="p-3 bg-[#1a1d24] rounded-lg border border-gray-800">
-                                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Playstyle</p>
+                                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t('player_profile.playstyle') || "Playstyle"}</p>
                                                 <p className="text-sm font-bold text-white uppercase tracking-tight">{player.playstyle || t('player_profile.no_data')}</p>
                                             </div>
                                             <div className="p-3 bg-[#1a1d24] rounded-lg border border-gray-800">
-                                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Aggression</p>
+                                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t('player_profile.aggression') || "Aggression"}</p>
                                                 <p className="text-sm font-bold text-white tracking-tight">{player.aggression_score}%</p>
                                             </div>
                                         </div>
