@@ -454,21 +454,7 @@ export function HandHistoryList() {
                                             </span>
                                         ))}
                                     </div>
-                                    <div className="flex items-center gap-1 border-l border-white/10 pl-3 ml-1">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                deleteHand(hand.id);
-                                            }}
-                                            className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-all flex items-center justify-center"
-                                            title={t('hands.erase_history') || "Delete Hand"}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                        <div className="p-2 flex items-center justify-center">
-                                            <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? "rotate-90" : ""}`} />
-                                        </div>
-                                    </div>
+                                    <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? "rotate-90" : ""}`} />
                                 </div>
                             </div>
 
