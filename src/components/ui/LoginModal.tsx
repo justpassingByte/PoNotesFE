@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Lock, Mail, Loader2, ArrowRight, X, Shield } from 'lucide-react';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose, reason }: LoginModalProps) {
+    const { t } = useLanguage();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [tab, setTab] = useState<'login' | 'register'>('login');
@@ -103,13 +105,13 @@ export function LoginModal({ isOpen, onClose, reason }: LoginModalProps) {
                             onClick={() => { setTab('login'); setError(null); }}
                             className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${tab === 'login' ? 'bg-gold text-black shadow' : 'text-gray-500 hover:text-white'}`}
                         >
-                            Sign In
+                            {t('auth_modal.sign_in')}
                         </button>
                         <button type="button"
                             onClick={() => { setTab('register'); setError(null); }}
                             className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${tab === 'register' ? 'bg-gold text-black shadow' : 'text-gray-500 hover:text-white'}`}
                         >
-                            Register
+                            {t('auth_modal.register')}
                         </button>
                     </div>
 
@@ -123,19 +125,19 @@ export function LoginModal({ isOpen, onClose, reason }: LoginModalProps) {
                         )}
 
                         <div className="relative group">
-                            <label className="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Email</label>
+                            <label className="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 ml-1">{t('auth_modal.email') || "Email"}</label>
                             <div className="relative">
                                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-gold transition-colors" />
                                 <input
                                     required type="text" name="email"
-                                    placeholder="Enter email"
+                                    placeholder={t('auth_modal.email') || "Enter email"}
                                     className="w-full bg-black/40 border border-white/8 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-gray-700 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/20 transition-all text-sm"
                                 />
                             </div>
                         </div>
 
                         <div className="relative group">
-                            <label className="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Password</label>
+                            <label className="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 ml-1">{t('auth_modal.password') || "Password"}</label>
                             <div className="relative">
                                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-gold transition-colors" />
                                 <input
@@ -151,14 +153,14 @@ export function LoginModal({ isOpen, onClose, reason }: LoginModalProps) {
                             className="w-full bg-gradient-to-r from-gold to-yellow-500 text-black font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_8px_20px_rgba(212,175,55,0.25)] mt-2"
                         >
                             {isLoading
-                                ? <><Loader2 className="w-4 h-4 animate-spin" /> Authenticating...</>
-                                : <>{tab === 'login' ? 'ENTER VAULT' : 'CREATE ACCOUNT'} <ArrowRight className="w-4 h-4" /></>
+                                ? <><Loader2 className="w-4 h-4 animate-spin" /> {tab === 'login' ? t('auth_modal.signing_in') : t('auth_modal.registering') || "Authenticating..."}</>
+                                : <><Lock className="w-4 h-4" /> {tab === 'login' ? t('auth_modal.sign_in') : t('auth_modal.register')} </>
                             }
                         </button>
                     </form>
 
                     <p className="text-center text-[10px] text-gray-600 mt-5">
-                        Browse freely · Sign in to unlock AI features
+                        {t('auth_modal.browse_freely') || "Browse freely · Sign in to unlock AI features"}
                     </p>
                 </div>
             </div>

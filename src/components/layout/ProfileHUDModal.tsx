@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { logout } from "@/app/auth-actions";
 import { getUserProfile } from "@/app/actions";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface ProfileHUDModalProps {
     isOpen: boolean;
@@ -48,6 +49,7 @@ const TIER_THEME: Record<string, {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 function UsageBar({ label, used, limit, color = "gold" }: { label: string; used: number; limit: number; color?: string }) {
+    const { t } = useLanguage();
     const pct = limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0;
     const barColor = color === "gold" ? "bg-gold" : color === "blue" ? "bg-blue-400" : "bg-purple-400";
     const textColor = color === "gold" ? "text-gold" : color === "blue" ? "text-blue-400" : "text-purple-400";
@@ -57,7 +59,7 @@ function UsageBar({ label, used, limit, color = "gold" }: { label: string; used:
             <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{label}</span>
                 <span className={`text-[10px] font-black font-mono ${textColor}`}>
-                    {limit === -1 ? "∞ Unlimited" : `${limit - used} left / ${limit}`}
+                    {limit === -1 ? `∞ ${t('profile_modal.unlimited') || "Unlimited"}` : `${limit - used} ${t('profile_modal.left') || "left /"} ${limit}`}
                 </span>
             </div>
             {limit !== -1 && (
@@ -83,14 +85,15 @@ function CategoryDot({ category }: { category: string }) {
 }
 
 function NoteRow({ note }: { note: any }) {
+    const { t } = useLanguage();
     const isAI = note.is_ai_generated;
     const timeAgo = (() => {
         const diff = Date.now() - new Date(note.created_at).getTime();
         const mins = Math.floor(diff / 60000);
-        if (mins < 60) return `${mins}m ago`;
+        if (mins < 60) return `${mins} ${t('profile_modal.m_ago') || "m ago"}`;
         const hrs = Math.floor(mins / 60);
-        if (hrs < 24) return `${hrs}h ago`;
-        return `${Math.floor(hrs / 24)}d ago`;
+        if (hrs < 24) return `${hrs} ${t('profile_modal.h_ago') || "h ago"}`;
+        return `${Math.floor(hrs / 24)} ${t('profile_modal.d_ago') || "d ago"}`;
     })();
 
     return (
@@ -101,7 +104,7 @@ function NoteRow({ note }: { note: any }) {
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
                     <span className="text-[10px] font-black text-white/60 uppercase tracking-wide truncate">
-                        {note.player?.name ?? "Unknown Player"}
+                        {note.player?.name ?? t('profile_modal.unknown_player')}
                     </span>
                     {isAI && <Bot className="w-2.5 h-2.5 text-blue-400 shrink-0" />}
                 </div>
@@ -114,6 +117,7 @@ function NoteRow({ note }: { note: any }) {
 
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps) {
+    const { t } = useLanguage();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [profile, setProfile] = useState<{
         user: any; plan: any; stats: any; recentNotes: any[]; usage?: any;
@@ -212,7 +216,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                     {loading && (
                         <div className="flex items-center justify-center py-10 gap-3">
                             <Loader2 className="w-5 h-5 text-gold/60 animate-spin" />
-                            <span className="text-[11px] text-gray-600 font-bold uppercase tracking-widest">Loading profile...</span>
+                            <span className="text-[11px] text-gray-600 font-bold uppercase tracking-widest">{t('profile_modal.loading')}</span>
                         </div>
                     )}
 
@@ -220,7 +224,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                     {error && !loading && (
                         <div className="flex items-center gap-2 p-4 rounded-xl bg-red-500/5 border border-red-500/15">
                             <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-                            <span className="text-xs text-red-400">Failed to load profile data.</span>
+                            <span className="text-xs text-red-400">{t('profile_modal.failed_load')}</span>
                         </div>
                     )}
 
@@ -231,12 +235,12 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                 <div className="bg-black/40 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-1">
                                     <Users className="w-5 h-5 text-gold/60 mb-1" />
                                     <span className="text-2xl font-black text-white">{stats?.totalPlayers ?? "—"}</span>
-                                    <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Players Tracked</span>
+                                    <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">{t('profile_modal.players_tracked')}</span>
                                 </div>
                                 <div className="bg-black/40 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-1">
                                     <StickyNote className="w-5 h-5 text-blue-400/60 mb-1" />
                                     <span className="text-2xl font-black text-white">{stats?.totalNotes ?? "—"}</span>
-                                    <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Notes Written</span>
+                                    <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">{t('profile_modal.notes_written')}</span>
                                 </div>
                             </div>
 
@@ -246,12 +250,12 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                     <div className="flex items-center gap-2">
                                         {theme.icon}
                                         <span className={`text-sm font-black uppercase tracking-widest ${theme.color}`}>
-                                            {displayTierName} Plan
+                                            {displayTierName} {t('profile_modal.plan')}
                                         </span>
                                     </div>
                                     {plan?.price !== undefined && (
                                         <span className="text-[10px] text-gray-500 font-black">
-                                            {plan.price === 0 ? "Free" : `$${plan.price}${plan.period ?? "/mo"}`}
+                                            {plan.price === 0 ? t('profile_modal.free') : `$${plan.price}${plan.period ?? "/mo"}`}
                                         </span>
                                     )}
                                 </div>
@@ -272,11 +276,11 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                 {plan && (
                                     <div className="pt-1 space-y-3 border-t border-white/5">
                                         <span className="text-[9px] font-black uppercase tracking-widest text-gray-600 flex items-center gap-1.5">
-                                            <Zap className="w-3 h-3 text-gold" /> Monthly Limits
+                                            <Zap className="w-3 h-3 text-gold" /> {t('profile_modal.monthly_limits')}
                                         </span>
                                         {plan.ai_limit !== 0 && (
                                             <UsageBar
-                                                label="AI Analysis"
+                                                label={t('profile_modal.ai_analysis') || "AI Analysis"}
                                                 used={aiUsed}
                                                 limit={plan.ai_limit}
                                                 color="gold"
@@ -284,7 +288,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                         )}
                                         {plan.hand_ocr_limit !== 0 && (
                                             <UsageBar
-                                                label="Hand OCR"
+                                                label={t('profile_modal.hand_ocr') || "Hand OCR"}
                                                 used={handOcrUsed}
                                                 limit={plan.hand_ocr_limit}
                                                 color="blue"
@@ -298,7 +302,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                     <div className="flex items-center gap-2 pt-1">
                                         <Calendar className="w-3 h-3 text-gray-600" />
                                         <span className="text-[10px] text-gray-500 font-bold">
-                                            Renews {expiryDate}
+                                            {t('profile_modal.renews')} {expiryDate}
                                         </span>
                                     </div>
                                 )}
@@ -316,9 +320,9 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                         </div>
                                         <div className="text-left">
                                             <p className="text-xs font-black text-gold uppercase tracking-wider">
-                                                {tier === "FREE" ? "Upgrade to Pro" : "Upgrade to Elite"}
+                                                {tier === "FREE" ? t('profile_modal.upgrade_pro') : t('profile_modal.upgrade_elite')}
                                             </p>
-                                            <p className="text-[9px] text-gray-500 font-medium mt-0.5">Unlock full neural power</p>
+                                            <p className="text-[9px] text-gray-500 font-medium mt-0.5">{t('profile_modal.unlock_neural')}</p>
                                         </div>
                                     </div>
                                     <ArrowUpRight className="w-4 h-4 text-gold/50 group-hover:text-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
@@ -329,13 +333,13 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                                        <PenLine className="w-3 h-3 text-gold" /> Recent Notes
+                                        <PenLine className="w-3 h-3 text-gold" /> {t('profile_modal.recent_notes')}
                                     </span>
                                     <a
                                         href="/players"
                                         className="flex items-center gap-1 text-[9px] text-gray-600 hover:text-gold transition-colors font-bold uppercase tracking-wider"
                                     >
-                                        View all <ChevronRight className="w-2.5 h-2.5" />
+                                        {t('profile_modal.view_all')} <ChevronRight className="w-2.5 h-2.5" />
                                     </a>
                                 </div>
 
@@ -348,9 +352,9 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                 ) : (
                                     <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-2xl bg-black/30 border border-white/5">
                                         <FileText className="w-7 h-7 text-gray-700" />
-                                        <p className="text-[11px] text-gray-600 font-bold">No notes yet</p>
+                                        <p className="text-[11px] text-gray-600 font-bold">{t('profile_modal.no_notes_yet')}</p>
                                         <a href="/players" className="text-[10px] text-gold/70 hover:text-gold transition-colors font-bold uppercase tracking-wider">
-                                            Add your first player →
+                                            {t('profile_modal.add_first_player')}
                                         </a>
                                     </div>
                                 )}
@@ -359,8 +363,8 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                             {/* ── Quick Links ── */}
                             <div className="grid grid-cols-2 gap-2">
                                 {[
-                                    { label: "Hand History", icon: Brain, href: "/history" },
-                                    { label: "Pricing", icon: CreditCard, href: "/pricing" },
+                                    { label: t('nav.history') || "Hand History", icon: Brain, href: "/history" },
+                                    { label: t('nav.pricing') || "Pricing", icon: CreditCard, href: "/pricing" },
                                 ].map(({ label, icon: Icon, href }) => (
                                     <a
                                         key={label}
@@ -376,7 +380,6 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                     )}
                 </div>
 
-                {/* ── Footer: Logout ── */}
                 <div className="px-6 pb-6 pt-4 border-t border-white/5 shrink-0">
                     <button
                         onClick={handleLogout}
@@ -384,7 +387,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                         className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-red-500/8 border border-red-500/15 text-red-400 hover:bg-red-500/18 hover:border-red-500/35 hover:text-red-300 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-40"
                     >
                         <LogOut className="w-4 h-4" />
-                        {isLoggingOut ? "Logging out..." : "Log Out"}
+                        {isLoggingOut ? t('profile_modal.logging_out') : t('profile_modal.logout') || "Log Out"}
                     </button>
                 </div>
             </div>

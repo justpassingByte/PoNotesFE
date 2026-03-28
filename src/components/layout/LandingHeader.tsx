@@ -25,6 +25,7 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
     const NAV_LINKS = [
         { name: t('landing.nav.features') || 'Features',     id: 'features' },
         { name: t('landing.nav.profiles') || 'HUD Profiles', id: 'profiles' },
+        { name: t('landing.nav.roadmap') || 'Roadmap',      id: 'roadmap'  },
         { name: t('landing.nav.pricing') || 'Pricing',      id: 'pricing'  },
         { name: t('landing.nav.contact') || 'Contact',      id: 'contact'  },
     ];

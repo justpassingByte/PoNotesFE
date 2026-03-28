@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { UploadCloud, CheckCircle, AlertCircle, Loader2, FileJson, ChevronDown, ChevronUp } from 'lucide-react';
 import { API } from '@/lib/api';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const EXAMPLE_STRUCTURE = `[
   {
@@ -28,6 +29,7 @@ const EXAMPLE_STRUCTURE = `[
 ]`;
 
 export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => void, onCancel?: () => void }) {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successCount, setSuccessCount] = useState<number | null>(null);
@@ -103,7 +105,7 @@ export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => voi
     return (
         <div className="space-y-5">
             <p className="text-gray-400 text-sm leading-relaxed">
-                Upload a JSON file containing player data and notes. The system will parse and bulk-insert everything into the database.
+                {t('import_json.desc') || "Upload a JSON file containing player data and notes. The system will parse and bulk-insert everything into the database."}
             </p>
 
             {/* Upload Zone */}
@@ -125,7 +127,7 @@ export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => voi
                         <div className="w-14 h-14 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mb-4">
                             <Loader2 className="w-6 h-6 text-gold animate-spin" />
                         </div>
-                        <span className="text-sm font-semibold text-white mb-1">Processing Import...</span>
+                        <span className="text-sm font-semibold text-white mb-1">{t('import_json.processing') || "Processing Import..."}</span>
                         {fileName && <span className="text-[11px] text-gray-500 font-mono">{fileName}</span>}
                     </div>
                 ) : successCount !== null ? (
@@ -133,10 +135,10 @@ export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => voi
                         <div className="w-14 h-14 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center mb-4">
                             <CheckCircle className="w-6 h-6 text-green-400" />
                         </div>
-                        <span className="text-sm font-bold text-green-400 mb-1">Import Successful!</span>
-                        <span className="text-xs text-gray-400">{successCount} players added to database</span>
+                        <span className="text-sm font-bold text-green-400 mb-1">{t('import_json.success') || "Import Successful!"}</span>
+                        <span className="text-xs text-gray-400">{successCount} {t('import_json.added') || "players added to database"}</span>
                         {skippedCount > 0 && (
-                            <span className="text-xs text-yellow-500 mt-1">{skippedCount} duplicate(s) skipped</span>
+                            <span className="text-xs text-yellow-500 mt-1">{skippedCount} {t('import_json.skipped') || "duplicate(s) skipped"}</span>
                         )}
                     </div>
                 ) : (
@@ -144,8 +146,8 @@ export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => voi
                         <div className="w-14 h-14 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center mb-4">
                             <UploadCloud className="w-6 h-6 text-gray-500" />
                         </div>
-                        <span className="text-sm font-semibold text-white mb-1">Click or Drag to Upload</span>
-                        <span className="text-[11px] text-gray-500">Accepts .json files</span>
+                        <span className="text-sm font-semibold text-white mb-1">{t('import_json.click_drag') || "Click or Drag to Upload"}</span>
+                        <span className="text-[11px] text-gray-500">{t('import_json.accepts') || "Accepts .json files"}</span>
                     </div>
                 )}
             </div>
@@ -159,7 +161,7 @@ export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => voi
                 >
                     <div className="flex items-center gap-2">
                         <FileJson className="w-4 h-4 text-gold" />
-                        <span className="text-sm font-semibold text-white">Expected JSON Structure</span>
+                        <span className="text-sm font-semibold text-white">{t('import_json.expected_structure') || "Expected JSON Structure"}</span>
                     </div>
                     {showStructure ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
                 </button>
@@ -168,41 +170,41 @@ export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => voi
                     <div className="border-t border-white/5">
                         {/* Field Reference */}
                         <div className="px-4 py-3 space-y-2 bg-black/20">
-                            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">Field Reference</p>
+                            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">{t('import_json.field_ref') || "Field Reference"}</p>
                             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
                                 <code className="text-gold font-mono">name</code>
-                                <span className="text-gray-400">Player name <span className="text-red-400">*required</span></span>
+                                <span className="text-gray-400">{t('import_json.player_name') || "Player name"} <span className="text-red-400">{t('import_json.required') || "*required"}</span></span>
 
                                 <code className="text-gold font-mono">playstyle</code>
                                 <span className="text-gray-400">LAG | TAG | NIT | FISH | MANIAC | CALLING STATION | UNKNOWN</span>
 
                                 <code className="text-gold font-mono">platform_id</code>
-                                <span className="text-gray-400">Platform UUID <span className="text-gray-600">(optional, defaults to first)</span></span>
+                                <span className="text-gray-400">{t('import_json.platform_uuid') || "Platform UUID"} <span className="text-gray-600">{t('import_json.optional_defaults_first') || "(optional, defaults to first)"}</span></span>
 
                                 <code className="text-gold font-mono">notes[]</code>
-                                <span className="text-gray-400">Array of note objects <span className="text-gray-600">(optional)</span></span>
+                                <span className="text-gray-400">{t('import_json.array_notes') || "Array of note objects"} <span className="text-gray-600">{t('import_json.optional') || "(optional)"}</span></span>
 
                                 <code className="text-gold font-mono">notes[].street</code>
                                 <span className="text-gray-400">Preflop | Flop | Turn | River</span>
 
                                 <code className="text-gold font-mono">notes[].note_type</code>
-                                <span className="text-gray-400">Category label <span className="text-gray-600">(defaults to &quot;Custom&quot;)</span></span>
+                                <span className="text-gray-400">{t('import_json.category_label') || "Category label"} <span className="text-gray-600">{t('import_json.defaults_custom') || "(defaults to \"Custom\")"}</span></span>
 
                                 <code className="text-gold font-mono">notes[].content</code>
-                                <span className="text-gray-400">Note text <span className="text-red-400">*required</span></span>
+                                <span className="text-gray-400">{t('import_json.note_text') || "Note text"} <span className="text-red-400">{t('import_json.required') || "*required"}</span></span>
                             </div>
                         </div>
 
                         {/* Example JSON */}
                         <div className="border-t border-white/5 px-4 py-3 bg-black/30">
                             <div className="flex items-center justify-between mb-2">
-                                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Example</p>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{t('import_json.example') || "Example"}</p>
                                 <button
                                     type="button"
                                     onClick={() => { navigator.clipboard.writeText(EXAMPLE_STRUCTURE); }}
                                     className="text-[10px] text-gray-500 hover:text-gold transition-colors uppercase tracking-wider font-semibold"
                                 >
-                                    Copy
+                                    {t('import_json.copy') || "Copy"}
                                 </button>
                             </div>
                             <pre className="text-[11px] text-gray-400 font-mono leading-relaxed overflow-x-auto max-h-48 scrollbar-thin scrollbar-thumb-white/10">
@@ -230,7 +232,7 @@ export function ImportJsonModal({ onSuccess, onCancel }: { onSuccess?: () => voi
                         disabled={loading}
                         className="px-5 py-2.5 text-sm text-gray-400 hover:text-white border border-white/5 rounded-xl hover:bg-white/5 transition-all"
                     >
-                        Cancel
+                        {t('import_json.cancel') || "Cancel"}
                     </button>
                 </div>
             )}

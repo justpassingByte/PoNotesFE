@@ -111,14 +111,38 @@ export function HeroSection() {
                             className="absolute inset-0 rounded-3xl blur-3xl opacity-30"
                             style={{ background: 'radial-gradient(ellipse at center, rgba(255,196,0,0.3) 0%, transparent 70%)' }}
                         />
-                        <Image
-                            src="/vault_hero.png"
-                            alt="Villiant Vault"
-                            width={520}
-                            height={520}
-                            className="relative z-10 w-full h-auto rounded-3xl"
-                            priority
-                        />
+                        <div className="relative z-10 w-full aspect-square md:aspect-auto md:h-[520px] rounded-3xl border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl flex flex-col">
+                            {/* Mac window header */}
+                            <div className="h-10 w-full shrink-0 flex items-center gap-2 border-b border-white/5 px-4 bg-white/5">
+                                <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80 hover:bg-rose-400 transition-colors cursor-pointer"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80 hover:bg-amber-400 transition-colors cursor-pointer"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 hover:bg-emerald-400 transition-colors cursor-pointer"></div>
+                                <div className="ml-4 h-3 w-32 bg-white/10 rounded-full"></div>
+                            </div>
+                            {/* Body */}
+                            <div className="flex-1 p-6 flex flex-col gap-4 relative">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-yellow-400/20 blur-[60px] rounded-full"></div>
+                                {/* Header */}
+                                <div className="flex justify-between items-center z-10">
+                                    <div className="h-6 w-32 bg-white/10 rounded-md"></div>
+                                    <div className="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center text-white/50 text-[10px]">AI</div>
+                                </div>
+                                {/* Cards */}
+                                <div className="flex-1 rounded-2xl border border-white/10 bg-white/5 p-5 mt-2 flex flex-col gap-5 z-10 backdrop-blur-sm">
+                                    <div className="h-5 w-40 bg-white/10 rounded flex items-center px-2 shadow-inner"></div>
+                                    <div className="h-32 w-full bg-gradient-to-r from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-xl relative overflow-hidden group">
+                                         <div className="absolute top-4 left-4 h-10 w-10 bg-emerald-500/20 rounded-lg border border-emerald-500/30"></div>
+                                         <div className="absolute top-5 left-16 h-3 w-32 bg-emerald-400/50 rounded"></div>
+                                         <div className="absolute top-9 left-16 h-2 w-20 bg-emerald-400/30 rounded"></div>
+                                         <div className="absolute bottom-4 left-4 right-4 h-8 border border-emerald-500/30 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-400/70 text-[10px] font-bold tracking-widest text-shadow">GTO ALIGNED 100%</div>
+                                    </div>
+                                    <div className="flex gap-3 mt-auto">
+                                        <div className="h-10 flex-1 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-[10px] text-white/30 font-bold">FOLD</div>
+                                        <div className="h-10 flex-[2] bg-yellow-400/20 rounded-lg border border-yellow-400/30 flex items-center justify-center text-[10px] text-yellow-500 font-bold tracking-widest shadow-[0_0_15px_rgba(255,196,0,0.1)]">DOMINATE CALL</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {/* Badge bên dưới ảnh — chìm */}
                         <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-white/8 text-[11px] font-bold text-white/25 whitespace-nowrap z-20 backdrop-blur">
                             <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/50 animate-pulse" />

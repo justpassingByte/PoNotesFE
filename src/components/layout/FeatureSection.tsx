@@ -28,9 +28,9 @@ export function FeatureSection() {
     const { t } = useLanguage();
 
     const PAIN_POINTS = [
-        { text: '"Chắc nó bluff" → call → mất tiền', fix: 'Vault tính xác suất cho bạn' },
-        { text: 'Học GTO xong vào bàn vẫn đánh tâm linh', fix: 'Review tự động sau mỗi hand' },
-        { text: 'Không biết thằng nào là ATM, thằng nào là CHỐT', fix: 'HUD Player Profiling tức thì' },
+        { text: t('landing.features.p1_text') || '"Chắc nó bluff" → call → mất tiền', fix: t('landing.features.p1_fix') || 'Vault tính xác suất cho bạn' },
+        { text: t('landing.features.p2_text') || 'Học GTO xong vào bàn vẫn đánh tâm linh', fix: t('landing.features.p2_fix') || 'Review tự động sau mỗi hand' },
+        { text: t('landing.features.p3_text') || 'Không biết thằng nào là ATM, thằng nào là CHỐT', fix: t('landing.features.p3_fix') || 'HUD Player Profiling tức thì' },
     ];
     
     const FEATURES = [
@@ -117,43 +117,74 @@ export function FeatureSection() {
 
                                 {/* Terminal — màu theo loại thông tin */}
                                 <div className="rounded-xl border border-white/8 bg-black/60 p-4 font-mono text-xs space-y-1.5">
-                                    <div className="text-white/30 font-semibold mb-1">TURN (vs raise):</div>
+                                    <div className="text-white/30 font-semibold mb-1">{t('landing.terminal.turn') || 'TURN (vs raise):'}</div>
                                     <div className="flex gap-5">
                                         {/* Call = gold = action quan trọng */}
-                                        <span className="text-white/50">Call: <strong className="text-yellow-400 font-black">%</strong></span>
+                                        <span className="text-white/50">{t('landing.terminal.call') || 'Call:'} <strong className="text-yellow-400 font-black">%</strong></span>
                                         {/* Fold = muted */}
-                                        <span className="text-white/35">Fold: <strong className="text-white/45">%</strong></span>
+                                        <span className="text-white/35">{t('landing.terminal.fold') || 'Fold:'} <strong className="text-white/45">%</strong></span>
                                     </div>
-                                    <div className="text-white/20 pt-1">Range:</div>
+                                    <div className="text-white/20 pt-1">{t('landing.terminal.range') || 'Range:'}</div>
                                     {/* Call range = xanh lá */}
                                     <div className="text-emerald-400/60">– Call: {t('landing.term.call') || 'KQ, KJ, draw tốt'}</div>
                                     {/* Fold range = đỏ nhạt */}
                                     <div className="text-rose-400/50">– Fold: {t('landing.term.fold') || 'air, weak pair'}</div>
-                                    <div className="text-white/20 pt-1">Plan:</div>
-                                    <div className="text-white/40">– XR strong  •  Brick → call ~%</div>
-                                    <div className="text-white/40">– Scare → fold ~%  •  Improve → value ~% pot</div>
+                                    <div className="text-white/20 pt-1">{t('landing.terminal.plan') || 'Plan:'}</div>
+                                    <div className="text-white/40">– {t('landing.terminal.plan_1') || 'XR strong  •  Brick → call ~%'}</div>
+                                    <div className="text-white/40">– {t('landing.terminal.plan_2') || 'Scare → fold ~%  •  Improve → value ~% pot'}</div>
                                 </div>
                             </div>
                         </div>
 
                         <RevealBlock delay={100}>
                             <div className="flex-1 order-1 lg:order-2 flex justify-center">
-                                <div className="relative w-full max-w-xs">
+                                <div className="relative w-full max-w-2xl lg:max-w-none">
                                     <div
                                         className="absolute inset-0 rounded-2xl blur-2xl opacity-20"
                                         style={{ background: 'radial-gradient(ellipse at center, rgba(255,196,0,0.4) 0%, transparent 70%)' }}
                                     />
                                     <Image
-                                        src="/ux_preview.png"
-                                        alt="Villiant Vault — Analysis Panel"
-                                        width={380}
-                                        height={380}
-                                        className="relative z-10 w-full h-auto rounded-2xl"
+                                        src="/real_hand_analyzer.png"
+                                        alt="Hand Analyzer Overview"
+                                        width={1200}
+                                        height={1200}
+                                        className="relative z-10 w-full h-auto rounded-2xl border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.6)]"
                                     />
                                 </div>
                             </div>
                         </RevealBlock>
                     </div>
+                </div>
+            </section>
+
+            {/* ─── Dashboard Overview Section ─── */}
+            <section className="relative py-20 bg-black/40 border-y border-white/5">
+                <div className="max-w-7xl mx-auto px-6 text-center">
+                    <RevealBlock delay={0}>
+                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">
+                            {t('landing.dashboard.overline') || "Hệ Thống Quản Lý Mục Tiêu"}
+                        </p>
+                        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-6">
+                            {t('landing.dashboard.h2') || "Dashboard Điều Khiển Sát Thủ"}
+                        </h2>
+                        <p className="text-white/50 text-sm max-w-2xl mx-auto leading-relaxed mb-12">
+                            {t('landing.dashboard.sub') || "Không còn mù mờ về kẻ thù. Bảng điều khiển tập trung Priority Targets và Elite Regs, giúp bạn biết rõ bàn nào đáng đánh và ai đang tìm cách rút tiền của bạn."}
+                        </p>
+                    </RevealBlock>
+                    
+                    <RevealBlock delay={100}>
+                        <div className="relative w-full rounded-3xl border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden group">
+                            <div className="absolute inset-0 bg-yellow-400/5 group-hover:bg-transparent transition-colors duration-500 z-10 pointer-events-none"></div>
+                            <Image
+                                src="/real_dashboard.png"
+                                alt="Villain Vault Dashboard Overview"
+                                width={1920}
+                                height={1080}
+                                className="w-full h-auto opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                                priority
+                            />
+                        </div>
+                    </RevealBlock>
                 </div>
             </section>
 
@@ -169,11 +200,11 @@ export function FeatureSection() {
                                         style={{ background: 'radial-gradient(ellipse at center, rgba(255,196,0,0.3) 0%, transparent 70%)' }}
                                     />
                                     <Image
-                                        src="/hud_preview.png"
+                                        src="/real_hud.png"
                                         alt="HUD Player Profiling — Villiant Vault"
                                         width={380}
-                                        height={380}
-                                        className="relative z-10 w-full h-auto rounded-2xl"
+                                        height={530}
+                                        className="relative z-10 w-full h-auto rounded-xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]"
                                     />
                                 </div>
                             </div>
@@ -277,6 +308,31 @@ export function FeatureSection() {
                                 <p className="text-xs text-white/40 leading-relaxed">{f.desc}</p>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ─── Video Instructions Section ─── */}
+            <section id="how-to-use" className="relative py-20 border-t border-white/5 bg-black/40">
+                <div className="max-w-5xl mx-auto px-6">
+                    <div className="text-center mb-12">
+                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">
+                            {t('landing.howToUse.overline') || "Hướng dẫn sử dụng"}
+                        </p>
+                        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
+                            {t('landing.howToUse.title') || "Xem cách Vault kiếm tiền cho bạn"}
+                        </h2>
+                    </div>
+                    
+                    {/* Video Placeholder */}
+                    <div className="relative w-full aspect-video rounded-3xl border border-white/10 bg-black/60 shadow-2xl overflow-hidden group cursor-pointer flex items-center justify-center">
+                        <div className="absolute inset-0 bg-yellow-400/5 group-hover:bg-yellow-400/10 transition-colors duration-300"></div>
+                        <div className="relative z-10 flex flex-col items-center gap-4">
+                            <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-110 group-hover:bg-yellow-400/20 group-hover:border-yellow-400/40 transition-all duration-300">
+                                <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-white border-b-[12px] border-b-transparent ml-2 group-hover:border-l-yellow-400 transition-colors"></div>
+                            </div>
+                            <p className="text-white/40 font-bold tracking-widest text-sm uppercase">{t('landing.howToUse.video_placeholder') || 'Video Placeholder'}</p>
+                        </div>
                     </div>
                 </div>
             </section>

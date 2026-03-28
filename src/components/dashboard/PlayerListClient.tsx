@@ -12,6 +12,7 @@ import { AddNoteForm } from "@/components/forms/AddNoteForm";
 import { ImportJsonModal } from "@/components/forms/ImportJsonModal";
 import { TemplateManagerModal } from "@/components/forms/TemplateManagerModal";
 import { loadMorePlayers, fetchFirstPage, deletePlayerAction } from "@/app/actions";
+import { useLanguage } from '@/i18n/LanguageContext';
 
 // Mock players shown when no real data exists (demo / not logged in)
 const MOCK_PLAYERS: Player[] = [
@@ -111,6 +112,7 @@ export function PlayerListClient({
     const [cursor, setCursor] = useState<string | null>(initialMeta.nextCursor);
     const [hasMore, setHasMore] = useState(initialMeta.hasMore);
     const [isLoading, setIsLoading] = useState(false);
+    const { t } = useLanguage();
 
     // UI state
     const [isAddModalOpen, setAddModalOpen] = useState(false);
@@ -245,8 +247,8 @@ export function PlayerListClient({
 
                             {players.length === 0 && !isLoading && (searchQuery || filterPlaystyle !== 'All' || filterPlatform !== 'All') ? (
                                 <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-border rounded-lg bg-card/20">
-                                    <p>No players found.</p>
-                                    <p className="text-xs mt-1">Try different filters.</p>
+                                    <p>{t('player_list.no_players')}</p>
+                                    <p className="text-xs mt-1">{t('player_list.try_filters')}</p>
                                 </div>
                             ) : (
                                 (players.length > 0 ? players : MOCK_PLAYERS).map((player) => (
@@ -277,7 +279,7 @@ export function PlayerListClient({
                         {isLoading && (
                             <div className="flex items-center justify-center py-8">
                                 <Loader2 className="w-6 h-6 text-gold animate-spin" />
-                                <span className="ml-3 text-sm text-gray-400 font-medium">Loading more players…</span>
+                                <span className="ml-3 text-sm text-gray-400 font-medium">{t('player_list.loading')}</span>
                             </div>
                         )}
 
@@ -285,7 +287,7 @@ export function PlayerListClient({
                         {!hasMore && players.length > 0 && (
                             <div className="flex items-center justify-center py-6">
                                 <div className="h-px w-16 bg-white/10"></div>
-                                <span className="mx-4 text-xs text-gray-500 uppercase tracking-widest">All players loaded</span>
+                                <span className="mx-4 text-xs text-gray-500 uppercase tracking-widest">{t('player_list.all_loaded')}</span>
                                 <div className="h-px w-16 bg-white/10"></div>
                             </div>
                         )}
@@ -297,21 +299,21 @@ export function PlayerListClient({
             </div>
 
             {/* Modals */}
-            <Modal isOpen={isAddModalOpen} onClose={() => setAddModalOpen(false)} title="Add New Target">
+            <Modal isOpen={isAddModalOpen} onClose={() => setAddModalOpen(false)} title={t('player_list.add_target')}>
                 <AddPlayerForm
                     onCancel={() => setAddModalOpen(false)}
                     onSuccess={() => { setAddModalOpen(false); resetAndReload(); }}
                 />
             </Modal>
 
-            <Modal isOpen={isImportModalOpen} onClose={() => setImportModalOpen(false)} title="Bulk Import Data">
+            <Modal isOpen={isImportModalOpen} onClose={() => setImportModalOpen(false)} title={t('player_list.bulk_import')}>
                 <ImportJsonModal
                     onCancel={() => setImportModalOpen(false)}
                     onSuccess={() => { setImportModalOpen(false); resetAndReload(); }}
                 />
             </Modal>
 
-            <Modal isOpen={isNoteModalOpen && activePlayerForNote !== null} onClose={() => setNoteModalOpen(false)} title={`Add Note: ${activePlayerForNote?.name}`}>
+            <Modal isOpen={isNoteModalOpen && activePlayerForNote !== null} onClose={() => setNoteModalOpen(false)} title={`${t('player_list.add_note')}: ${activePlayerForNote?.name}`}>
                 {activePlayerForNote && (
                     <AddNoteForm
                         playerId={activePlayerForNote.id}
@@ -321,7 +323,7 @@ export function PlayerListClient({
                 )}
             </Modal>
 
-            <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} title="Settings & Tags" size="xl">
+            <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} title={t('player_list.settings_tags')} size="xl">
                 <TemplateManagerModal onClose={() => setSettingsOpen(false)} />
             </Modal>
         </div>

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Clock, Search, Tag, ChevronRight, Sparkles, Trophy, Calendar, Trash2, Image as ImageIcon, Loader2, FileText, AlertCircle } from "lucide-react";
 import Tesseract from 'tesseract.js';
 import { API, apiFetch, apiDelete } from "@/lib/api";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface HandAction {
     player: string;
@@ -110,6 +111,7 @@ function CardBadge({ card, onClick }: { card: string; onClick?: () => void }) {
 }
 
 export function HandHistoryList() {
+    const { t } = useLanguage();
     const [hands, setHands] = useState<HandSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTag, setSearchTag] = useState("");
@@ -221,23 +223,23 @@ export function HandHistoryList() {
 
     const deleteHand = async (handId: string) => {
         if (handId === "mock-demo-hand") {
-            alert("This is a mock hand, it cannot be deleted.");
+            alert(t('hands.mock_hand_warn') || "This is a mock hand, it cannot be deleted.");
             return;
         }
-        if (!confirm("Are you sure you want to delete this hand history?")) return;
+        if (!confirm(t('hands.delete_confirm') || "Are you sure you want to delete this hand history?")) return;
 
         try {
             const res = await apiDelete(API.hand(handId));
             const json = await res.json();
             if (json.success) {
-                alert("Hand deleted successfully");
+                alert(t('hands.delete_success') || "Hand deleted successfully");
                 fetchHands();
             } else {
-                alert("Delete failed: " + (json.error || "Unknown error"));
+                alert((t('hands.delete_fail') || "Delete failed: ") + (json.error || "Unknown error"));
             }
         } catch (err) {
             console.error("Delete failed:", err);
-            alert("Delete failed");
+            alert(t('hands.delete_fail') || "Delete failed");
         }
     };
 
@@ -310,7 +312,7 @@ export function HandHistoryList() {
                             type="text"
                             value={searchTag}
                             onChange={(e) => setSearchTag(e.target.value)}
-                            placeholder="Tag (e.g. Bluff)"
+                            placeholder={t('hands.search_tag') || "Tag (e.g. Bluff)"}
                             className="w-full bg-black/40 border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-gray-300 placeholder-gray-600 focus:ring-1 focus:ring-gold/50"
                         />
                     </div>
@@ -320,7 +322,7 @@ export function HandHistoryList() {
                             onChange={(e) => setGameType(e.target.value)}
                             className="w-full bg-black/40 border border-border rounded-lg px-4 py-2 text-sm text-gray-300 focus:ring-1 focus:ring-gold/50"
                         >
-                            <option value="">All Game Types</option>
+                            <option value="">{t('hands.game_type_all')}</option>
                             <option value="NLHE">No Limit Hold'em</option>
                             <option value="PLO">Pot Limit Omaha</option>
                             <option value="SHORT_DECK">6+ Short Deck</option>
@@ -333,7 +335,7 @@ export function HandHistoryList() {
                             value={playerName}
                             onChange={(e) => setPlayerName(e.target.value)}
                             onPaste={handlePaste}
-                            placeholder={scanning ? "Scanning..." : "Player Name (or Paste Snapshot)"}
+                            placeholder={scanning ? (t('hands.scanning') || "Scanning...") : (t('hands.player_name') || "Player Name (or Paste Snapshot)")}
                             className={`w-full bg-black/40 border border-border rounded-lg pl-10 pr-10 py-2 text-sm text-gray-300 placeholder-gray-600 focus:ring-1 focus:ring-gold/50 ${scanning ? 'animate-pulse border-gold/40' : ''}`}
                         />
                         <button
@@ -366,14 +368,14 @@ export function HandHistoryList() {
                             onClick={fetchHands}
                             className="flex-1 bg-gold hover:bg-amber-500 text-black text-sm font-bold py-2 rounded-lg transition-colors"
                         >
-                            Filter
+                            {t('hands.filter')}
                         </button>
                         <button
                             onClick={clearFilters}
                             className="px-3 bg-white/5 hover:bg-white/10 text-gray-400 rounded-lg border border-border"
                             title="Clear All"
                         >
-                            Reset
+                            {t('hands.reset')}
                         </button>
                     </div>
                 </div>
@@ -382,8 +384,8 @@ export function HandHistoryList() {
             {hands.length === 0 ? (
                 <div className="bg-card border border-border rounded-xl p-12 text-center">
                     <Clock className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <h3 className="text-lg font-medium text-gray-400">No Hands Found</h3>
-                    <p className="text-sm text-gray-600 mt-1">Try adjusting your filters or analyze a new hand.</p>
+                    <h3 className="text-lg font-medium text-gray-400">{t('hands.no_hands_found') || "No Hands Found"}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{t('hands.no_hands_desc') || "Try adjusting your filters or analyze a new hand."}</p>
                 </div>
             ) : (
                 hands.map((hand) => {
@@ -448,7 +450,7 @@ export function HandHistoryList() {
                                     <div className="hidden sm:flex items-center gap-2">
                                         {Object.entries(mistakesByPlayer).map(([pName, mArr]: any) => (
                                             <span key={pName} className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/10">
-                                                {pName}: {mArr.length} Leak{mArr.length > 1 ? "s" : ""}
+                                                {pName}: {mArr.length} {mArr.length > 1 ? (t('hands.leaks') || "Leaks") : (t('hands.leak') || "Leak")}
                                             </span>
                                         ))}
                                     </div>
@@ -482,17 +484,17 @@ export function HandHistoryList() {
                                             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 flex flex-col gap-3 font-mono">
                                                 <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest flex items-center gap-2">
                                                     <Clock className="w-3 h-3 text-gold" />
-                                                    Hand Timeline
+                                                    {t('hands.hand_timeline')}
                                                 </h4>
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                     {/* Dynamic street blocks */}
                                                     {([
-                                                        { key: 'blinds_ante' as const, label: 'BLINDS & ANTE', boardCards: [] as string[] },
-                                                        { key: 'preflop' as const, label: 'PRE-FLOP', boardCards: [] as string[] },
-                                                        { key: 'flop' as const, label: 'FLOP', boardCards: parsed?.board?.slice(0, 3) || [] },
-                                                        { key: 'turn' as const, label: 'TURN', boardCards: parsed?.board?.slice(3, 4) || [] },
-                                                        { key: 'river' as const, label: 'RIVER', boardCards: parsed?.board?.slice(4, 5) || [] },
+                                                        { key: 'blinds_ante' as const, label: t('hands.blinds_ante') || 'BLINDS & ANTE', boardCards: [] as string[] },
+                                                        { key: 'preflop' as const, label: t('hands.preflop') || 'PRE-FLOP', boardCards: [] as string[] },
+                                                        { key: 'flop' as const, label: t('hands.flop') || 'FLOP', boardCards: parsed?.board?.slice(0, 3) || [] },
+                                                        { key: 'turn' as const, label: t('hands.turn') || 'TURN', boardCards: parsed?.board?.slice(3, 4) || [] },
+                                                        { key: 'river' as const, label: t('hands.river') || 'RIVER', boardCards: parsed?.board?.slice(4, 5) || [] },
                                                     ]).map(({ key, label, boardCards }) => {
                                                         const streetActions = parsed?.actions?.[key] || [];
                                                         if (streetActions.length === 0) return null;
@@ -540,7 +542,7 @@ export function HandHistoryList() {
                                                     })}
                                                     {/* Fallback if no actions at all */}
                                                     {!parsed?.actions && (
-                                                        <div className="col-span-2 text-center text-gray-600 text-xs py-6">No action data available</div>
+                                                        <div className="col-span-2 text-center text-gray-600 text-xs py-6">{t('hands.no_action_data') || "No action data available"}</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -550,7 +552,7 @@ export function HandHistoryList() {
                                                 <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 space-y-4">
                                                     <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest flex items-center gap-2">
                                                         <Sparkles className="w-3 h-3 text-purple-400" />
-                                                        AI Analysis
+                                                        {t('hands.ai_analysis')}
                                                         {analysis.final_verdict && (
                                                             <span className="ml-auto flex items-center gap-2">
                                                                 <span className="text-yellow-400 font-bold text-sm">{analysis.final_verdict.grade}</span>
@@ -571,7 +573,7 @@ export function HandHistoryList() {
                                                         <div>
                                                             <div className="text-[10px] font-bold text-blue-400 uppercase flex items-center gap-1.5 mb-1.5">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-                                                                Strategy
+                                                                {t('hands.strategy')}
                                                             </div>
                                                             <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
                                                                 <div className="whitespace-pre-line">{analysis.summary}</div>
@@ -584,7 +586,7 @@ export function HandHistoryList() {
                                                         <div>
                                                             <div className="text-[10px] font-bold text-purple-400 uppercase flex items-center gap-1.5 mb-1.5">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"></div>
-                                                                Exploit
+                                                                {t('hands.exploit')}
                                                             </div>
                                                             <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-300 font-mono leading-relaxed">
                                                                 {analysis.exploit_suggestions && analysis.exploit_suggestions.length > 0 ? (
@@ -605,7 +607,7 @@ export function HandHistoryList() {
                                                         <div>
                                                             <div className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1.5 mb-1.5">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-gray-500"></div>
-                                                                Reasoning
+                                                                {t('hands.reasoning')}
                                                             </div>
                                                             <div className="bg-black/40 border border-white/5 p-3 rounded text-xs text-gray-400 font-mono leading-relaxed space-y-0.5">
                                                                 {analysis.reasoning_trace.map((s, i) => (
@@ -636,9 +638,9 @@ export function HandHistoryList() {
                                                                                 </span>
                                                                             )}
                                                                             <br />
-                                                                            <span className="text-gray-500">• Error:</span> {mistake.description}
+                                                                            <span className="text-gray-500">• {t('common.error')}:</span> {mistake.description}
                                                                             {mistake.better_line && (
-                                                                                <><br /><span className="text-gray-500">• Better:</span> <span className="text-green-400 font-bold">{mistake.better_line}</span></>
+                                                                                <><br /><span className="text-gray-500">• {t('hands.better') || "Better"}:</span> <span className="text-green-400 font-bold">{mistake.better_line}</span></>
                                                                             )}
                                                                             {mistake.gto_deviation_reason && (
                                                                                 <><br /><span className="text-purple-400 italic">💡 {mistake.gto_deviation_reason}</span></>
@@ -652,10 +654,10 @@ export function HandHistoryList() {
                                                         <div>
                                                             <div className="text-[10px] font-bold text-green-500 uppercase flex items-center gap-1.5 mb-1.5">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                                                                Flawless Play
+                                                                {t('hands.flawless_play')}
                                                             </div>
                                                             <div className="bg-black/40 border border-green-500/20 p-3 rounded text-xs text-green-400 font-mono">
-                                                                No significant errors detected in this hand.
+                                                                {t('hands.no_errors')}
                                                             </div>
                                                         </div>
                                                     )}
@@ -665,7 +667,7 @@ export function HandHistoryList() {
                                             {/* No AI analysis yet */}
                                             {!analysis && (
                                                 <div className="bg-white/5 border border-white/10 rounded-md p-4 text-center text-gray-600 text-xs">
-                                                    No AI analysis available for this hand yet.
+                                                    {t('hands.no_ai_analysis') || "No AI analysis available for this hand yet."}
                                                 </div>
                                             )}
 
@@ -674,7 +676,7 @@ export function HandHistoryList() {
                                                 <details className="group">
                                                     <summary className="cursor-pointer text-xs font-bold text-gray-500 hover:text-gray-300 transition-colors list-none flex items-center gap-2 select-none">
                                                         <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" />
-                                                        System Logs
+                                                        {t('hands.system_logs')}
                                                     </summary>
                                                     <div className="bg-black/40 rounded-md p-3 border border-white/5 overflow-hidden ml-5 mt-2">
                                                         <div className="space-y-1.5 font-mono text-[10px]">
@@ -698,15 +700,15 @@ export function HandHistoryList() {
 
                                             {/* SUMMARY BOX */}
                                             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4 space-y-4">
-                                                <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Summary</h4>
+                                                <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">{t('hands.summary')}</h4>
 
                                                 <div>
-                                                    <span className="text-[10px] text-gray-500 block mb-0.5 uppercase tracking-tighter">Final Pot</span>
+                                                    <span className="text-[10px] text-gray-500 block mb-0.5 uppercase tracking-tighter">{t('hands.final_pot')}</span>
                                                     <span className="text-xl font-bold text-gold">{String(parsed?.pot ?? 0).replace(/ ?BB/i, '')} <span className="text-xs text-amber-700">BB</span></span>
                                                 </div>
                                                 <div className="h-[1px] bg-white/5"></div>
                                                 <div>
-                                                    <span className="text-[10px] text-gray-500 block mb-0.5 uppercase tracking-tighter">Winner</span>
+                                                    <span className="text-[10px] text-gray-500 block mb-0.5 uppercase tracking-tighter">{t('hands.winner')}</span>
                                                     <span className="text-sm font-bold text-emerald-400 truncate block">
                                                         {parsed?.winner ? `🏆 ${parsed.winner}` : "—"}
                                                     </span>
@@ -715,7 +717,7 @@ export function HandHistoryList() {
 
                                                 {/* Players */}
                                                 <div>
-                                                    <span className="text-[10px] text-gray-500 block mb-1 uppercase tracking-tighter">Players</span>
+                                                    <span className="text-[10px] text-gray-500 block mb-1 uppercase tracking-tighter">{t('hands.players')}</span>
                                                     {parsed?.players && parsed.players.length > 0 ? (
                                                         parsed.players.map((p, i) => (
                                                             <div key={i} className="flex justify-between items-center bg-black/40 px-2 py-1.5 rounded border border-white/5 mb-1">
@@ -729,7 +731,7 @@ export function HandHistoryList() {
                                                             </div>
                                                         ))
                                                     ) : (
-                                                        <div className="text-xs text-gray-600">No player data</div>
+                                                        <div className="text-xs text-gray-600">{t('hands.no_player_data') || "No player data"}</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -739,10 +741,10 @@ export function HandHistoryList() {
                                                 <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-md p-4">
                                                     <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-3 flex items-center gap-2">
                                                         <Tag className="w-3 h-3 text-purple-400" />
-                                                        Exploit Quick View
+                                                        {t('hands.exploit_quick_view')}
                                                     </h4>
                                                     <div className="text-xs text-gray-300">
-                                                        <span className="text-gray-500 block mb-1">Suggestions:</span>
+                                                        <span className="text-gray-500 block mb-1">{t('hands.suggestions')}</span>
                                                         <ul className="space-y-1.5 pl-3 border-l-2 border-purple-500/50">
                                                             {(analysis.exploit_suggestions || []).map((s, i) => (
                                                                 <li key={i}>{s}</li>
@@ -765,7 +767,7 @@ export function HandHistoryList() {
                                                     className="w-full py-2 bg-transparent hover:bg-white/5 text-gray-500 hover:text-red-400 text-[10px] font-bold rounded-md transition-all flex items-center justify-center gap-2 mt-2"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
-                                                    Erase History
+                                                    {t('hands.erase_history')}
                                                 </button>
                                             </div>
                                         </div>

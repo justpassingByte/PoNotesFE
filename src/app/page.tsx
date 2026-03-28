@@ -1,6 +1,7 @@
 import { LandingLayout } from "@/components/layout/LandingLayout";
 import { HeroSection } from "@/components/layout/HeroSection";
 import { FeatureSection } from "@/components/layout/FeatureSection";
+import { RoadmapSection } from "@/components/layout/RoadmapSection";
 import { PricingSection } from "@/components/layout/PricingSection";
 import { ContactSection } from "@/components/layout/ContactSection";
 
@@ -17,6 +18,7 @@ export default function LandingPage() {
       <LandingLayout>
         <HeroSection />
         <FeatureSection />
+        <RoadmapSection />
         <PricingSection />
         <ContactSection />
       </LandingLayout>

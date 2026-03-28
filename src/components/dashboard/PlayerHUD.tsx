@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ShieldAlert, Crosshair, AlertTriangle, Brain, Plus, FileText, MessageSquare, ChevronDown, ChevronUp, Users } from 'lucide-react';
 import { HighlightKeywords } from '@/components/ui/HighlightKeywords';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export interface PlayerHUDProps {
     id: string;
@@ -27,6 +28,7 @@ export function PlayerHUD({
     recentNotes,
     onAddNote, onDelete 
 }: PlayerHUDProps) {
+    const { t } = useLanguage();
     const [expanded, setExpanded] = useState(false);
 
     const getTagStyle = (style: string) => {
@@ -77,7 +79,7 @@ export function PlayerHUD({
                         <h3 className="font-bold text-xl text-white tracking-tight leading-none mb-2 truncate">{name}</h3>
                         <div className="flex items-center gap-1.5">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                            <span className="text-xs text-gray-500 font-bold uppercase tracking-widest leading-none block">{platformName || 'Unknown'}</span>
+                            <span className="text-xs text-gray-500 font-bold uppercase tracking-widest leading-none block">{platformName || t('dashboard.hud.unknown') || 'Unknown'}</span>
                         </div>
                     </div>
                 </div>
@@ -88,7 +90,7 @@ export function PlayerHUD({
 
             {/* ROW 2: RECENT NOTES */}
             <div className="mb-5">
-                <span className="text-xs text-gray-600 font-black uppercase tracking-widest block mb-2 px-1">Intel Logs</span>
+                <span className="text-xs text-gray-600 font-black uppercase tracking-widest block mb-2 px-1">{t('dashboard.hud.intel_logs') || "Intel Logs"}</span>
                 {notes.length > 0 ? (
                     <div className="space-y-1 px-1">
                         {notes.map((note) => (
@@ -102,7 +104,7 @@ export function PlayerHUD({
                     </div>
                 ) : (
                     <div className="px-1 py-2 border border-dashed border-gray-800 rounded-lg text-center">
-                        <span className="text-[10px] text-gray-700 italic uppercase">No logs.</span>
+                        <span className="text-[10px] text-gray-700 italic uppercase">{t('dashboard.hud.no_logs') || "No logs."}</span>
                     </div>
                 )}
             </div>
@@ -110,7 +112,7 @@ export function PlayerHUD({
             {/* ROW 3: RANGE ADJUSTMENTS */}
             {allRangeAdj.length > 0 && (
                 <div className="mb-5">
-                    <span className="text-xs text-gray-600 font-black uppercase tracking-widest mb-2 block px-1">Tactical Adjusts</span>
+                    <span className="text-xs text-gray-600 font-black uppercase tracking-widest mb-2 block px-1">{t('dashboard.hud.tactical_adjusts') || "Tactical Adjusts"}</span>
                     <div className={`space-y-1 px-1 ${expanded ? 'max-h-[200px] overflow-y-auto scrollbar-hide' : ''}`}>
                         {visibleAdj.map((adj: string, i: number) => (
                             <div key={i} className="flex items-start gap-2.5 py-2">
@@ -127,9 +129,9 @@ export function PlayerHUD({
                             className="flex items-center gap-1 text-[9px] text-gray-600 hover:text-amber-500 font-black uppercase tracking-widest transition-colors mt-2 px-1"
                         >
                             {expanded ? (
-                                <><ChevronUp className="w-3 h-3" /> Hide</>
+                                <><ChevronUp className="w-3 h-3" /> {t('dashboard.hud.hide') || "Hide"}</>
                             ) : (
-                                <><ChevronDown className="w-3 h-3" /> +{allRangeAdj.length - 3} more</>
+                                <><ChevronDown className="w-3 h-3" /> +{allRangeAdj.length - 3} {t('dashboard.hud.more') || "more"}</>
                             )}
                         </button>
                     )}
@@ -145,7 +147,7 @@ export function PlayerHUD({
                             <span className={`text-xs font-mono font-bold ${getAggressionColor(aggScore)}`}>
                                 {aggScore}%
                             </span>
-                            <span className="text-[8px] text-gray-700 uppercase font-black tracking-widest">AGG</span>
+                            <span className="text-[8px] text-gray-700 uppercase font-black tracking-widest">{t('dashboard.hud.agg') || "AGG"}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <FileText className="w-3.5 h-3.5 text-gray-700" />
@@ -155,7 +157,7 @@ export function PlayerHUD({
                     <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddNote?.(); }}
                         className="w-7 h-7 flex items-center justify-center border border-gray-800 hover:bg-white/5 text-gray-600 hover:text-amber-500 rounded-lg transition-colors"
-                        title="Log note"
+                        title={t('dashboard.hud.log_note') || "Log note"}
                     >
                         <Plus className="w-3.5 h-3.5" />
                     </button>

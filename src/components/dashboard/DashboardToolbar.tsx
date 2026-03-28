@@ -3,6 +3,7 @@
 import { Users, Download, Upload } from "lucide-react";
 import { OCRSearchInput } from "@/components/layout/OCRSearchInput";
 import { exportPlayersAction } from "@/app/actions";
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface DashboardToolbarProps {
     totalCount: number;
@@ -29,6 +30,7 @@ export function DashboardToolbar({
     onPlatformFilterChange,
     onImportClick,
 }: DashboardToolbarProps) {
+    const { t } = useLanguage();
     const distinctPlaystyles = Object.keys(playstyleCounts);
 
     return (
@@ -37,9 +39,9 @@ export function DashboardToolbar({
 
             {/* Title row */}
             <div className="flex items-center justify-between">
-                <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center tracking-tight uppercase">
                     <Users className="w-6 h-6 mr-3 text-gold" />
-                    OPPONENT HUDS
+                    {t('dashboard.opponent_huds')}
                 </h2>
             </div>
 
@@ -50,26 +52,26 @@ export function DashboardToolbar({
                 </div>
                 <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
                     <div className="flex items-center gap-1.5 sm:gap-3 flex-1 sm:flex-none">
-                        <span className="hidden sm:inline text-xs text-gray-500 uppercase tracking-widest font-black shrink-0">Platform:</span>
+                        <span className="hidden sm:inline text-xs text-gray-500 uppercase tracking-widest font-black shrink-0">{t('dashboard.platform')}</span>
                         <select
                             value={filterPlatform}
                             onChange={(e) => onPlatformFilterChange(e.target.value)}
                             className="w-full sm:w-auto bg-black/40 border border-gray-800 rounded-lg px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-bold uppercase tracking-widest text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer transition-all hover:bg-black/60 appearance-none"
                         >
-                            <option value="All">All Platforms</option>
+                            <option value="All">{t('dashboard.all_platforms')}</option>
                             {distinctPlatforms.map(platform => (
                                 <option key={platform} value={platform}>{platform}</option>
                             ))}
                         </select>
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-3 flex-1 sm:flex-none">
-                        <span className="hidden sm:inline text-xs text-gray-500 uppercase tracking-widest font-black shrink-0">Style:</span>
+                        <span className="hidden sm:inline text-xs text-gray-500 uppercase tracking-widest font-black shrink-0">{t('dashboard.style')}</span>
                         <select
                             value={filterPlaystyle}
                             onChange={(e) => onFilterChange(e.target.value)}
                             className="w-full sm:w-auto bg-black/40 border border-gray-800 rounded-lg px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-bold uppercase tracking-widest text-white focus:border-gold focus:ring-1 focus:ring-gold outline-none cursor-pointer transition-all hover:bg-black/60 appearance-none"
                         >
-                            <option value="All">All ({totalCount})</option>
+                            <option value="All">{t('dashboard.all')} ({totalCount})</option>
                             {distinctPlaystyles.map(style => (
                                 <option key={style} value={style}>
                                     {style} ({playstyleCounts[style] ?? 0})

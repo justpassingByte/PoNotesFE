@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { Brain, Save, RefreshCw, AlertCircle, Info, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { getAISettings, updateAISettings, getAIPreviewAction } from "@/app/actions";
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface AITuningModalProps {
     onClose: () => void;
 }
 
 export function AITuningModal({ onClose }: AITuningModalProps) {
+    const { t } = useLanguage();
     const [settings, setSettings] = useState<any>(null);
     const [previews, setPreviews] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -84,7 +86,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
         return (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
                 <RefreshCw className="w-8 h-8 text-gold animate-spin" />
-                <p className="text-gray-400 font-medium font-mono tracking-widest uppercase">Initializing Neural Matrix...</p>
+                <p className="text-gray-400 font-medium font-mono tracking-widest uppercase">{t('ai_tuning.initializing')}</p>
             </div>
         );
     }
@@ -100,7 +102,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                 >
                     <div className="flex items-center justify-center gap-2">
                         <Brain className="w-3.5 h-3.5" />
-                        Player Profiling
+                        {t('ai_tuning.player_profiling')}
                     </div>
                 </button>
                 <button 
@@ -109,7 +111,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                 >
                     <div className="flex items-center justify-center gap-2">
                         <Zap className="w-3.5 h-3.5" />
-                        Hand Analysis
+                        {t('ai_tuning.hand_analysis')}
                     </div>
                 </button>
             </div>
@@ -124,8 +126,8 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                                 <Brain className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="text-xs font-bold text-white uppercase tracking-wider">AI Analysis Engine</h4>
-                                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-tighter">Global Neural Switch</p>
+                                <h4 className="text-xs font-bold text-white uppercase tracking-wider">{t('ai_tuning.ai_analysis_engine')}</h4>
+                                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-tighter">{t('ai_tuning.global_neural_switch')}</p>
                             </div>
                         </div>
                         <button 
@@ -138,27 +140,27 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                     </div>
 
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">AI Model Generation</label>
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{t('ai_tuning.model_generation')}</label>
                         <select 
                             value={settings?.model_name || "llama-3.3-70b-versatile"}
                             onChange={(e) => setSettings({ ...settings, model_name: e.target.value })}
                             className="w-full bg-black/60 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:border-gold/50 transition-all font-bold appearance-none cursor-pointer shadow-inner"
                         >
                             <optgroup label="Groq (Ultra-Fast)">
-                                <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Fast & Precise)</option>
-                                <option value="llama-3.1-8b-instant">Llama 3.1 8B (Instant)</option>
-                                <option value="mixtral-8x7b-32768">Mixtral 8x7B (Expert)</option>
+                                <option value="llama-3.3-70b-versatile">Llama 3.3 70B ({t('ai_tuning.fast_precise')})</option>
+                                <option value="llama-3.1-8b-instant">Llama 3.1 8B ({t('ai_tuning.instant')})</option>
+                                <option value="mixtral-8x7b-32768">Mixtral 8x7B ({t('ai_tuning.expert')})</option>
                             </optgroup>
                             <optgroup label="OpenAI (Premium)">
-                                <option value="gpt-4o">GPT-4o (State of the Art)</option>
-                                <option value="gpt-4o-mini">GPT-4o Mini (Efficient)</option>
+                                <option value="gpt-4o">GPT-4o ({t('ai_tuning.state_of_art')})</option>
+                                <option value="gpt-4o-mini">GPT-4o Mini ({t('ai_tuning.efficient')})</option>
                             </optgroup>
                         </select>
                     </div>
 
                     <div className="space-y-3">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 flex justify-between">
-                            Logic Creativity
+                            {t('ai_tuning.logic_creativity')}
                             <span className="text-gold font-mono font-bold tracking-widest">{settings?.temperature || 0.7}</span>
                         </label>
                         <input 
@@ -176,7 +178,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                 {/* Right Side: Behavioral Sliders */}
                 <div className="space-y-6">
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Strategic Architecture</label>
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{t('ai_tuning.strategic_architecture')}</label>
                         <div className="grid grid-cols-3 gap-2 p-1 bg-black/40 border border-white/5 rounded-2xl h-[58px]">
                             {['Exploit', 'Balanced', 'GTO'].map((style) => {
                                 const currentStyle = activeTab === 'profile'
@@ -212,7 +214,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
 
                     <div className="space-y-3">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 flex justify-between">
-                            Aggression Bias
+                            {t('ai_tuning.aggression_bias')}
                             <span className="text-gold font-mono font-bold tracking-widest">{activeTab === 'profile' ? (settings?.aggression_bias || 85) : (settings?.hand_aggression_bias || 85)}%</span>
                         </label>
                         <input 
@@ -230,7 +232,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                     </div>
 
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Neural Depth</label>
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{t('ai_tuning.neural_depth')}</label>
                         <div className="flex bg-black/40 border border-white/5 rounded-2xl p-1 h-[58px]">
                             {['Quick', 'Deep'].map((depth) => {
                                 const currentDepth = activeTab === 'profile' ? (settings?.insight_depth || "Deep") : (settings?.hand_insight_depth || "Deep");
@@ -244,7 +246,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                                         })}
                                         className={`flex-1 flex items-center justify-center text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${currentDepth === depth ? 'bg-gold text-black shadow-lg font-black' : 'text-gray-500 hover:text-white'}`}
                                     >
-                                        {depth} Mode
+                                        {depth === 'Quick' ? (t('ai_tuning.quick_mode') || 'Quick Mode') : depth === 'Deep' ? (t('ai_tuning.deep_mode') || 'Deep Mode') : `${depth} ${t('ai_tuning.mode')}`}
                                     </button>
                                 );
                             })}
@@ -261,7 +263,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                 <div className={`p-1.5 rounded-lg transition-all ${showPrompt ? 'bg-gold/20 text-gold' : 'bg-white/5'}`}>
                     <Brain className="w-4 h-4" />
                 </div>
-                {showPrompt ? "Close Tactical System Instructions" : "Edit Neural System Prompt (Expert Only)"}
+                {showPrompt ? t('ai_tuning.close_prompt') : t('ai_tuning.open_prompt')}
                 {showPrompt ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
 
@@ -272,7 +274,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                         <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-gold animate-pulse"></div>
                             <label className="text-[11px] font-black text-white uppercase tracking-[0.2em]">
-                                {activeTab === 'profile' ? "Neural Profiling Core" : "Strategic Analysis Core"}
+                                {activeTab === 'profile' ? t('ai_tuning.profiling_core') : t('ai_tuning.analysis_core')}
                             </label>
                         </div>
                         <button 
@@ -283,7 +285,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                             }}
                             className="text-[10px] text-gray-500 hover:text-red-500 transition-colors font-bold uppercase tracking-widest"
                         >
-                            Purge & Reset
+                            {t('ai_tuning.purge_reset')}
                         </button>
                     </div>
                     
@@ -298,14 +300,14 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                                 else setSettings({ ...settings, analysis_prompt: e.target.value });
                             }}
                             className="relative w-full bg-black/80 border border-white/10 rounded-3xl px-8 py-8 text-[15px] text-gray-200 font-mono leading-relaxed focus:outline-none focus:border-gold/40 transition-all min-h-[500px] shadow-2xl scrollbar-hide"
-                            placeholder="Instruct the AI engine on its primary directive..."
+                            placeholder={t('ai_tuning.prompt_placeholder')}
                         />
                     </div>
                     
                     <div className="flex items-center gap-3 p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl">
                         <Info className="w-4 h-4 text-blue-400 shrink-0" />
                         <p className="text-[10px] text-blue-200/60 leading-relaxed font-medium">
-                            The prompt above is the "DNA" of the AI. Changes here will immediately alter how the system interprets player tendencies and constructs exploits.
+                            {t('ai_tuning.dna_info')}
                         </p>
                     </div>
                 </div>
@@ -316,7 +318,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                 {(error || success) && (
                     <div className={`${error ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'} text-[10px] font-black uppercase tracking-widest px-6 py-5 rounded-2xl flex items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                         {error ? <AlertCircle className="w-5 h-5" /> : <Zap className="w-5 h-5 fill-current" />}
-                        {error || "NEURAL CONFIGURATION SYNCHRONIZED SUCCESSFULLY."}
+                        {error || t('ai_tuning.sync_success')}
                     </div>
                 )}
                 
@@ -325,7 +327,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                         onClick={onClose}
                         className="flex-1 py-5 text-[10px] font-black text-gray-500 hover:text-white transition-all uppercase tracking-[0.2em] bg-white/5 rounded-2xl hover:bg-white/10"
                     >
-                        Return to Dashboard
+                        {t('ai_tuning.return_dashboard')}
                     </button>
                     <button 
                         onClick={handleSave}
@@ -333,7 +335,7 @@ export function AITuningModal({ onClose }: AITuningModalProps) {
                         className="flex-[2] py-5 bg-gold text-black rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] flex items-center justify-center gap-4 hover:bg-yellow-400 transition-all hover:shadow-[0_0_40px_rgba(250,204,21,0.25)] disabled:opacity-50"
                     >
                         {isSaving ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                        {isSaving ? "SYNCHRONIZING..." : "UPLOAD TO NEURAL CORE"}
+                        {isSaving ? t('ai_tuning.syncing') : t('ai_tuning.upload_core')}
                     </button>
                 </div>
             </div>

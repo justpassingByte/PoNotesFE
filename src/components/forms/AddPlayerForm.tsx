@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Plus, Upload, Image as ImageIcon, Loader2, Zap } from 'lucide-react';
 import Tesseract from 'tesseract.js';
 import { API, apiFetch, apiPost } from '@/lib/api';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface PlatformOption {
     id: string;
@@ -15,6 +16,7 @@ interface QuickTag {
 }
 
 export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void, onCancel?: () => void }) {
+    const { t } = useLanguage();
     const [name, setName] = useState('');
     const [platforms, setPlatforms] = useState<PlatformOption[]>([]);
     const [platformId, setPlatformId] = useState('');
@@ -157,15 +159,15 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
                 {scanning ? (
                     <div className="flex items-center gap-3 text-gold">
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span className="text-sm font-medium">Scanning image...</span>
+                        <span className="text-sm font-medium">{t('player_form.scanning') || "Scanning image..."}</span>
                     </div>
                 ) : (
                     <>
                         <div className="flex items-center gap-2 text-gray-400">
                             <ImageIcon className="w-5 h-5 opacity-50" />
                             <div>
-                                <span className="text-sm text-white font-medium block">OCR Auto-fill</span>
-                                <span className="text-[10px] text-gray-500">Paste screenshot anywhere (Ctrl+V)</span>
+                                <span className="text-sm text-white font-medium block">{t('player_form.ocr_autofill') || "OCR Auto-fill"}</span>
+                                <span className="text-[10px] text-gray-500">{t('player_form.paste_screenshot') || "Paste screenshot anywhere (Ctrl+V)"}</span>
                             </div>
                         </div>
                         <button
@@ -173,7 +175,7 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
                             onClick={() => fileInputRef.current?.click()}
                             className="px-3 py-1.5 text-[11px] font-semibold text-gray-400 hover:text-gold bg-white/5 hover:bg-gold/10 border border-white/5 hover:border-gold/30 rounded-lg transition-all uppercase tracking-wider"
                         >
-                            <Upload className="w-3 h-3 inline mr-1.5" />Browse
+                            <Upload className="w-3 h-3 inline mr-1.5" />{t('player_form.browse') || "Browse"}
                         </button>
                     </>
                 )}
@@ -181,20 +183,20 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Player Name <span className="text-red-400">*</span></label>
+                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('player_form.player_name') || "Player Name"} <span className="text-red-400">*</span></label>
                     <input
                         type="text"
                         value={name}
                         onChange={e => setName(e.target.value)}
                         onPaste={handlePaste}
                         required
-                        placeholder={scanning ? 'Scanning...' : 'e.g. Isildur1 (or paste screenshot here)'}
+                        placeholder={scanning ? (t('player_form.scanning_placeholder') || 'Scanning...') : (t('player_form.name_placeholder') || 'e.g. Isildur1 (or paste screenshot here)')}
                         className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
                     />
                 </div>
 
                 <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Platform</label>
+                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('player_form.platform') || "Platform"}</label>
                     <select
                         value={platformId}
                         onChange={e => setPlatformId(e.target.value)}
@@ -207,19 +209,19 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
                 </div>
 
                 <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Playstyle</label>
+                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('player_form.playstyle') || "Playstyle"}</label>
                     <select
                         value={playstyle}
                         onChange={e => setPlaystyle(e.target.value)}
                         className="w-full bg-background border border-border text-sm rounded-md px-3 py-2 text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
                     >
-                        <option value="UNKNOWN">Unknown</option>
-                        <option value="LAG">LAG (Aggressive)</option>
-                        <option value="TAG">TAG (Tight)</option>
-                        <option value="NIT">NIT (Very Tight)</option>
-                        <option value="FISH">FISH (Passive)</option>
-                        <option value="MANIAC">MANIAC</option>
-                        <option value="CALLING STATION">CALLING STATION</option>
+                        <option value="UNKNOWN">{t('player_form.playstyle_unknown') || "Unknown"}</option>
+                        <option value="LAG">{t('player_form.playstyle_lag') || "LAG (Aggressive)"}</option>
+                        <option value="TAG">{t('player_form.playstyle_tag') || "TAG (Tight)"}</option>
+                        <option value="NIT">{t('player_form.playstyle_nit') || "NIT (Very Tight)"}</option>
+                        <option value="FISH">{t('player_form.playstyle_fish') || "FISH (Passive)"}</option>
+                        <option value="MANIAC">{t('player_form.playstyle_maniac') || "MANIAC"}</option>
+                        <option value="CALLING STATION">{t('player_form.playstyle_calling_station') || "CALLING STATION"}</option>
                     </select>
                 </div>
             </div>
@@ -227,7 +229,7 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
             {/* Initial Note Section */}
             <div className="pt-4 border-t border-white/5">
                 <div className="flex justify-between items-center mb-3">
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">Initial Note (Optional)</label>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('player_form.initial_note') || "Initial Note (Optional)"}</label>
 
                     <div className="flex gap-1">
                         {['Preflop', 'Flop', 'Turn', 'River'].map((s) => (
@@ -250,7 +252,7 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
                 {quickTags.length > 0 && (
                     <div className="mb-3">
                         <label className="flex items-center gap-1 text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1.5">
-                            <Zap className="w-3 h-3" /> Quick Tags
+                            <Zap className="w-3 h-3" /> {t('player_form.quick_tags') || "Quick Tags"}
                         </label>
                         <div className="flex flex-wrap gap-1.5">
                             {quickTags.map(t => (
@@ -271,7 +273,7 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
                     value={noteContent}
                     onChange={e => setNoteContent(e.target.value)}
                     rows={2}
-                    placeholder="E.g. Overfolds to 3-bets OOP..."
+                    placeholder={t('player_form.note_placeholder') || "E.g. Overfolds to 3-bets OOP..."}
                     className="w-full bg-black/30 border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all resize-none placeholder:text-gray-600"
                 />
             </div>
@@ -285,7 +287,7 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
                         onClick={onCancel}
                         className="flex-1 px-4 py-2.5 border border-white/5 text-gray-400 rounded-xl hover:bg-white/5 hover:text-white transition-all"
                     >
-                        Cancel
+                        {t('player_form.cancel') || "Cancel"}
                     </button>
                 )}
                 <button
@@ -293,10 +295,10 @@ export function AddPlayerForm({ onSuccess, onCancel }: { onSuccess?: () => void,
                     disabled={loading}
                     className="flex-1 flex justify-center items-center px-4 py-2.5 bg-gold text-black font-semibold rounded-xl hover:bg-yellow-500 transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)] disabled:opacity-50"
                 >
-                    {loading ? 'Saving...' : (
+                    {loading ? (t('player_form.saving') || 'Saving...') : (
                         <>
                             <Plus className="w-4 h-4 mr-2" />
-                            Add Player
+                            {t('player_form.add_player') || 'Add Player'}
                         </>
                     )}
                 </button>

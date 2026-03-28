@@ -474,6 +474,8 @@ const SUITS = ["h", "d", "c", "s"];
 
 function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (v: string) => void; onCancel: () => void; currentVal?: string }) {
 
+    const { t } = useLanguage();
+
     return (
 
         <div className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onCancel}>
@@ -482,8 +484,7 @@ function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (v: string) 
 
                 <div className="flex justify-between mb-3">
 
-                    <span className="text-xs text-gray-400 uppercase font-bold">Pick card</span>
-
+                    <span className="text-xs text-gray-400 uppercase font-bold">{t('hands.pick_card')}</span>
                     <button onClick={onCancel} className="text-gray-400 hover:text-white text-xs">✕</button>
 
                 </div>
@@ -552,6 +553,8 @@ function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (v: string) 
 
 function ShowdownBlock({ players, currency = 'BB' }: { players: any[]; currency?: string }) {
 
+    const { t } = useLanguage();
+
     if (!players || players.length === 0) return null;
 
     return (
@@ -560,7 +563,7 @@ function ShowdownBlock({ players, currency = 'BB' }: { players: any[]; currency?
 
             <div className="flex items-center gap-2 border-b border-gray-800 pb-1 mb-1 text-yellow-400">
 
-                <span className="font-bold text-xs">SHOWDOWN</span>
+                <span className="font-bold text-xs">{t('hands.showdown')}</span>
 
             </div>
 
@@ -632,6 +635,8 @@ function ShowdownBlock({ players, currency = 'BB' }: { players: any[]; currency?
 
 function SaveNoteButton({ noteData }: { noteData: { player_name: string; content: string; street: string; note_type: string; source: string; hand_id?: string } }) {
 
+    const { t } = useLanguage();
+
     const [saving, setSaving] = useState(false);
 
     const [saved, setSaved] = useState(false);
@@ -666,7 +671,7 @@ function SaveNoteButton({ noteData }: { noteData: { player_name: string; content
 
             className={`text-[10px] px-1.5 py-0.5 rounded transition-colors ${saved ? 'text-green-500 bg-green-900/20' : 'text-gray-600 hover:text-yellow-400 hover:bg-yellow-900/10'}`}>
 
-            {saving ? '...' : saved ? '✓ saved' : '+ note'}
+            {saving ? '...' : saved ? `✓ ${t('common.save')}` : `+ ${t('hands.notes')}`}
 
         </button>
 
@@ -724,10 +729,10 @@ const handleParse = async () => {
 
             if (json.usage || json.error?.toLowerCase().includes("limit") || json.error?.toLowerCase().includes("quota")) { setQuotaError({ error: json.error || "Limit", used: json.usage?.used ?? 0, limit: json.usage?.limit ?? 0, remaining: json.usage?.remaining ?? 0, resetsAt: json.usage?.resetsAt || "", type: "ocr" }); return; }
 
-            openLogin("Sign in to use the Hand Analyzer."); return;
+            openLogin(t('hands.sign_in_analyzer')); return;
         }
         if (!json.success) {
-            if (["auth", "login", "token", "session", "expired"].some(k => json.error?.toLowerCase().includes(k))) { openLogin("Sign in."); return; }
+            if (["auth", "login", "token", "session", "expired"].some(k => json.error?.toLowerCase().includes(k))) { openLogin(t('nav.login')); return; }
 
             throw new Error(json.error || "Parsing failed");
         }
@@ -741,14 +746,14 @@ const handleRunAnalysis = async () => {
     setError(null); setQuotaError(null); setIsAnalyzing(true);
     try {
         const res = await fetch(`${API.handAnalyze}/analyze`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ handId: parsedHand.id, parsedData: parsedHand.parsed_data }) });
-        if (res.status === 401 || res.status === 440) { openLogin("Sign in for AI analysis."); return; }
+        if (res.status === 401 || res.status === 440) { openLogin(t('hands.sign_in_analyzer')); return; }
         const json = await res.json();
         if (res.status === 403) {
             if (json.usage || json.error?.toLowerCase().includes("limit") || json.error?.toLowerCase().includes("quota")) { setQuotaError({ error: json.error || "Limit", used: json.usage?.used ?? 0, limit: json.usage?.limit ?? 0, remaining: json.usage?.remaining ?? 0, resetsAt: json.usage?.resetsAt || "", type: "ai" }); return; }
-            openLogin("Sign in for AI analysis."); return;
+            openLogin(t('hands.sign_in_analyzer')); return;
         }
         if (!json.success) {
-            if (["auth", "login", "token", "session", "expired"].some(k => json.error?.toLowerCase().includes(k))) { openLogin("Sign in."); return; }
+            if (["auth", "login", "token", "session", "expired"].some(k => json.error?.toLowerCase().includes(k))) { openLogin(t('nav.login')); return; }
             throw new Error(json.error || "Analysis failed");
         }
         setAnalysis(json.data.analysis); setIsReviewing(false);
@@ -787,7 +792,7 @@ const board: string[] = handData?.board || [];
 
 const streetDefs: { key: string; label: string; cards: string[]; boardStart: number }[] = [
 
-    { key: "blinds_ante", label: "BLINDS & ANTE", cards: [], boardStart: 0 },
+    { key: "blinds_ante", label: t('hands.blinds_ante') || "BLINDS & ANTE", cards: [], boardStart: 0 },
 
     { key: "preflop", label: t('hands.preflop') || "PRE-FLOP", cards: [], boardStart: 0 },
 
@@ -823,7 +828,7 @@ return (
 
                     {inputType === "text" ? (
 
-                        <textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="Paste hand history..."
+                        <textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder={t('hands.paste_hand_history')}
 
                             className="w-full h-20 bg-transparent border border-gray-800 rounded p-2 text-xs text-gray-400 placeholder-gray-700 resize-none focus:outline-none" />
 
@@ -833,7 +838,7 @@ return (
 
                             <div onClick={() => fileInputRef.current?.click()} className="h-16 border border-dashed border-gray-800 rounded flex items-center justify-center cursor-pointer hover:border-gray-600 text-xs text-gray-600 transition-colors">
 
-                                {imagePreview ? "✓ loaded — click to change" : "Drop / Paste / Click"}
+                                {imagePreview ? t('hands.loaded_click_change') : t('hands.drop_paste_click')}
 
                                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
 
@@ -859,7 +864,7 @@ return (
 
                         className="mt-2 w-full py-2 bg-yellow-400 text-black text-xs font-bold uppercase rounded disabled:opacity-30">
 
-                        {isParsing ? "PROCESSING..." : isReviewing ? "RE-PARSE" : "PARSE"}
+                        {isParsing ? t('hands.processing') : isReviewing ? t('hands.re_parse') : t('hands.parse')}
 
                     </button>
 
@@ -891,7 +896,7 @@ return (
 
                     <div className="flex items-center justify-center min-h-[40vh] text-gray-700 text-sm">
 
-                        Awaiting input
+                        {t('hands.awaiting_input')}
 
                     </div>
 
@@ -919,7 +924,7 @@ return (
 
                                     <button onClick={() => handleFeedback("confirm")} disabled={isSubmittingFeedback}
 
-                                        className="text-green-500 hover:underline font-bold">{isSubmittingFeedback ? "..." : "✓ confirm"}</button>
+                                        className="text-green-500 hover:underline font-bold">{isSubmittingFeedback ? "..." : t('hands.confirm')}</button>
 
                                 )}
 
@@ -1014,7 +1019,7 @@ return (
 
                                 className="mt-2 w-full py-2 bg-green-700 hover:bg-green-600 text-white text-xs font-bold uppercase rounded disabled:opacity-30">
 
-                                {isAnalyzing ? "ANALYZING..." : "RUN AI LEAK SCAN"}
+                                {isAnalyzing ? t('hands.analyzing') : t('hands.run_ai_leak_scan')}
 
                             </button>
 
@@ -1036,7 +1041,7 @@ return (
 
                             <div className="flex items-center gap-3 mb-2">
 
-                                <span className="text-xs text-gray-600 uppercase font-bold">Analysis</span>
+                                <span className="text-xs text-gray-600 uppercase font-bold">{t('hands.analysis')}</span>
 
                                 {analysis.final_verdict && (
 
@@ -1072,7 +1077,7 @@ return (
 
                             <div>
 
-                                <span className="text-xs text-gray-600 uppercase font-bold block mb-1">Reasoning</span>
+                                <span className="text-xs text-gray-600 uppercase font-bold block mb-1">{t('hands.reasoning')}</span>
 
                                 {analysis.reasoning_trace.map((s, i) => (
 
@@ -1094,7 +1099,7 @@ return (
 
                         <div>
 
-                            <span className="text-xs text-orange-400 uppercase font-bold block mb-1">Mistakes ({analysis.mistakes?.length || 0})</span>
+                            <span className="text-xs text-orange-400 uppercase font-bold block mb-1">{t('hands.mistakes')} ({analysis.mistakes?.length || 0})</span>
 
                             {analysis.mistakes?.length > 0 ? analysis.mistakes.map((m, i) => {
 
@@ -1128,7 +1133,7 @@ return (
 
                                 );
 
-                            }) : <p className="text-gray-700 italic">No mistakes detected.</p>}
+                            }) : <p className="text-gray-700 italic">{t('hands.no_mistakes')}</p>}
 
                         </div>
 
@@ -1138,7 +1143,7 @@ return (
 
                             <div>
 
-                                <span className="text-xs text-purple-400 uppercase font-bold block mb-1">Exploit Plan</span>
+                                <span className="text-xs text-purple-400 uppercase font-bold block mb-1">{t('hands.exploit_plan')}</span>
 
                                 {analysis.exploit_suggestions.map((s, i) => (
 
@@ -1152,7 +1157,7 @@ return (
 
                         <button onClick={() => { setAnalysis(null); setParsedHand(null); setIsReviewing(false); setError(null); }}
 
-                            className="text-xs text-gray-600 hover:text-yellow-400 uppercase font-bold">↺ new hand</button>
+                            className="text-xs text-gray-600 hover:text-yellow-400 uppercase font-bold">{t('hands.new_hand')}</button>
 
                     </div>
 

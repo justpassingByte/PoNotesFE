@@ -20,6 +20,7 @@ import {
 import { Modal } from '@/components/ui/Modal';
 import { AITuningModal } from './AITuningModal';
 import { HighlightKeywords } from '@/components/ui/HighlightKeywords';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface Player {
     id: string;
@@ -123,6 +124,7 @@ const MOCK_REGS: Player[] = [
 
 export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHomeProps) {
     const [isAITuningOpen, setIsAITuningOpen] = useState(false);
+    const { t } = useLanguage();
     const displayName = user?.email ? user.email.split('@')[0].toUpperCase() : 'HERO';
 
     return (
@@ -131,7 +133,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
             <Modal 
                 isOpen={isAITuningOpen} 
                 onClose={() => setIsAITuningOpen(false)}
-                title="AI Neural Tuning Engine"
+                title={t('dashboard.ai_tuning_modal_title')}
                 size="xl"
             >
                 <AITuningModal onClose={() => setIsAITuningOpen(false)} />
@@ -147,13 +149,13 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                         <div className="space-y-3">
                             <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[11px] font-black uppercase tracking-widest border border-emerald-500/20">
                                 <Sparkles className="w-3.5 h-3.5" />
-                                Neural Link Established
+                                {t('dashboard.neural_link_established')}
                             </div>
                             <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tighter leading-tight uppercase">
-                                Welcome Back, <span className="text-white underline decoration-gold/30">{displayName}</span>
+                                {t('dashboard.welcome')} <span className="text-white underline decoration-gold/30">{displayName}</span>
                             </h1>
                             <p className="text-gray-400 max-w-lg leading-relaxed text-sm sm:text-lg font-medium">
-                                Tracking <span className="text-white font-bold">{stats.totalCount}</span> active opponents. All systems synchronized.
+                                {t('dashboard.tracking_prefix')} <span className="text-white font-bold">{stats.totalCount}</span> {t('dashboard.tracking_suffix')}
                             </p>
                         </div>
                     </div>
@@ -164,7 +166,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                             className="group flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-white/5 border border-white/10 text-white font-black rounded-xl hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98]"
                         >
                             <Brain className="w-5 h-5 text-gray-400 group-hover:text-gold transition-colors" />
-                            <span className="text-sm uppercase tracking-widest">Neural Tuning</span>
+                            <span className="text-sm uppercase tracking-widest">{t('dashboard.neural_tuning_btn')}</span>
                         </button>
 
                         <Link 
@@ -172,7 +174,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                             className="group flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-amber-500 text-black font-black rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)] active:scale-[0.98]"
                         >
                             <Zap className="w-5 h-5 fill-current" />
-                            <span className="text-sm uppercase tracking-widest">New Hand Analysis</span>
+                            <span className="text-sm uppercase tracking-widest">{t('dashboard.new_hand_btn')}</span>
                         </Link>
                     </div>
                 </div>
@@ -185,7 +187,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 <div className="space-y-4">
                     <div className="flex items-center gap-2.5 px-1">
                         <ShieldAlert className="w-4 h-4 text-gray-500" />
-                        <h2 className="text-xs font-black text-white uppercase tracking-widest">Priority Targets</h2>
+                        <h2 className="text-xs font-black text-white uppercase tracking-widest">{t('dashboard.priority_targets')}</h2>
                         <div className="h-[1px] flex-1 bg-gray-800/60 ml-2"></div>
                     </div>
                     <div className="space-y-3">
@@ -199,7 +201,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 <div className="space-y-4">
                     <div className="flex items-center gap-2.5 px-1">
                         <Target className="w-4 h-4 text-gray-500" />
-                        <h2 className="text-xs font-black text-white uppercase tracking-widest">Elite Regs</h2>
+                        <h2 className="text-xs font-black text-white uppercase tracking-widest">{t('dashboard.elite_regs')}</h2>
                         <div className="h-[1px] flex-1 bg-gray-800/60 ml-2"></div>
                     </div>
                     <div className="space-y-3">
@@ -213,7 +215,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 <div className="space-y-3">
                     <div className="flex items-center gap-2 px-1">
                         <Zap className="w-3.5 h-3.5 text-amber-400" />
-                        <h2 className="text-[10px] font-bold text-white uppercase tracking-wider">Quick Actions</h2>
+                        <h2 className="text-[10px] font-bold text-white uppercase tracking-wider">{t('dashboard.quick_actions')}</h2>
                         <div className="h-[1px] flex-1 bg-gray-800"></div>
                     </div>
                     <div className="space-y-2">
@@ -222,8 +224,8 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                                 <Users className="w-4 h-4 text-blue-400" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-white">All Players</p>
-                                <p className="text-[10px] text-gray-500 uppercase tracking-wider">{stats.totalCount} tracked</p>
+                                <p className="text-sm font-bold text-white">{t('dashboard.all_players')}</p>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-wider">{stats.totalCount} {t('dashboard.tracked_count')}</p>
                             </div>
                             <ArrowRight className="w-3.5 h-3.5 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </Link>
@@ -233,8 +235,8 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                                 <Zap className="w-4 h-4 text-amber-400" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-white">Hand Scanner</p>
-                                <p className="text-[10px] text-gray-500 uppercase tracking-wider">Upload & analyze</p>
+                                <p className="text-sm font-bold text-white">{t('dashboard.hand_scanner')}</p>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t('dashboard.upload_analyze')}</p>
                             </div>
                             <ArrowRight className="w-3.5 h-3.5 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </Link>
@@ -242,7 +244,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
 
                     {/* Playstyle Breakdown */}
                     <div className="pt-1">
-                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-2 block px-1">Player Breakdown</span>
+                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-2 block px-1">{t('dashboard.player_breakdown')}</span>
                         <div className="space-y-1.5">
                             {(() => {
                                 const counts = Object.keys(stats.playstyleCounts).length > 0
@@ -282,6 +284,7 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
 }
 
 function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: boolean }) {
+    const { t } = useLanguage();
     const getTagStyle = (style: string) => {
         const s = style?.toUpperCase();
         if (s === 'MANIAC' || s === 'LAG') return 'bg-red-500/5 text-red-500/80 border-red-500/20';
@@ -321,7 +324,7 @@ function PlayerCard({ player, isStrong = false }: { player: Player, isStrong?: b
             {/* ROW 2: Range Adjustments (max 2) - Higher Density */}
             {player.ai_profile?.range_adjustments && player.ai_profile.range_adjustments.length > 0 && (
                 <div className="mb-3">
-                    <span className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-2 block px-1">Range Adjustments</span>
+                    <span className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-2 block px-1">{t('dashboard.range_adjustments')}</span>
                     <div className="space-y-1">
                         {player.ai_profile.range_adjustments.slice(0, 2).map((adj: string, i: number) => (
                             <div key={i} className="flex items-start gap-2.5 border-l-2 border-gray-700 py-1.5 pl-4">

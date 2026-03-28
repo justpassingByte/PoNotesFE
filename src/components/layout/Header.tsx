@@ -30,7 +30,7 @@ export function Header({
         { name: t('nav.players'), href: '/players', icon: User },
         { name: t('nav.hands'), href: '/analyzer', icon: Activity },
         { name: t('nav.history'), href: '/history', icon: History },
-        { name: t('nav.admin'), href: '/admin', icon: CreditCard },
+        { name: t('nav.pricing') || 'Nâng Cấp', href: '/pricing', icon: CreditCard },
     ];
 
     const isActive = (href: string) => pathname === href;

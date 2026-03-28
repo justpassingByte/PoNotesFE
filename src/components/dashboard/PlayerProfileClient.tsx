@@ -319,13 +319,13 @@ export function PlayerProfileClient({
 
                                 <div className="relative z-10">
                                     <div className="flex items-center gap-2 mb-6">
-                                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Core Exploit Strategy</span>
+                                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{t('player_profile.core_strategy')}</span>
                                     </div>
 
                                     {isAnalyzing ? (
                                         <div className="py-12 flex flex-col items-center justify-center space-y-3">
                                             <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
-                                            <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Analyzing...</p>
+                                            <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">{t('player_profile.analyzing')}</p>
                                         </div>
                                     ) : (
                                         <>
@@ -333,7 +333,7 @@ export function PlayerProfileClient({
                                                 {(() => {
                                                     const rawStrategy = player.ai_profile?.strategy || player.ai_exploit_strategy;
                                                     if (!rawStrategy) {
-                                                        return <blockquote className="text-base md:text-lg font-medium text-gray-200 leading-relaxed tracking-tight italic">&quot;Gathering more data for neural mapping...&quot;</blockquote>;
+                                                        return <blockquote className="text-base md:text-lg font-medium text-gray-200 leading-relaxed tracking-tight italic">&quot;{t('player_profile.gathering_data')}&quot;</blockquote>;
                                                     }
 
                                                     // Normalize to array if it's an object/array
@@ -349,19 +349,19 @@ export function PlayerProfileClient({
                                                                 </div>
                                                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
                                                                     <div>
-                                                                        <p className="text-[9px] text-gray-500 uppercase font-black">Action</p>
+                                                                        <p className="text-[9px] text-gray-500 uppercase font-black">{t('player_profile.action')}</p>
                                                                         <p className="text-white text-sm font-bold leading-tight mt-1">{move.action || '-'}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-xs text-gray-500 uppercase font-black">Range</p>
+                                                                        <p className="text-xs text-gray-500 uppercase font-black">{t('player_profile.range')}</p>
                                                                         <p className="text-sm font-bold leading-tight mt-1.5">{move.range || '-'}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-xs text-gray-500 uppercase font-black">Structure</p>
+                                                                        <p className="text-xs text-gray-500 uppercase font-black">{t('player_profile.structure')}</p>
                                                                         <p className="text-base font-bold leading-tight mt-1.5">{move.structure || '-'}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-xs text-gray-500 uppercase font-black">Sizing / Freq</p>
+                                                                        <p className="text-xs text-gray-500 uppercase font-black">{t('player_profile.sizing_freq')}</p>
                                                                         <p className="text-base font-bold leading-tight mt-1.5">
                                                                             <HighlightKeywords text={move.sizing || '-'} /> ({move.frequency || '-'})
                                                                         </p>
@@ -382,7 +382,7 @@ export function PlayerProfileClient({
 
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-700/60">
                                                 <div className="space-y-2">
-                                                    <p className="text-xs text-gray-500 font-black uppercase tracking-widest">Archetype</p>
+                                                    <p className="text-xs text-gray-500 font-black uppercase tracking-widest">{t('player_profile.archetype')}</p>
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-2 h-2 rounded-full bg-gray-400"></div>
                                                         <span className="text-lg font-bold text-white uppercase tracking-tighter">{player.ai_profile?.archetype || player.playstyle || 'Analyzing'}</span>
@@ -398,9 +398,9 @@ export function PlayerProfileClient({
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Analysis Mode</p>
+                                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{t('player_profile.analysis_mode')}</p>
                                                     <div className="text-xs font-bold text-emerald-500 uppercase flex items-center gap-1.5">
-                                                        <Zap className="w-3 h-3" /> GTO-Exploit Hybrid
+                                                        <Zap className="w-3 h-3" /> {t('player_profile.hybrid_mode')}
                                                     </div>
                                                 </div>
                                             </div>
@@ -413,7 +413,7 @@ export function PlayerProfileClient({
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-black/40 backdrop-blur-sm shadow-xl border border-gray-700 rounded-xl p-5">
                                     <h3 className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-4 flex items-center justify-between">
-                                        Positional Leaks
+                                        {t('player_profile.positional_leaks')}
                                         <Shield className="w-3 h-3 text-gray-500" />
                                     </h3>
                                     <div className="space-y-4">
@@ -425,14 +425,14 @@ export function PlayerProfileClient({
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="text-[10px] text-gray-600 italic uppercase">No critical leaks detected in current sample.</div>
+                                            <div className="text-[10px] text-gray-600 italic uppercase">{t('player_profile.no_leaks')}</div>
                                         )}
                                     </div>
                                 </div>
 
                                 <div className="bg-black/40 backdrop-blur-sm shadow-xl border border-gray-700 rounded-xl p-5">
                                     <h3 className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-4 flex items-center justify-between">
-                                        Range Adjustments
+                                        {t('player_profile.range_adjustments')}
                                         <Target className="w-3 h-3 text-gray-500" />
                                     </h3>
                                     <div className="space-y-4">
@@ -446,7 +446,7 @@ export function PlayerProfileClient({
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="text-[10px] text-gray-600 italic uppercase">Neural mapping pending...</div>
+                                            <div className="text-[10px] text-gray-600 italic uppercase">{t('player_profile.neural_pending')}</div>
                                         )}
                                     </div>
                                 </div>
@@ -487,7 +487,7 @@ export function PlayerProfileClient({
                                 {editingPlayer ? (
                                     <div className="space-y-6 pt-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] text-gold font-black uppercase tracking-widest">Codename</label>
+                                            <label className="text-[10px] text-gold font-black uppercase tracking-widest">{t('player_profile.codename')}</label>
                                             <input
                                                 type="text"
                                                 value={editName}
@@ -496,7 +496,7 @@ export function PlayerProfileClient({
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] text-gold font-black uppercase tracking-widest">Basic Style</label>
+                                            <label className="text-[10px] text-gold font-black uppercase tracking-widest">{t('player_profile.basic_style')}</label>
                                             <select
                                                 value={editPlaystyle}
                                                 onChange={e => setEditPlaystyle(e.target.value)}
@@ -513,8 +513,8 @@ export function PlayerProfileClient({
                                             </select>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button onClick={handleUpdatePlayer} className="flex-1 py-3 bg-amber-500 text-black font-bold text-[10px] uppercase tracking-widest rounded-lg hover:bg-amber-400 transition-colors">Save Changes</button>
-                                            <button onClick={() => setEditingPlayer(false)} className="px-4 py-3 bg-black/60 backdrop-blur-md shadow-inner text-gray-500 font-bold text-[10px] uppercase tracking-widest rounded-lg border border-gray-700">Cancel</button>
+                                            <button onClick={handleUpdatePlayer} className="flex-1 py-3 bg-amber-500 text-black font-bold text-[10px] uppercase tracking-widest rounded-lg hover:bg-amber-400 transition-colors">{t('player_profile.save_changes')}</button>
+                                            <button onClick={() => setEditingPlayer(false)} className="px-4 py-3 bg-black/60 backdrop-blur-md shadow-inner text-gray-500 font-bold text-[10px] uppercase tracking-widest rounded-lg border border-gray-700">{t('player_profile.cancel')}</button>
                                         </div>
                                     </div>
                                 ) : (
@@ -529,7 +529,7 @@ export function PlayerProfileClient({
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-3">
                                                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                                                        <span className="text-xs text-gray-500 font-mono tracking-widest uppercase">Target Overview</span>
+                                                        <span className="text-xs text-gray-500 font-mono tracking-widest uppercase">{t('player_profile.target_overview')}</span>
                                                     </div>
                                                     <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tighter mb-2 truncate max-w-[300px] leading-tight text-white/90">{player.name}</h1>
                                                     <div className="flex items-center gap-2">
@@ -550,7 +550,7 @@ export function PlayerProfileClient({
                                         <div className="grid grid-cols-2 gap-2 mb-6">
                                             <div className="p-3 bg-[#1a1d24] rounded-lg border border-gray-800">
                                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Playstyle</p>
-                                                <p className="text-sm font-bold text-white uppercase tracking-tight">{player.playstyle || 'No Data'}</p>
+                                                <p className="text-sm font-bold text-white uppercase tracking-tight">{player.playstyle || t('player_profile.no_data')}</p>
                                             </div>
                                             <div className="p-3 bg-[#1a1d24] rounded-lg border border-gray-800">
                                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Aggression</p>
@@ -564,7 +564,7 @@ export function PlayerProfileClient({
                                                 onClick={() => setShowDeleteConfirm(true)}
                                                 className="flex items-center gap-2 text-[10px] text-gray-600 hover:text-red-500 transition-colors uppercase tracking-widest font-black"
                                             >
-                                                <Trash2 className="w-3 h-3" /> Delete
+                                                <Trash2 className="w-3 h-3" /> {t('player_profile.delete')}
                                             </button>
                                         </div>
                                     </>
@@ -575,11 +575,11 @@ export function PlayerProfileClient({
                                         <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
                                             <Trash2 className="w-6 h-6 text-red-500" />
                                         </div>
-                                        <p className="text-white font-black text-sm uppercase tracking-wider mb-1">Confirm Termination</p>
-                                        <p className="text-gray-500 text-[10px] mb-6 uppercase tracking-widest font-bold">Wipe all intelligence on {player.name}?</p>
+                                        <p className="text-white font-black text-sm uppercase tracking-wider mb-1">{t('player_profile.confirm_termination')}</p>
+                                        <p className="text-gray-500 text-[10px] mb-6 uppercase tracking-widest font-bold">{t('player_profile.wipe_intel')} {player.name}?</p>
                                         <div className="flex flex-col gap-2 w-full">
-                                            <button onClick={handleDeletePlayer} className="w-full py-3 bg-red-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-red-600 transition-colors">Delete Player</button>
-                                            <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-3 text-[10px] text-gray-500 font-black uppercase tracking-widest">Keep Intel</button>
+                                            <button onClick={handleDeletePlayer} className="w-full py-3 bg-red-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-red-600 transition-colors">{t('player_profile.delete_player')}</button>
+                                            <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-3 text-[10px] text-gray-500 font-black uppercase tracking-widest">{t('player_profile.keep_intel')}</button>
                                         </div>
                                     </div>
                                 )}
@@ -621,7 +621,7 @@ export function PlayerProfileClient({
                                             value={newNoteContent}
                                             onChange={e => setNewNoteContent(e.target.value)}
                                             rows={2}
-                                            placeholder="Observation..."
+                                            placeholder={t('player_profile.observation')}
                                             className="w-full bg-black/40 backdrop-blur-sm shadow-xl border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-gray-500 transition-colors resize-none placeholder:text-gray-700"
                                         />
                                         <button
@@ -637,7 +637,7 @@ export function PlayerProfileClient({
                                 <div className="space-y-4 overflow-y-auto pr-2 scrollbar-none">
                                     {player.notes.length === 0 ? (
                                         <div className="text-center py-8 text-gray-600 border border-dashed border-gray-700 rounded-lg bg-black/60 backdrop-blur-md shadow-inner">
-                                            <p className="text-[10px] font-bold uppercase tracking-widest">No notes yet</p>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest">{t('player_profile.no_notes')}</p>
                                         </div>
                                     ) : (
                                         player.notes.map((note) => (
@@ -659,8 +659,8 @@ export function PlayerProfileClient({
                                                     <div className="space-y-2">
                                                         <textarea value={editContent} onChange={e => setEditContent(e.target.value)} className="w-full bg-black/40 backdrop-blur-sm shadow-xl border border-gray-700 rounded-lg p-2 text-[11px] text-white focus:outline-none focus:border-gray-500" />
                                                         <div className="flex gap-1">
-                                                            <button onClick={() => handleUpdateNote(note.id)} className="flex-1 bg-amber-500 text-black text-[9px] font-bold uppercase py-1 rounded">Save</button>
-                                                            <button onClick={() => setEditingNoteId(null)} className="flex-1 bg-black/60 backdrop-blur-md shadow-inner text-gray-500 text-[9px] font-bold uppercase py-1 rounded border border-gray-700">Cancel</button>
+                                                            <button onClick={() => handleUpdateNote(note.id)} className="flex-1 bg-amber-500 text-black text-[9px] font-bold uppercase py-1 rounded">{t('player_profile.save')}</button>
+                                                            <button onClick={() => setEditingNoteId(null)} className="flex-1 bg-black/60 backdrop-blur-md shadow-inner text-gray-500 text-[9px] font-bold uppercase py-1 rounded border border-gray-700">{t('player_profile.cancel')}</button>
                                                         </div>
                                                     </div>
                                                 ) : (
@@ -679,7 +679,7 @@ export function PlayerProfileClient({
             </div>
 
             {/* Modals */}
-            <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} title="Intelligence Templates" size="xl">
+            <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} title={t('player_profile.intelligence_templates')} size="xl">
                 <TemplateManagerModal onClose={() => setSettingsOpen(false)} />
             </Modal>
         </div>

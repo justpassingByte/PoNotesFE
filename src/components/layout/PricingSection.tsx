@@ -23,23 +23,23 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                 t('landing.pricing_section.tier1_f1') || '500 hand phân tích',
                 t('landing.pricing_section.tier1_f2') || 'Strategy cơ bản (call/fold)',
                 t('landing.pricing_section.tier1_f3') || 'HUD basic',
-                'Player memory',
-                '1 thiết bị',
+                t('landing.pricing_section.tier1_f4') || 'Player memory',
+                t('landing.pricing_section.tier1_f5') || '1 thiết bị',
             ],
         },
         {
             id: 'pro',
             name: 'Pro',
             price: 59,
-            tagline: 'Được chọn nhiều nhất',
+            tagline: t('landing.pricing_section.tier_pro_tagline') || 'Được chọn nhiều nhất',
             popular: true,
             features: [
-                '2.000 hand phân tích',
-                'Strategy full: frequency + sizing + plan',
-                'HUD exploit + leak detect',
-                'Player modeling',
-                '2 thiết bị',
-                'Priority support',
+                t('landing.pricing_section.tier_pro_f1') || '2.000 hand phân tích',
+                t('landing.pricing_section.tier_pro_f2') || 'Strategy full: frequency + sizing + plan',
+                t('landing.pricing_section.tier_pro_f3') || 'HUD exploit + leak detect',
+                t('landing.pricing_section.tier_pro_f4') || 'Player modeling',
+                t('landing.pricing_section.tier_pro_f5') || '2 thiết bị',
+                t('landing.pricing_section.tier_pro_f6') || 'Priority support',
             ],
         },
         {
@@ -52,9 +52,9 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                 t('landing.pricing_section.tier2_f1') || '5.000+ hand không giới hạn',
                 t('landing.pricing_section.tier2_f2') || 'Exploit sâu theo từng spot',
                 t('landing.pricing_section.tier2_f3') || 'Player modeling cực mạnh',
-                'GTO + Population reads',
-                '3 thiết bị',
-                'Onboarding 1-on-1',
+                t('landing.pricing_section.tier2_f4') || 'GTO + Population reads',
+                t('landing.pricing_section.tier2_f5') || '3 thiết bị',
+                t('landing.pricing_section.tier2_f6') || 'Onboarding 1-on-1',
             ],
         },
     ];
@@ -100,7 +100,7 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                         >
                             {isPopular && (
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black px-3 py-1 rounded-full bg-yellow-500 text-black uppercase tracking-widest whitespace-nowrap">
-                                    Được Chọn Nhiều Nhất
+                                    {t('landing.pricing_section.most_popular') || 'Được Chọn Nhiều Nhất'}
                                 </div>
                             )}
 
@@ -111,7 +111,7 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                                 <p className="text-xs text-white/20 italic mb-4">{plan.tagline}</p>
                                 <div className="flex items-baseline gap-1">
                                     <span className="text-4xl font-black text-white">${plan.price}</span>
-                                    <span className="text-white/25 text-sm">/tháng</span>
+                                    <span className="text-white/25 text-sm">{t('landing.pricing_section.per_month') || '/tháng'}</span>
                                 </div>
                             </div>
 
@@ -132,7 +132,7 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                                         : 'bg-white/5 text-white/50 border border-white/8 hover:bg-white/8 hover:text-white/75 hover:border-white/15'
                                 }`}
                             >
-                                {isPopular ? 'Mở Vault Pro' : `Bắt đầu ${plan.name}`}
+                                {isPopular ? (t('landing.pricing_section.open_pro') || 'Mở Vault Pro') : `${t('landing.pricing_section.start_plan') || 'Bắt đầu'} ${plan.name}`}
                             </Link>
                         </div>
                         );
@@ -153,7 +153,7 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                     </div>
                     <div className="text-right">
                         <p className="text-white font-black text-xl">${ADDON.price}</p>
-                        <Link href="/register" className="text-xs text-yellow-400/60 font-bold hover:text-yellow-400 transition-colors">Nạp ngay →</Link>
+                        <Link href="/register" className="text-xs text-yellow-400/60 font-bold hover:text-yellow-400 transition-colors">{t('landing.pricing_section.recharge_now') || 'Nạp ngay →'}</Link>
                     </div>
                 </div>
 
