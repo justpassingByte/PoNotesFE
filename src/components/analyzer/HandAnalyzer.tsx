@@ -700,7 +700,21 @@ const handleParse = async () => {
     try {
         const rawInput = inputType === "text" ? textInput : (imagePreview || "");
         if (!rawInput) { setError("No input."); return; }
-        const res = await fetch(`${API.handAnalyze}/parse`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rawInput, inputType }) });
+
+        let res: Response;
+        if (inputType === "image") {
+            const formData = new FormData();
+            formData.append("inputType", "image");
+            if (imagePreview) {
+                const fetchRes = await fetch(imagePreview);
+                const blob = await fetchRes.blob();
+                formData.append("file", blob, "hand.png");
+            }
+            res = await fetch(`${API.handAnalyze}/parse`, { method: "POST", credentials: "include", body: formData });
+        } else {
+            res = await fetch(`${API.handAnalyze}/parse`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rawInput, inputType }) });
+        }
+
         if (res.status === 401 || res.status === 440) { openLogin("Sign in to use the Hand Analyzer."); return; }
         const json = await res.json();
         if (res.status === 403) {
@@ -742,7 +756,18 @@ const handData = (parsedHand?.parsed_data as any) || parsedHand;
 async function handleFeedback(action: "confirm" | "edit" | "reject", corrected?: { name: string; revised: string; index?: number }) {
     setIsSubmittingFeedback(true);
     try {
-        await fetch(`${API.base}/api/ocr/feedback`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageHex: imagePreview, cardName: corrected?.name || "all_board", action, correctedName: corrected?.revised || "", cardIndex: corrected?.index }) });
+        const formData = new FormData();
+        if (imagePreview) {
+            const fetchRes = await fetch(imagePreview);
+            const blob = await fetchRes.blob();
+            formData.append("file", blob, "feedback.png");
+        }
+        formData.append("cardName", corrected?.name || "all_board");
+        formData.append("action", action);
+        if (corrected?.revised) formData.append("correctedName", corrected.revised);
+        if (corrected?.index !== undefined) formData.append("cardIndex", String(corrected.index));
+
+        await fetch(`${API.base}/api/ocr/feedback`, { method: "POST", credentials: "include", body: formData });
         if (action === "confirm") setParsedHand({ ...parsedHand!, parsed_data: { ...handData, ocr_result: { ...handData.ocr_result, decision: "auto_accept" } } });
     } catch (err) { console.error("Feedback failed:", err); }
     finally { setIsSubmittingFeedback(false); }
