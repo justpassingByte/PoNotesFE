@@ -30,7 +30,10 @@ export function FeatureSection() {
     const PAIN_POINTS = [
         { text: t('landing.features.p1_text') || '"Chắc nó bluff" → call → mất tiền', fix: t('landing.features.p1_fix') || 'Vault tính xác suất cho bạn' },
         { text: t('landing.features.p2_text') || 'Học GTO xong vào bàn vẫn đánh tâm linh', fix: t('landing.features.p2_fix') || 'Review tự động sau mỗi hand' },
-        { text: t('landing.features.p3_text') || 'Không biết thằng nào là ATM, thằng nào là CHỐT', fix: t('landing.features.p3_fix') || 'HUD Player Profiling tức thì' },
+        { text: t('landing.features.p3_text') || 'Không biết thằng nào là ATM, thằng nào là CHỐT', fix: t('landing.features.p3_fix') || 'Phân loại đối thủ tức thì (Whale/Reg)' },
+        { text: t('landing.features.p4_text') || 'Thấy đánh "sai sai" nhưng không biết note thế nào', fix: t('landing.features.p4_fix') || 'Viết tự do, AI tự động tóm tắt' },
+        { text: t('landing.features.p5_text') || 'Ghi chú đống lúc vào trận không kịp dùng', fix: t('landing.features.p5_fix') || 'Tự động gắn note vào kế hoạch đánh Real-time' },
+        { text: t('landing.features.p6_text') || 'HUD tung rổ số liệu bắt tự suy nghĩ', fix: t('landing.features.p6_fix') || 'Điểm mặt ĐIỂM YẾU thẳng luôn' },
     ];
     
     const FEATURES = [

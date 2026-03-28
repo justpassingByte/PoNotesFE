@@ -382,13 +382,13 @@ function StreetBlock({ label, pot, boardCards, actions, editable, onSetEditingCa
 
             {/* HEADER */}
 
-            <div className="flex items-center gap-2 border-b border-gray-800 pb-1 mb-1 text-yellow-400">
+            <div className="flex items-center gap-2 border-b border-gray-800 pb-2 mb-2 text-yellow-400">
 
-                <span className="font-bold text-xs">{label}</span>
+                <span className="font-black text-sm uppercase tracking-wider">{label}</span>
 
                 {pot != null && String(pot).replace(/ ?BB/i, '').trim() !== '0' && (
 
-                    <span className="text-gray-400 text-xs">({String(pot).replace(/[^\d.,]/g, '').trim()}{currency === 'BB' || !currency ? ' BB' : ` ${currency}`}))</span>
+                    <span className="text-gray-400 text-sm font-bold">({String(pot).replace(/[^\d.,]/g, '').trim()}{currency === 'BB' || !currency ? ' BB' : ` ${currency}`})</span>
 
                 )}
 
@@ -529,29 +529,38 @@ function CardPicker({ onSelect, onCancel, currentVal }: { onSelect: (v: string) 
 
 // ─── ShowdownBlock ───────────────────────────────────────────────────────────────
 
-function ShowdownBlock({ players, currency = 'BB' }: { players: any[]; currency?: string }) {
+function ShowdownBlock({ showdownPlayers = [], currency = 'BB', editable = false, onSetEditingCard, allPlayers = [] }: { showdownPlayers?: any[]; currency?: string; editable?: boolean; onSetEditingCard?: (v: any) => void; allPlayers?: any[] }) {
 
     const { t } = useLanguage();
 
-    if (!players || players.length === 0) return null;
+    // Combine showdown players with anyone who has hole cards so we don't lose the hero's hand
+    let displayPlayers = [...showdownPlayers];
+    allPlayers.forEach(ap => {
+        if (ap.hole_cards?.length > 0 && !displayPlayers.some(p => p.name === ap.name)) {
+            displayPlayers.unshift({ name: ap.name, position: ap.position, hole_cards: ap.hole_cards });
+        }
+    });
+
+    if (displayPlayers.length === 0) return null;
 
     return (
 
         <div className="bg-black/40 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-colors rounded-md px-3 py-2">
 
-            <div className="flex items-center gap-2 border-b border-gray-800 pb-1 mb-1 text-yellow-400">
+            <div className="flex items-center gap-2 border-b border-gray-800 pb-2 mb-2 text-yellow-400">
 
-                <span className="font-bold text-xs">{t('hands.showdown')}</span>
+                <span className="font-black text-sm uppercase tracking-wider">{t('hands.showdown')}</span>
 
             </div>
 
             <div className="mt-1 space-y-2">
 
-                {players.map((p: any, i: number) => {
+                {displayPlayers.map((p: any, i: number) => {
 
                     const isWinner = p.result === 'winner';
-
-                    const cards = p.hole_cards || [];
+                    const pIdx = allPlayers.findIndex(ap => ap.name === p.name);
+                    const sourceCards = (pIdx >= 0 && allPlayers[pIdx].hole_cards?.length > 0) ? allPlayers[pIdx].hole_cards : (p.hole_cards || []);
+                    const paddedHoleCards = sourceCards.length === 1 ? [...sourceCards, "??"] : sourceCards;
 
                     return (
 
@@ -561,7 +570,7 @@ function ShowdownBlock({ players, currency = 'BB' }: { players: any[]; currency?
 
                                 <span className={`text-xs font-bold ${isWinner ? 'text-green-400' : 'text-red-400'}`}>
 
-                                    {isWinner ? '🏆' : '✗'}
+                                    {isWinner ? '🏆' : p.result === 'loser' ? '✗' : '·'}
 
                                 </span>
 
@@ -573,9 +582,9 @@ function ShowdownBlock({ players, currency = 'BB' }: { players: any[]; currency?
 
                             <div className="flex gap-1 shrink-0">
 
-                                {cards.length > 0 ? cards.map((c: string, ci: number) => (
+                                {paddedHoleCards.length > 0 ? paddedHoleCards.map((c: string, ci: number) => (
 
-                                    <CardBadge key={ci} card={c} />
+                                    <CardBadge key={ci} card={c} onClick={(editable && pIdx >= 0 && onSetEditingCard) ? () => onSetEditingCard({ type: "hole", index: ci, pIdx }) : undefined}/>
 
                                 )) : <span className="text-gray-700 text-xs italic">no cards</span>}
 
@@ -585,9 +594,9 @@ function ShowdownBlock({ players, currency = 'BB' }: { players: any[]; currency?
 
                                 <span className={`text-xs font-bold tabular-nums shrink-0 ${isWinner ? 'text-green-400' : 'text-red-400'}`}>
 
-                                    {p.resultAmount.startsWith('+') || p.resultAmount.startsWith('-') ? '' : isWinner ? '+' : '-'}
+                                    {String(p.resultAmount).startsWith('+') || String(p.resultAmount).startsWith('-') ? '' : isWinner ? '+' : '-'}
 
-                                    {currency && currency !== 'BB' ? currency : ''}{p.resultAmount.replace(/^[+-]/, '')}
+                                    {currency && currency !== 'BB' ? currency : ''}{String(p.resultAmount).replace(/^[+-]/, '')}
 
                                     {(!currency || currency === 'BB') && <span className="text-[10px] text-gray-600 ml-0.5">BB</span>}
 
@@ -935,39 +944,12 @@ return (
 
                         )}
 
-                        {/* Hole cards line */}
-
-                        {handData.players?.some((p: any) => p.hole_cards?.length > 0) && (
-
+                        {/* Winner & Pot Line */}
+                        {(handData.winner || handData.pot != null) && (
                             <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
-
-                                {handData.players.filter((p: any) => p.hole_cards?.length > 0).map((p: any, i: number) => {
-
-                                    const paddedHoleCards = p.hole_cards.length === 1 ? [...p.hole_cards, "??"] : p.hole_cards;
-
-                                    return (
-
-                                        <span key={i} className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm shadow-sm rounded-md px-2 py-2 border border-white/10">
-
-                                            <span className="text-gray-300 font-bold">{p.name}</span>
-
-                                            {paddedHoleCards.map((c: string, ci: number) => (
-
-                                                <CardBadge key={ci} card={c} onClick={editable ? () => setEditingCard({ type: "hole", index: ci, pIdx: handData.players.indexOf(p) }) : undefined} />
-
-                                            ))}
-
-                                        </span>
-
-                                    )
-                                })}
-
-                                {handData.winner && <span className="text-green-500 ml-auto font-bold">🏆 {handData.winner}</span>}
-
-                                {handData.pot != null && <span className="text-gray-500">Pot: {handData.currency && handData.currency !== 'BB' ? handData.currency : ''}{handData.pot}{handData.currency === 'BB' || !handData.currency ? ' BB' : ''}</span>}
-
+                                {handData.winner && <span className="text-green-500 font-bold">🏆 {handData.winner}</span>}
+                                {handData.pot != null && <span className="text-gray-500 ml-auto font-bold text-sm">Pot: {handData.currency && handData.currency !== 'BB' ? handData.currency : ''}{handData.pot}{handData.currency === 'BB' || !handData.currency ? ' BB' : ''}</span>}
                             </div>
-
                         )}
 
                         {/* Street blocks — 3-col grid (Vertical flow order) */}
@@ -1008,7 +990,7 @@ return (
 
                                 ))}
 
-                                <ShowdownBlock players={handData.showdown_players || []} currency={handData.currency} />
+                                <ShowdownBlock showdownPlayers={handData.showdown_players || []} allPlayers={handData.players || []} editable={editable} onSetEditingCard={setEditingCard} currency={handData.currency} />
 
                             </div>
 
