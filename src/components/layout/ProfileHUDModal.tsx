@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import {
     X, Crown, Zap, ShieldCheck, LogOut, ArrowUpRight, Star, Brain,
     FileText, CreditCard, Sparkles, Calendar, Monitor, Download,
-    Bot, PenLine, ChevronRight, Loader2, AlertCircle, Key
+    Bot, PenLine, ChevronRight, Loader2, AlertCircle, Key, Copy, Check, Plus
 } from "lucide-react";
 import { logout } from "@/app/auth-actions";
 import { getUserProfile } from "@/app/actions";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { apiFetch, API } from "@/lib/api";
 
 interface ProfileHUDModalProps {
     isOpen: boolean;
@@ -125,24 +126,57 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
 
-    // Fetch real profile data when modal opens
+    // API Keys state
+    const [apiKeys, setApiKeys] = useState<any[]>([]);
+    const [newKey, setNewKey] = useState<string | null>(null);
+    const [copiedKey, setCopiedKey] = useState(false);
+    const [generatingKey, setGeneratingKey] = useState(false);
+
     useEffect(() => {
         if (!isOpen || !user) return;
         setLoading(true);
         setError(false);
-        getUserProfile()
-            .then((data) => {
+        Promise.all([
+            getUserProfile(),
+            apiFetch(API.apiKeys).then(r => r.json()).catch(() => null),
+        ])
+            .then(([data, keysJson]) => {
                 if (data) setProfile(data);
                 else setError(true);
+                if (keysJson?.success) setApiKeys(keysJson.data);
             })
             .catch(() => setError(true))
             .finally(() => setLoading(false));
     }, [isOpen, user]);
 
-    // Reset on close
     useEffect(() => {
-        if (!isOpen) { setProfile(null); setError(false); }
+        if (!isOpen) { setProfile(null); setError(false); setNewKey(null); setApiKeys([]); }
     }, [isOpen]);
+
+    const handleGenerateKey = async () => {
+        setGeneratingKey(true);
+        try {
+            const res = await apiFetch(API.apiKeys, {
+                method: 'POST',
+                body: JSON.stringify({ name: 'Desktop App' }),
+            });
+            const json = await res.json();
+            if (json.success) {
+                setNewKey(json.data.rawKey);
+                // Refresh keys list
+                const keysRes = await apiFetch(API.apiKeys);
+                const keysJson = await keysRes.json();
+                if (keysJson?.success) setApiKeys(keysJson.data);
+            }
+        } catch { /* silent */ }
+        setGeneratingKey(false);
+    };
+
+    const handleCopyKey = (text: string) => {
+        navigator.clipboard.writeText(text);
+        setCopiedKey(true);
+        setTimeout(() => setCopiedKey(false), 2000);
+    };
 
     const tier = (profile?.user?.premium_tier ?? user?.premium_tier ?? "FREE").toUpperCase();
     const theme = TIER_THEME[tier] ?? TIER_THEME.FREE;
@@ -366,11 +400,71 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                 )}
                             </div>
 
+                            {/* ── API Keys (inline) ── */}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                                        <Key className="w-3 h-3 text-gold" /> API Keys
+                                    </span>
+                                    <button
+                                        onClick={handleGenerateKey}
+                                        disabled={generatingKey}
+                                        className="flex items-center gap-1 text-[9px] text-gold hover:text-yellow-300 transition-colors font-bold uppercase tracking-wider disabled:opacity-40"
+                                    >
+                                        {generatingKey ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Plus className="w-2.5 h-2.5" />}
+                                        Generate
+                                    </button>
+                                </div>
+
+                                {/* Newly generated key */}
+                                {newKey && (
+                                    <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                                        <p className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mb-2">Copy now — shown only once</p>
+                                        <div className="flex items-center gap-2">
+                                            <code className="flex-1 bg-black/40 border border-white/5 rounded-lg py-2 px-2.5 text-emerald-300 text-[10px] font-mono break-all select-all">
+                                                {newKey}
+                                            </code>
+                                            <button
+                                                onClick={() => handleCopyKey(newKey)}
+                                                className="shrink-0 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                                            >
+                                                {copiedKey ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Existing keys */}
+                                {apiKeys.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {apiKeys.filter(k => k.isActive).map((key: any) => (
+                                            <div key={key.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-black/30 border border-white/5 hover:border-white/10 transition-all">
+                                                <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center shrink-0">
+                                                    <Key className="w-3.5 h-3.5 text-gold" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-[11px] font-bold text-white truncate">{key.name}</p>
+                                                    <p className="text-[9px] text-gray-500 font-mono">{key.keyPrefix}•••••••</p>
+                                                </div>
+                                                <span className="text-[9px] text-gray-600 font-bold shrink-0">
+                                                    {key.devices?.length || 0} devices
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center gap-2 py-5 rounded-xl bg-black/30 border border-white/5">
+                                        <Key className="w-6 h-6 text-gray-700" />
+                                        <p className="text-[10px] text-gray-600 font-bold">No API keys yet</p>
+                                        <p className="text-[9px] text-gray-700">Generate one to use the Desktop App</p>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* ── Quick Links ── */}
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 {[
                                     { label: t('nav.history') || "Hand History", icon: Brain, href: "/history" },
-                                    { label: "API Keys", icon: Key, href: "/api-keys" },
                                     { label: t('nav.pricing') || "Pricing", icon: CreditCard, href: "/pricing" },
                                 ].map(({ label, icon: Icon, href }) => (
                                     <a

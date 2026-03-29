@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Key, Plus, Trash2, Monitor, Copy, Check, AlertTriangle, Loader2, Clock, Wifi, Shield } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, API } from '@/lib/api';
 
 interface ApiKeyDevice {
     id: string;
@@ -34,7 +34,7 @@ export default function ApiKeysPage() {
 
     const fetchKeys = useCallback(async () => {
         try {
-            const res = await apiFetch('/api/api-keys');
+            const res = await apiFetch(API.apiKeys);
             const json = await res.json();
             if (json.success) {
                 setKeys(json.data);
@@ -55,7 +55,7 @@ export default function ApiKeysPage() {
         setError(null);
         setNewKey(null);
         try {
-            const res = await apiFetch('/api/api-keys', {
+            const res = await apiFetch(API.apiKeys, {
                 method: 'POST',
                 body: JSON.stringify({ name: keyName || 'Desktop App' }),
             });
@@ -77,7 +77,7 @@ export default function ApiKeysPage() {
     async function handleRevoke(keyId: string) {
         if (!confirm('Are you sure? This will deactivate this API key permanently.')) return;
         try {
-            await apiFetch(`/api/api-keys/${keyId}`, { method: 'DELETE' });
+            await apiFetch(API.apiKey(keyId), { method: 'DELETE' });
             fetchKeys();
         } catch {
             setError('Failed to revoke key');
@@ -86,7 +86,7 @@ export default function ApiKeysPage() {
 
     async function handleRemoveDevice(keyId: string, deviceId: string) {
         try {
-            await apiFetch(`/api/api-keys/${keyId}/devices/${deviceId}`, { method: 'DELETE' });
+            await apiFetch(API.apiKeyDevices(keyId, deviceId), { method: 'DELETE' });
             fetchKeys();
         } catch {
             setError('Failed to remove device');
