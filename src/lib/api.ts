@@ -53,6 +53,7 @@ export const API = {
   // API Keys
   apiKeys: `${API_BASE_URL}/api/api-keys`,
   apiKey: (id: string) => `${API_BASE_URL}/api/api-keys/${id}`,
+  apiKeyPermanent: (id: string) => `${API_BASE_URL}/api/api-keys/${id}/permanent`,
   apiKeyDevices: (id: string, deviceId: string) => `${API_BASE_URL}/api/api-keys/${id}/devices/${deviceId}`,
 } as const;
 

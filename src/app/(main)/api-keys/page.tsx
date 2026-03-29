@@ -74,13 +74,13 @@ export default function ApiKeysPage() {
         }
     }
 
-    async function handleRevoke(keyId: string) {
-        if (!confirm('Are you sure? This will deactivate this API key permanently.')) return;
+    async function handleDeleteKey(keyId: string) {
+        if (!confirm('Bạn có chắc chắn muốn xoá API key này? Khi xoá thì toàn bộ thiết bị đang dùng key này sẽ mất kết nối.')) return;
         try {
-            await apiFetch(API.apiKey(keyId), { method: 'DELETE' });
+            await apiFetch(API.apiKeyPermanent(keyId), { method: 'DELETE' });
             fetchKeys();
         } catch {
-            setError('Failed to revoke key');
+            setError('Failed to delete key');
         }
     }
 
@@ -238,9 +238,9 @@ export default function ApiKeysPage() {
                                     )}
                                     {key.isActive && (
                                         <button
-                                            onClick={() => handleRevoke(key.id)}
+                                            onClick={() => handleDeleteKey(key.id)}
                                             className="text-red-500/50 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
-                                            title="Revoke Key"
+                                            title="Delete Key (Xoá Key)"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                         </button>
