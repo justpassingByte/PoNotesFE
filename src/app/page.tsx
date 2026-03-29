@@ -4,6 +4,7 @@ import { FeatureSection } from "@/components/layout/FeatureSection";
 import { RoadmapSection } from "@/components/layout/RoadmapSection";
 import { PricingSection } from "@/components/layout/PricingSection";
 import { ContactSection } from "@/components/layout/ContactSection";
+import { AntiDetectSection } from "@/components/layout/AntiDetectSection";
 
 export const metadata = {
   title: "Villiant Vault | Két Sắt + Bộ Não AI Cho Poker",
@@ -19,6 +20,7 @@ export default function LandingPage() {
         <HeroSection />
         <FeatureSection />
         <RoadmapSection />
+        <AntiDetectSection />
         <PricingSection />
         <ContactSection />
       </LandingLayout>

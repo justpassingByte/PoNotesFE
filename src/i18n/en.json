@@ -279,6 +279,20 @@
       "terms": "Terms of Service",
       "tagline": "The first AI vault for poker."
     },
+    "anti_detect": {
+      "overline": "Bankroll Security",
+      "h2": "Invisible to <span class=\"text-red-500 font-bold\">Anti-Cheats</span>.",
+      "sub": "Every Poker client knows an overlay is running, but they DON'T DARE to ban blindly. Why? Discord, OBS, and Messenger use the exact same Overlay technology. Banning them would mistakenly kill millions of legit players. RobinHUD exploits this to achieve 100% stealth.",
+      "f1_title": "100% Image Based (Zero RAM Hook)",
+      "f1_desc": "Cheap tools get banned because they inject DLLs and steal game RAM data. RobinHUD is 100% clean, simply capturing the screen and using AI to recognize the board just like a human eye.",
+      "f2_title": "Legitimate Overlay Framework",
+      "f2_desc": "The HUD surface is built as a legitimate, transparent Windows native layer. The poker application sees it as a harmless floating notification.",
+      "f3_title": "System Process Camouflage",
+      "f3_desc": "The main Control Panel and hidden .exe file are camouflaged as core Windows OS processes. The poker room's scanner will actively ignore them.",
+      "github_title": "Open Source & Fully Transparent",
+      "github_desc": "Don't trust us? You have the right to inspect every line of code. We open-source our Desktop App so anyone can compile it themselves and verify it's 100% safe and clean.",
+      "github_btn": "Verify on GitHub"
+    },
     "roadmap": {
       "overline": "Vision — The Roadmap",
       "title": "Poker Hybrid <span className=\"text-yellow-400\">System</span>.",
