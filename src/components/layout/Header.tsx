@@ -89,13 +89,13 @@ export function Header({
                     {user ? (
                         <button
                             onClick={() => setIsProfileOpen(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-gold/10 border border-gold/30 rounded-full hover:bg-gold/20 hover:border-gold/50 transition-all group shadow-[0_0_10px_rgba(250,204,21,0.08)]"
+                            className="flex items-center gap-2 pl-2 pr-4 py-1.5 bg-gold/10 border border-gold/30 rounded-full hover:bg-gold/20 hover:border-gold/50 transition-all group shadow-[0_0_10px_rgba(250,204,21,0.08)]"
                             title="Profile & Plan"
                         >
-                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-gold/60 to-amber-700/60 flex items-center justify-center">
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-gold/60 to-amber-700/60 flex items-center justify-center shrink-0">
                                 <span className="text-[9px] font-black text-black">{user.email.charAt(0).toUpperCase()}</span>
                             </div>
-                            <span className="hidden sm:block text-[10px] font-black uppercase tracking-wider text-gold truncate max-w-[60px] md:max-w-[80px]">{user.plan_name || user.premium_tier}</span>
+                            <span className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-gold truncate max-w-[90px] lg:max-w-[140px] pr-1">{user.plan_name || user.premium_tier}</span>
                         </button>
                     ) : (
                         <button
