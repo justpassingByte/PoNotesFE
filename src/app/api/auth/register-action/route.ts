@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
         const res = await fetch(`${API.base}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, deviceId: 'web-client' }),
+            body: JSON.stringify({ email, password }),
         });
 
         const json = await res.json();
@@ -17,20 +17,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: json.error || 'Registration failed' });
         }
 
-        const secure = process.env.NEXT_PUBLIC_API_URL?.startsWith('https') || false;
-
-        // IMPORTANT: In Route Handlers, cookies must be set on the NextResponse object directly.
-        // Using cookieStore.set() from next/headers does NOT attach to the HTTP response here.
-        const response = NextResponse.json({ success: true });
-        response.cookies.set('token', json.token, {
-            httpOnly: true,
-            secure,
-            maxAge: 7 * 24 * 60 * 60,
-            sameSite: 'lax',
-            path: '/',
+        // No longer auto-login — user must verify email first
+        return NextResponse.json({
+            success: true,
+            message: json.message,
+            requiresVerification: true,
         });
-
-        return response;
     } catch (err) {
         return NextResponse.json({ success: false, error: 'Network error during registration' });
     }

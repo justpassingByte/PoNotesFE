@@ -14,13 +14,15 @@ export async function POST(request: NextRequest) {
         const json = await res.json();
 
         if (!json.success) {
-            return NextResponse.json({ success: false, error: json.error || 'Login failed' });
+            return NextResponse.json({
+                success: false,
+                error: json.error || 'Login failed',
+                code: json.code || undefined,
+            }, { status: res.status });
         }
 
         const secure = process.env.NEXT_PUBLIC_API_URL?.startsWith('https') || false;
 
-        // IMPORTANT: In Route Handlers, cookies must be set on the NextResponse object directly.
-        // Using cookieStore.set() from next/headers does NOT attach to the HTTP response here.
         const response = NextResponse.json({ success: true });
         response.cookies.set('token', json.token, {
             httpOnly: true,

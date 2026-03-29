@@ -49,6 +49,11 @@ export const API = {
   paymentStatus: (id: string) => `${API_BASE_URL}/api/payments/${id}/status`,
   pricingPublic: `${API_BASE_URL}/api/admin/pricing/public`,
   authRefreshSession: `${API_BASE_URL}/api/auth/refresh-session`,
+
+  // API Keys
+  apiKeys: `${API_BASE_URL}/api/api-keys`,
+  apiKey: (id: string) => `${API_BASE_URL}/api/api-keys/${id}`,
+  apiKeyDevices: (id: string, deviceId: string) => `${API_BASE_URL}/api/api-keys/${id}/devices/${deviceId}`,
 } as const;
 
 /**
