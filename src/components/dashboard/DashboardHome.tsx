@@ -41,6 +41,9 @@ interface DashboardHomeProps {
         totalCount: number;
         totalNotesCount: number;
         playstyleCounts: Record<string, number>;
+        totalHands?: number;
+        aiNotesCount?: number;
+        manualNotesCount?: number;
         aiUsage?: { remaining: number; limit: number; resetsAt: string };
         ocrUsage?: { remaining: number; limit: number; resetsAt: string };
     };
@@ -180,7 +183,37 @@ export function DashboardHome({ user, stats, topWhales, topRegs }: DashboardHome
                 </div>
             </div>
 
-
+            {/* Stats Overview */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <StatCard 
+                    title={t('dashboard.total_analyzed') || "Total Hands Analyzed"}
+                    value={stats.totalHands ?? 0}
+                    icon={<Activity className="w-5 h-5" />}
+                    color="gold"
+                    href="/history"
+                />
+                <StatCard 
+                    title={t('dashboard.total_opponents') || "Total Opponents Tracked"}
+                    value={stats.totalCount ?? 0}
+                    icon={<Users className="w-5 h-5" />}
+                    color="green"
+                    href="/players"
+                />
+                <StatCard 
+                    title={t('dashboard.ai_notes') || "Total AI Notes"}
+                    value={stats.aiNotesCount ?? 0}
+                    icon={<Brain className="w-5 h-5" />}
+                    color="blue"
+                    href="/players"
+                />
+                <StatCard 
+                    title={t('dashboard.manual_notes') || "Total Manual Notes"}
+                    value={stats.manualNotesCount ?? 0}
+                    icon={<FileText className="w-5 h-5" />}
+                    color="red"
+                    href="/players"
+                />
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
                 {/* Col 1: Top WHALE Targets */}

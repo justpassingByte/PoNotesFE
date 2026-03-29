@@ -109,6 +109,7 @@
       "cta_sub": "View Pricing",
       "trust": "No extreme focus needed · Improve rapidly",
       "badge_ai": "AI is guarding your money",
+      "cta_desktop": "Download Desktop App",
       "scroll": "Explore"
     },
     "features": {
@@ -164,7 +165,11 @@
     "dashboard": {
       "overline": "Target Management System",
       "h2": "Assassin's Dashboard",
-      "sub": "No more guessing about your enemies. Centralized dashboard featuring Priority Targets and Elite Regs, so you know exactly which tables to play and who is trying to take your chips."
+      "sub": "No more guessing about your enemies. Centralized dashboard featuring Priority Targets and Elite Regs, so you know exactly which tables to play and who is trying to take your chips.",
+      "total_analyzed": "Total Hands Analyzed",
+      "total_opponents": "Total Opponents Tracked",
+      "ai_notes": "Total AI Notes",
+      "manual_notes": "Total Manual Notes"
     },
     "howToUse": {
       "overline": "How To Use",

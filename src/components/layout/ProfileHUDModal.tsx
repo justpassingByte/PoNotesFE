@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import {
     X, Crown, Zap, ShieldCheck, LogOut, ArrowUpRight, Star, Brain,
     FileText, CreditCard, Sparkles, Calendar, Monitor, Download,
-    Bot, PenLine, ChevronRight, Loader2, AlertCircle, Key, Copy, Check, Plus
+    Bot, PenLine, ChevronRight, Loader2, AlertCircle, Key, Copy, Check, Plus, Trash
 } from "lucide-react";
 import { logout } from "@/app/auth-actions";
 import { getUserProfile } from "@/app/actions";
@@ -170,6 +170,15 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
             }
         } catch { /* silent */ }
         setGeneratingKey(false);
+    };
+
+    const handleDeleteKey = async (id: string) => {
+        try {
+            const res = await apiFetch(API.apiKey(id), { method: 'DELETE' });
+            if (res.ok) {
+                setApiKeys(prev => prev.filter(k => k.id !== id));
+            }
+        } catch { /* silent */ }
     };
 
     const handleCopyKey = (text: string) => {
@@ -438,7 +447,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                 {apiKeys.length > 0 ? (
                                     <div className="space-y-2">
                                         {apiKeys.filter(k => k.isActive).map((key: any) => (
-                                            <div key={key.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-black/30 border border-white/5 hover:border-white/10 transition-all">
+                                            <div key={key.id} className="group/key flex items-center gap-3 px-3 py-2.5 rounded-xl bg-black/30 border border-white/5 hover:border-white/10 transition-all">
                                                 <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center shrink-0">
                                                     <Key className="w-3.5 h-3.5 text-gold" />
                                                 </div>
@@ -446,9 +455,18 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                                                     <p className="text-[11px] font-bold text-white truncate">{key.name}</p>
                                                     <p className="text-[9px] text-gray-500 font-mono">{key.keyPrefix}•••••••</p>
                                                 </div>
-                                                <span className="text-[9px] text-gray-600 font-bold shrink-0">
-                                                    {key.devices?.length || 0} devices
-                                                </span>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-[9px] text-gray-600 font-bold shrink-0">
+                                                        {key.devices?.length || 0} devices
+                                                    </span>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleDeleteKey(key.id); }}
+                                                        className="opacity-0 group-hover/key:opacity-100 p-1.5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-all"
+                                                        title="Delete Key"
+                                                    >
+                                                        <Trash className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

@@ -108,6 +108,7 @@
       "cta_sub": "Xem Giá",
       "trust": "Không cần căng não · Lên trình nhanh như HT2",
       "badge_ai": "AI đang canh gác tiền của bạn",
+      "cta_desktop": "Tải Desktop App",
       "scroll": "Khám phá"
     },
     "features": {
@@ -163,7 +164,11 @@
     "dashboard": {
       "overline": "Hệ Thống Quản Lý Mục Tiêu",
       "h2": "Dashboard Điều Khiển Sát Thủ",
-      "sub": "Không còn mù mờ về kẻ thù. Bảng điều khiển tập trung Priority Targets và Elite Regs, giúp bạn biết rõ bàn nào đáng đánh và ai đang tìm cách rút tiền của bạn."
+      "sub": "Không còn mù mờ về kẻ thù. Bảng điều khiển tập trung Priority Targets và Elite Regs, giúp bạn biết rõ bàn nào đáng đánh và ai đang tìm cách rút tiền của bạn.",
+      "total_analyzed": "Tổng Hand Đã Phân Tích",
+      "total_opponents": "Tổng Đối Thủ Theo Dõi",
+      "ai_notes": "Tổng Số Note AI",
+      "manual_notes": "Tổng Số Note Thủ Công"
     },
     "howToUse": {
       "overline": "Hướng dẫn sử dụng",
@@ -209,10 +214,10 @@
       "sub": "Đầu tư vào thứ sẽ tự trả tiền cho chính nó ngay trong session đầu tiên.",
       "tier1_name": "Grinder",
       "tier1_desc": "Dành cho người chơi mài edge.",
-      "tier1_price": "$29",
+      "tier1_price": "$19.99",
       "tier1_f1": "Cố vấn AI chiến thuật",
       "tier1_f2": "Phân tích HUD cơ bản",
-      "tier1_f3": "5.000+ hand không giới hạn",
+      "tier1_f3": "500 hand phân tích",
       "tier1_f4": "Player memory",
       "tier1_f5": "1 thiết bị",
       "tier1_btn": "Bắt đầu dùng thử",

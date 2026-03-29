@@ -63,7 +63,7 @@ export function Header({
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive(link.href)
+                                className={`flex items-center whitespace-nowrap gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive(link.href)
                                     ? "bg-gold text-black shadow-[0_0_15px_rgba(250,204,21,0.3)]"
                                     : "text-gray-400 hover:text-white hover:bg-white/5"}`}
                             >
