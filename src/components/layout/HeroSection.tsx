@@ -91,7 +91,7 @@ export function HeroSection() {
                             {t('landing.hero.cta_sub') || "Xem Giá"}
                         </Link>
                         <a
-                            href="/downloads/RoninHUD-Setup.exe"
+                            href="/downloads/RobinHUD_Setup_v1.0.0.exe"
                             download
                             className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-400/40 hover:text-emerald-300 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] transition-all duration-300"
                         >
