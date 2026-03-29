@@ -275,7 +275,7 @@ export default function AdminDashboard() {
                                     className="w-full bg-card border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm text-white outline-none focus:border-gold/30 transition-all"
                                 />
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <select 
                                     value={tierFilter}
                                     onChange={(e) => setTierFilter(e.target.value)}
@@ -285,33 +285,46 @@ export default function AdminDashboard() {
                                     <option value="FREE">Free</option>
                                     <option value="PRO">Pro</option>
                                     <option value="PRO_PLUS">Elite</option>
+                                    <option value="ENTERPRISE">Enterprise</option>
                                 </select>
                                 <select 
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
                                     className="bg-card border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-gold/30 transition-all cursor-pointer"
                                 >
-                                    <option value="ALL">All Status</option>
-                                    <option value="ACTIVE">Active Only</option>
-                                    <option value="EXPIRED">Expired Only</option>
+                                    <option value="ALL">All Roles</option>
+                                    <option value="ACTIVE">Active Sub</option>
+                                    <option value="EXPIRED">Expired Sub</option>
+                                </select>
+                                <select 
+                                    value={(window as any).verifiedFilter || "ALL"}
+                                    onChange={(e) => {
+                                        (window as any).verifiedFilter = e.target.value;
+                                        fetchUsers();
+                                    }}
+                                    className="bg-card border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-gold/30 transition-all cursor-pointer"
+                                >
+                                    <option value="ALL">All Verify</option>
+                                    <option value="true">Verified Only</option>
+                                    <option value="false">Unverified</option>
                                 </select>
                             </div>
                         </div>
 
                         <div className="bg-card border border-white/10 rounded-2xl overflow-hidden">
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
+                                <table className="w-full text-left border-collapse min-w-[800px]">
                                     <thead>
                                         <tr className="bg-white/5 text-[10px] uppercase font-bold text-gray-500 tracking-wider">
                                             <th className="px-6 py-4">User</th>
-                                            <th className="px-6 py-4">Tier</th>
-                                            <th className="px-6 py-4">Usage (Mtd)</th>
+                                            <th className="px-6 py-4">Tier & Verified</th>
+                                            <th className="px-6 py-4">AI Usage (Current)</th>
                                             <th className="px-6 py-4">Expiry</th>
-                                            <th className="px-6 py-4 text-right">Quick Manage</th>
+                                            <th className="px-6 py-4 text-right">Manage</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
-                                        {users.map((user) => (
+                                        {users.map((user: any) => (
                                             <tr key={user.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
@@ -325,29 +338,52 @@ export default function AdminDashboard() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`text-[10px] font-bold px-2 py-1 rounded inline-flex items-center gap-1 ${
-                                                        user.premium_tier === 'FREE' ? 'bg-gray-500/10 text-gray-400' :
-                                                        user.premium_tier === 'PRO' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'
-                                                    }`}>
-                                                        {plans.find(p => p.id === user.premium_tier)?.name || user.premium_tier}
-                                                        {user.is_admin && <Shield className="w-3 h-3 ml-1 text-gold" />}
-                                                    </span>
+                                                    <div className="flex flex-col gap-1 items-start">
+                                                        <span className={`text-[10px] font-bold px-2 py-1 rounded inline-flex items-center gap-1 ${
+                                                            user.premium_tier === 'FREE' ? 'bg-gray-500/10 text-gray-400' :
+                                                            user.premium_tier === 'PRO' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'
+                                                        }`}>
+                                                            {plans.find(p => p.id === user.premium_tier)?.name || user.premium_tier}
+                                                            {user.is_admin && <Shield className="w-3 h-3 ml-1 text-gold" />}
+                                                        </span>
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest ${user.email_verified ? 'text-emerald-400' : 'text-yellow-500'}`}>
+                                                            {user.email_verified ? "VERIFIED" : "UNVERIFIED"}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`text-xs ${user.subscription_expiry && new Date(user.subscription_expiry) < new Date() ? 'text-red-400' : 'text-gray-400'}`}>
-                                                        {user.subscription_expiry ? new Date(user.subscription_expiry).toLocaleDateString() : '—'}
+                                                    <div className="text-xs text-white">
+                                                        {user.usages && user.usages.length > 0 ? (
+                                                            <span className="font-mono text-blue-300">{user.usages[0].ai_analysis_used} AI Used</span>
+                                                        ) : (
+                                                            <span className="text-gray-500">No usage data</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`text-xs ${user.subscription_expiry && new Date(user.subscription_expiry) < new Date() ? 'text-red-400 font-bold' : 'text-gray-400'}`}>
+                                                        {user.subscription_expiry ? new Date(user.subscription_expiry).toLocaleDateString() : 'Lifetime / Free'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => handleUpdateUser(user.id, 'FREE', 0)} className="text-[10px] bg-white/5 hover:bg-gray-500/20 text-gray-400 px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
+                                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-wrap justify-end max-w-[140px] ml-auto">
+                                                        <button onClick={() => handleUpdateUser(user.id, 'FREE', 0)} className="text-[9px] bg-white/5 hover:bg-gray-500/20 text-gray-400 px-2 py-1 rounded border border-white/10 transition-all uppercase font-bold">
                                                             FREE
                                                         </button>
-                                                        <button onClick={() => handleUpdateUser(user.id, 'PRO', 30)} className="text-[10px] bg-white/5 hover:bg-blue-500/20 text-gray-400 hover:text-blue-400 px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
-                                                            +PRO
+                                                        <button onClick={() => handleUpdateUser(user.id, 'PRO', 30)} className="text-[9px] bg-white/5 hover:bg-blue-500/20 text-blue-400 px-2 py-1 rounded border border-white/10 transition-all uppercase font-bold">
+                                                            PRO
                                                         </button>
-                                                        <button onClick={() => handleUpdateUser(user.id, 'PRO_PLUS', 30)} className="text-[10px] bg-white/5 hover:bg-purple-500/20 text-gray-400 hover:text-purple-400 px-2 py-1 rounded-lg border border-white/10 transition-all uppercase font-bold">
-                                                            +ELITE
+                                                        <button onClick={() => handleUpdateUser(user.id, 'PRO_PLUS', 30)} className="text-[9px] bg-white/5 hover:bg-purple-500/20 text-purple-400 px-2 py-1 rounded border border-white/10 transition-all uppercase font-bold">
+                                                            ELITE
+                                                        </button>
+                                                        <button onClick={async () => {
+                                                            if(confirm('Are you sure you want to delete this user?')) {
+                                                                const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+                                                                await fetch(`${baseUrl}/api/admin/users/${user.id}`, { method: 'DELETE', credentials: "include" });
+                                                                fetchUsers();
+                                                            }
+                                                        }} className="text-[9px] bg-red-500/10 hover:bg-red-500/30 text-red-500 px-2 py-1 rounded border border-red-500/20 transition-all uppercase font-bold flex items-center gap-1 w-full mt-1 justify-center">
+                                                            <Trash2 className="w-3 h-3" /> DEL
                                                         </button>
                                                     </div>
                                                 </td>

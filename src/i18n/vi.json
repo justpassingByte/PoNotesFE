@@ -279,12 +279,12 @@
       "title": "Poker Hybrid <span className=\"text-yellow-400\">System</span>.",
       "subtitle": "RobinHUD không chỉ là HUD. Nó là một hệ sinh thái nơi decision dựa vào data + context + AI + exploit thực chiến.",
       "phase1": {
-        "title": "Phase 1 - Villiant Vault (Live)",
+        "title": "Phase 1 (Đang Live): Villiant Vault + RobinHUD Desktop App V1",
         "badge": "Đang chạy",
-        "desc": "Trải nghiệm nhanh, dễ tiếp cận. Không phải HUD thông thường mà gợi ý ngay hướng đánh từ note. AI thực chiến, nhanh, hiệu quả.",
-        "pt1": "Build trust & cộng đồng",
-        "pt2": "Thu thập data để scale",
-        "pt3": "Đưa thẳng cách phản ứng theo đối thủ"
+        "desc": "Trải nghiệm nhanh, dễ tiếp cận. Công cụ sắc bén để review hand và exploit đối thủ trực tiếp.",
+        "pt1": "Web-based app: Tải hand lên review nhanh, AI tự bóc tách leak và gợi ý Exploit",
+        "pt2": "Desktop App V1: Trải nghiệm mượt mà trên máy tính, đồng bộ hoàn toàn với web",
+        "pt3": "Build trust, cộng đồng & thu thập data để scale"
       },
       "phase2": {
         "title": "Phase 2 - Core Upgrade",
@@ -295,12 +295,12 @@
         "pt3": "Map chặt chẽ với GTO baseline"
       },
       "phase3": {
-        "title": "Phase 3 - Release RobinHUD Desktop for Scale & Automation",
+        "title": "Phase 3: Desktop App V2 (Final/Auto-Scale)",
         "badge": "Tầm nhìn xa",
-        "desc": "Tối ưu theo player pool thực tế. Data càng nhiều AI càng mạnh, edge tăng theo thời gian.",
-        "pt1": "Tặng RobinHUD Desktop",
-        "pt2": "Auto đọc bàn & tự build note để thu thập data scale AI",
-        "pt3": "Quy mô Enterprise / Team"
+        "desc": "Phiên bản hoàn thiện (Final Version) với tính năng auto để scale. Data càng dày thì edge càng lớn.",
+        "pt1": "Mắt đọc auto: Tự động đọc bàn, ghi chú, và cập nhật hệ thống liên tục",
+        "pt2": "Auto-scale: Khả năng mở rộng tự động dựa trên lượng data thu thập",
+        "pt3": "Tối ưu theo player pool thực tế ở quy mô Enterprise / Team"
       },
       "phase4": {
         "title": "Phase 4 - Mobile App",

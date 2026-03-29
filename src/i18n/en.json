@@ -283,12 +283,12 @@
       "title": "Poker Hybrid <span className=\"text-yellow-400\">System</span>.",
       "subtitle": "RobinHUD is not just a HUD. It's an ecosystem where decisions are driven by data, context, AI, and real-time scaling.",
       "phase1": {
-        "title": "Phase 1 - Villiant Vault (Live)",
+        "title": "Phase 1 (Live Now): Villiant Vault + RobinHUD Desktop App V1",
         "badge": "Live Now",
-        "desc": "Fast and accessible experience. Direct exploit suggestions based on notes. Tactical AI optimizing for instantaneous decisions.",
-        "pt1": "Building trust & community",
-        "pt2": "Data collection for scaling",
-        "pt3": "Direct adaptation to opponent styles"
+        "desc": "Fast and accessible experience. A sharp tool for hand reviews and direct opponent exploitation.",
+        "pt1": "Web-based app: Upload hands for quick AI review, leak extraction & Exploit tips",
+        "pt2": "Desktop App V1: Smooth desktop experience, fully synced with the web platform",
+        "pt3": "Building trust, community & data collection for scaling"
       },
       "phase2": {
         "title": "Phase 2 - Core Upgrade",
@@ -299,12 +299,12 @@
         "pt3": "Mapped tightly with GTO fundamentals"
       },
       "phase3": {
-        "title": "Phase 3 - Release RobinHUD Desktop for Scale and Automation",
+        "title": "Phase 3: Desktop App V2 (Final/Auto-Scale)",
         "badge": "Future Vision",
-        "desc": "Optimized by actual player pools. More data exponentially increases AI power.",
-        "pt1": "Desktop Environment included",
-        "pt2": "Auto table-reading & note-building to collect data for AI scaling",
-        "pt3": "Enterprise & Team features"
+        "desc": "The Final Version with auto-scale capabilities. More data exponentially increases your edge.",
+        "pt1": "Auto-Scanner: Automatically reads the table, takes notes, and updates the system",
+        "pt2": "Auto-scale: Automated scaling capabilities based on gathered player data",
+        "pt3": "Optimized by actual player pools for Enterprise / Team scale"
       },
       "phase4": {
         "title": "Phase 4 - Mobile App",

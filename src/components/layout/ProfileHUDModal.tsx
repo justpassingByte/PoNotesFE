@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import {
     X, Crown, Zap, ShieldCheck, LogOut, ArrowUpRight, Star, Brain,
-    FileText, CreditCard, Sparkles, Users, StickyNote, Calendar,
-    Bot, PenLine, ChevronRight, Loader2, AlertCircle
+    FileText, CreditCard, Sparkles, Calendar, Monitor, Download,
+    Bot, PenLine, ChevronRight, Loader2, AlertCircle, Key
 } from "lucide-react";
 import { logout } from "@/app/auth-actions";
 import { getUserProfile } from "@/app/actions";
@@ -230,19 +230,25 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
 
                     {!loading && (
                         <>
-                            {/* ── Stats Row ── */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-black/40 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-1">
-                                    <Users className="w-5 h-5 text-gold/60 mb-1" />
-                                    <span className="text-2xl font-black text-white">{stats?.totalPlayers ?? "—"}</span>
-                                    <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">{t('profile_modal.players_tracked')}</span>
+                            {/* ── Desktop App Download ── */}
+                            <a
+                                href="/downloads/VillainVault-Setup.exe"
+                                download
+                                className="group relative flex items-center gap-4 w-full p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-600/5 to-teal-500/10 border border-emerald-500/20 hover:border-emerald-400/40 transition-all duration-300 overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.05)] hover:shadow-[0_0_30px_rgba(16,185,129,0.12)]"
+                            >
+                                {/* Animated glow */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-400/5 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+                                    <Monitor className="w-5 h-5 text-emerald-400" />
                                 </div>
-                                <div className="bg-black/40 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-1">
-                                    <StickyNote className="w-5 h-5 text-blue-400/60 mb-1" />
-                                    <span className="text-2xl font-black text-white">{stats?.totalNotes ?? "—"}</span>
-                                    <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">{t('profile_modal.notes_written')}</span>
+                                <div className="relative flex-1 min-w-0">
+                                    <p className="text-xs font-black text-white uppercase tracking-wider">Desktop HUD App</p>
+                                    <p className="text-[10px] text-emerald-400/60 font-medium mt-0.5">Windows • Real-time Overlay</p>
                                 </div>
-                            </div>
+                                <div className="relative w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/25 group-hover:border-emerald-400/40 transition-all duration-300">
+                                    <Download className="w-4 h-4 text-emerald-400 group-hover:animate-bounce" />
+                                </div>
+                            </a>
 
                             {/* ── Plan Card ── */}
                             <div className={`p-5 rounded-2xl border ${theme.bg} ${theme.border} ${theme.glow} space-y-4`}>
@@ -361,18 +367,19 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                             </div>
 
                             {/* ── Quick Links ── */}
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                                 {[
                                     { label: t('nav.history') || "Hand History", icon: Brain, href: "/history" },
+                                    { label: "API Keys", icon: Key, href: "/api-keys" },
                                     { label: t('nav.pricing') || "Pricing", icon: CreditCard, href: "/pricing" },
                                 ].map(({ label, icon: Icon, href }) => (
                                     <a
                                         key={label}
                                         href={href}
-                                        className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-black/30 border border-white/5 hover:border-white/15 hover:bg-white/3 transition-all group"
+                                        className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-black/30 border border-white/5 hover:border-white/15 hover:bg-white/3 transition-all group"
                                     >
                                         <Icon className="w-4 h-4 text-gray-600 group-hover:text-gold transition-colors" />
-                                        <span className="text-xs font-bold text-gray-500 group-hover:text-white transition-colors">{label}</span>
+                                        <span className="text-[11px] font-bold text-gray-500 group-hover:text-white transition-colors">{label}</span>
                                     </a>
                                 ))}
                             </div>

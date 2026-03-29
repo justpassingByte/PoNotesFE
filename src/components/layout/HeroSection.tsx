@@ -57,7 +57,7 @@ export function HeroSection() {
                     >
                         {/* Sub-headline — đọc được */}
                         <p className="text-base sm:text-lg text-white/55 max-w-lg leading-relaxed mb-3 mx-auto lg:mx-0"
-                           dangerouslySetInnerHTML={{ __html: t('landing.hero.subtitle') || "Villiant Vault là <span className=\"text-white font-semibold\">bộ não AI</span> tại bàn — không phải solver, lối chơi linh hoạt, <span className=\"text-white/80 font-semibold\">bạn hôm sau ≠ bạn hôm nay</span>." }}
+                            dangerouslySetInnerHTML={{ __html: t('landing.hero.subtitle') || "Villiant Vault là <span className=\"text-white font-semibold\">bộ não AI</span> tại bàn — không phải solver, lối chơi linh hoạt, <span className=\"text-white/80 font-semibold\">bạn hôm sau ≠ bạn hôm nay</span>." }}
                         />
                         {/* Tagline — chìm hẳn */}
                         <p className="text-sm text-white/25 italic mb-10 mx-auto lg:mx-0">
@@ -90,6 +90,16 @@ export function HeroSection() {
                         >
                             {t('landing.hero.cta_sub') || "Xem Giá"}
                         </Link>
+                        <a
+                            href="/downloads/RoninHUD-Setup.exe"
+                            download
+                            className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-400/40 hover:text-emerald-300 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] transition-all duration-300"
+                        >
+                            <svg className="w-4 h-4 group-hover:animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+                            </svg>
+                            {t('landing.hero.cta_desktop') || "Tải Desktop App"}
+                        </a>
                     </div>
 
                     {/* Trust line — chìm */}
@@ -131,10 +141,10 @@ export function HeroSection() {
                                 <div className="flex-1 rounded-2xl border border-white/10 bg-white/5 p-5 mt-2 flex flex-col gap-5 z-10 backdrop-blur-sm">
                                     <div className="h-5 w-40 bg-white/10 rounded flex items-center px-2 shadow-inner"></div>
                                     <div className="h-32 w-full bg-gradient-to-r from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-xl relative overflow-hidden group">
-                                         <div className="absolute top-4 left-4 h-10 w-10 bg-emerald-500/20 rounded-lg border border-emerald-500/30"></div>
-                                         <div className="absolute top-5 left-16 h-3 w-32 bg-emerald-400/50 rounded"></div>
-                                         <div className="absolute top-9 left-16 h-2 w-20 bg-emerald-400/30 rounded"></div>
-                                         <div className="absolute bottom-4 left-4 right-4 h-8 border border-emerald-500/30 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-400/70 text-[10px] font-bold tracking-widest text-shadow">GTO ALIGNED 100%</div>
+                                        <div className="absolute top-4 left-4 h-10 w-10 bg-emerald-500/20 rounded-lg border border-emerald-500/30"></div>
+                                        <div className="absolute top-5 left-16 h-3 w-32 bg-emerald-400/50 rounded"></div>
+                                        <div className="absolute top-9 left-16 h-2 w-20 bg-emerald-400/30 rounded"></div>
+                                        <div className="absolute bottom-4 left-4 right-4 h-8 border border-emerald-500/30 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-400/70 text-[10px] font-bold tracking-widest text-shadow">GTO ALIGNED 100%</div>
                                     </div>
                                     <div className="flex gap-3 mt-auto">
                                         <div className="h-10 flex-1 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-[10px] text-white/30 font-bold">FOLD</div>

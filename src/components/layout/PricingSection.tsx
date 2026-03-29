@@ -25,7 +25,7 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                 t('landing.pricing_section.tier1_f3') || 'HUD exploit + leak detect',
                 t('landing.pricing_section.tier1_f4') || 'Player memory',
                 t('landing.pricing_section.tier1_f5') || '1 thiết bị',
-                t('landing.pricing_section.tier1_f6') || 'Desktop robinHUD basic',
+                'Desktop robinHUD API Access',
             ],
         },
         {
@@ -41,7 +41,7 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                 t('landing.pricing_section.tier_pro_f4') || 'Player modeling',
                 t('landing.pricing_section.tier_pro_f5') || '2 thiết bị',
                 t('landing.pricing_section.tier_pro_f6') || 'Priority support',
-                t('landing.pricing_section.tier_pro_f7') || 'Desktop robinHUD API access',
+                'Desktop robinHUD API access',
             ],
         },
         {
@@ -89,7 +89,7 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                 {/* Plans */}
                 <div
                     ref={cards.ref as React.RefObject<HTMLDivElement>}
-                    className={`reveal grid grid-cols-1 md:grid-cols-3 gap-5 items-start mb-8 ${cards.visible ? 'is-visible' : ''}`}
+                    className={`reveal grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch mb-8 ${cards.visible ? 'is-visible' : ''}`}
                 >
                     {PLANS.map((plan, i) => {
                         const isPopular = plan.popular;

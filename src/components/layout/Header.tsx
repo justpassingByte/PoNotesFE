@@ -95,7 +95,7 @@ export function Header({
                             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-gold/60 to-amber-700/60 flex items-center justify-center">
                                 <span className="text-[9px] font-black text-black">{user.email.charAt(0).toUpperCase()}</span>
                             </div>
-                            <span className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-gold">{user.plan_name || user.premium_tier}</span>
+                            <span className="hidden sm:block text-[10px] font-black uppercase tracking-wider text-gold truncate max-w-[60px] md:max-w-[80px]">{user.plan_name || user.premium_tier}</span>
                         </button>
                     ) : (
                         <button
