@@ -165,11 +165,7 @@
     "dashboard": {
       "overline": "Target Management System",
       "h2": "Assassin's Dashboard",
-      "sub": "No more guessing about your enemies. Centralized dashboard featuring Priority Targets and Elite Regs, so you know exactly which tables to play and who is trying to take your chips.",
-      "total_analyzed": "Total Hands Analyzed",
-      "total_opponents": "Total Opponents Tracked",
-      "ai_notes": "Total AI Notes",
-      "manual_notes": "Total Manual Notes"
+      "sub": "No more guessing about your enemies. Centralized dashboard featuring Priority Targets and Elite Regs, so you know exactly which tables to play and who is trying to take your chips."
     },
     "howToUse": {
       "overline": "How To Use",
@@ -328,6 +324,10 @@
   "dashboard": {
     "title": "Dashboard",
     "desc": "Welcome to your AI poker headquarters. Track your sessions, identify new leaks, and monitor weak targets.",
+    "total_analyzed": "Total Hands Analyzed",
+    "total_opponents": "Total Opponents Tracked",
+    "ai_notes": "Total AI Notes",
+    "manual_notes": "Total Manual Notes",
     "ai_tuning_modal_title": "AI Neural Tuning Engine",
     "neural_link_established": "Neural Link Established",
     "welcome": "Welcome Back,",

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Check, Zap } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useReveal } from '@/hooks/useReveal';
 import { useLanguage } from '@/i18n/LanguageContext';
 
@@ -63,8 +63,6 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
             ],
         },
     ];
-
-    const ADDON = { price: 10, hands: 200 };
 
     return (
         <section id="pricing" className={`relative overflow-hidden ${isDashboard ? '' : 'py-24'}`}>
@@ -141,23 +139,6 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                         );
                     })}
 
-                </div>
-
-                {/* Add-on */}
-                <div className="max-w-md mx-auto rounded-xl border border-white/6 bg-white/[0.02] p-5 flex items-center justify-between gap-4 mb-10">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white/4 flex items-center justify-center">
-                            <Zap className="w-4 h-4 text-white/30" />
-                        </div>
-                        <div>
-                            <p className="text-white/60 font-bold text-sm">Addon</p>
-                            <p className="text-white/25 text-xs">{t('landing.pricing_section.addon_hands') || '200'} {t('landing.pricing_section.addon_text') || 'hand · Không cần subscribe'}</p>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-white font-black text-xl">${ADDON.price}</p>
-                        <Link href="/register" className="text-xs text-yellow-400/60 font-bold hover:text-yellow-400 transition-colors">{t('landing.pricing_section.recharge_now') || 'Nạp ngay →'}</Link>
-                    </div>
                 </div>
 
                 {/* FAQ */}

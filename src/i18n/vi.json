@@ -164,11 +164,7 @@
     "dashboard": {
       "overline": "Hệ Thống Quản Lý Mục Tiêu",
       "h2": "Dashboard Điều Khiển Sát Thủ",
-      "sub": "Không còn mù mờ về kẻ thù. Bảng điều khiển tập trung Priority Targets và Elite Regs, giúp bạn biết rõ bàn nào đáng đánh và ai đang tìm cách rút tiền của bạn.",
-      "total_analyzed": "Tổng Hand Đã Phân Tích",
-      "total_opponents": "Tổng Đối Thủ Theo Dõi",
-      "ai_notes": "Tổng Số Note AI",
-      "manual_notes": "Tổng Số Note Thủ Công"
+      "sub": "Không còn mù mờ về kẻ thù. Bảng điều khiển tập trung Priority Targets và Elite Regs, giúp bạn biết rõ bàn nào đáng đánh và ai đang tìm cách rút tiền của bạn."
     },
     "howToUse": {
       "overline": "Hướng dẫn sử dụng",
@@ -323,7 +319,11 @@
   },
   "dashboard": {
     "title": "Bảng Điều Khiển",
-    "desc": "Chào mừng đến với trung tâm AI của bạn. Theo dõi quá trình chơi, phát hiện lỗi hệ thống và tìm kiếm mục tiêu yếu.",
+    "desc": "Chào mừng bạn đến với trụ sở AI poker của bạn. Theo dõi phiên của bạn, xác định lỗi mới và giám sát mục tiêu yếu.",
+    "total_analyzed": "Tổng Hand Đã Phân Tích",
+    "total_opponents": "Tổng Đối Thủ Theo Dõi",
+    "ai_notes": "Tổng Số Note AI",
+    "manual_notes": "Tổng Số Note Thủ Công",
     "ai_tuning_modal_title": "Hệ Thống Tùy Chỉnh AI Neural",
     "neural_link_established": "Đã Kết Nối Hệ Thần Kinh",
     "welcome": "Chào Mừng Trở Lại,",
