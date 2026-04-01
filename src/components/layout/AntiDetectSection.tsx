@@ -3,7 +3,7 @@
 import React from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useReveal } from '@/hooks/useReveal';
-import { ShieldCheck, Eye, Minimize2, Terminal, Github } from 'lucide-react';
+import { ShieldCheck, Eye, Minimize2, Clock, Github, MousePointerClick } from 'lucide-react';
 
 export function AntiDetectSection() {
     const headerReveal = useReveal();
@@ -14,21 +14,27 @@ export function AntiDetectSection() {
     const FEATURES = [
         {
             icon: Eye,
-            title: t('landing.anti_detect.f1_title') || '100% Computer Vision',
-            desc: t('landing.anti_detect.f1_desc') || 'Không động chạm RAM, không can thiệp bộ nhớ. Nó giống như bạn đang tự mình nhìn vào màn hình.',
+            title: t('landing.anti_detect.f1_title') || 'Chỉ Đọc Màn Hình — Không Chạm RAM',
+            desc: t('landing.anti_detect.f1_desc') || 'RobinHUD chỉ chụp ảnh các pixel hiển thị trên màn hình của bạn, sau đó dùng AI đọc tên người chơi. Hoàn toàn không inject DLL, không hook vào bộ nhớ game, không đọc lén tiến trình nào.',
             color: 'text-sky-400'
         },
         {
-            icon: Minimize2,
-            title: t('landing.anti_detect.f2_title') || 'Hoạt Động Như Notepad',
-            desc: t('landing.anti_detect.f2_desc') || 'Windows DWM Overlay nổi trên cùng một cách hợp pháp, vô hại đối với Game Client.',
+            icon: MousePointerClick,
+            title: t('landing.anti_detect.f2_title') || 'Bạn Chủ Động — Không Auto',
+            desc: t('landing.anti_detect.f2_desc') || 'Mọi lần quét bàn đều do bạn chủ động bấm nút hoặc nhấn phím tắt (F5). Không có timer chạy ngầm, không polling liên tục. Giảm thiểu tối đa signal phần mềm tự động.',
             color: 'text-amber-400'
         },
         {
-            icon: Terminal,
-            title: t('landing.anti_detect.f3_title') || 'Ngụy Trang Hệ Thống',
-            desc: t('landing.anti_detect.f3_desc') || 'Ứng dụng đổi tên đóng giả tiến trình lõi hệ thống Telemetry. Vô hình trước trình quét.',
+            icon: Clock,
+            title: t('landing.anti_detect.f3_title') || 'Timing Giống Người Thật',
+            desc: t('landing.anti_detect.f3_desc') || 'Mỗi hành động (quét tên, lấy dữ liệu, hiển thị HUD) đều có độ trễ ngẫu nhiên 200–800ms, mô phỏng tốc độ đọc và phản ứng của con người thay vì xử lý tức thì kiểu máy.',
             color: 'text-emerald-400'
+        },
+        {
+            icon: Minimize2,
+            title: t('landing.anti_detect.f4_title') || 'Overlay Tiêu Chuẩn Windows',
+            desc: t('landing.anti_detect.f4_desc') || 'HUD sử dụng WPF Overlay — công nghệ cửa sổ trong suốt tiêu chuẩn của Windows, giống hệt cách Discord, OBS, hay Zalo hiển thị thông báo nổi. Không dùng kỹ thuật đặc biệt nào.',
+            color: 'text-purple-400'
         }
     ];
 
@@ -51,17 +57,17 @@ export function AntiDetectSection() {
                     </div>
 
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-5"
-                        dangerouslySetInnerHTML={{ __html: t('landing.anti_detect.h2') || 'Tàng Hình Trước <span class="text-red-500">Anti-Cheat</span>.' }}
+                        dangerouslySetInnerHTML={{ __html: t('landing.anti_detect.h2') || 'Thiết Kế <span class="text-red-500">An Toàn</span> Từ Nền Tảng.' }}
                     />
                     
                     <p className="text-white/50 text-sm max-w-2xl mx-auto leading-relaxed">
-                        {t('landing.anti_detect.sub') || 'Đừng để tiền mất tật mang vì những tool lởm bị ban account. RobinHUD miễn nhiễm với mọi hệ thống quét của PokerStars, N8, hay bất kỳ sàn nào.'}
+                        {t('landing.anti_detect.sub') || 'RobinHUD được xây dựng với nguyên tắc zero-intrusion: không inject, không hook, không tự động. Mọi thao tác đều do bạn chủ động kích hoạt, với timing tự nhiên như khi bạn tự ghi chép bằng tay.'}
                     </p>
                 </div>
 
                 <div
                     ref={gridReveal.ref as React.RefObject<HTMLDivElement>}
-                    className={`reveal grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16 ${gridReveal.visible ? 'is-visible' : ''}`}
+                    className={`reveal grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-16 ${gridReveal.visible ? 'is-visible' : ''}`}
                 >
                     {FEATURES.map((feat, i) => (
                         <div
