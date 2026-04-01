@@ -275,7 +275,7 @@ export function ProfileHUDModal({ isOpen, onClose, user }: ProfileHUDModalProps)
                         <>
                             {/* ── Desktop App Download ── */}
                             <a
-                                href="/downloads/RobinHUD_Setup_v1.0.2.exe"
+                                href="https://github.com/justpassingByte/PoNotesFE/releases/download/pokerhud/RobinHood_Setup_v1.1.3.exe"
                                 download
                                 className="group relative flex items-center gap-4 w-full p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-600/5 to-teal-500/10 border border-emerald-500/20 hover:border-emerald-400/40 transition-all duration-300 overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.05)] hover:shadow-[0_0_30px_rgba(16,185,129,0.12)]"
                             >
