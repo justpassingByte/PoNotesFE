@@ -49,7 +49,7 @@ export function Header({
         <>
             <header className="fixed top-3 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] sm:w-11/12 max-w-6xl bg-card/40 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 sm:py-2 flex items-center justify-between shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
                 {/* Left: Logo */}
-                <div className="flex items-center shrink-0 w-[140px] md:w-[180px]">
+                <div className="flex items-center shrink-0 flex-1">
                     <Link href="/" className="flex items-center group">
                         <div className="w-8 h-8 bg-gradient-to-br from-gold to-yellow-600 rounded flex items-center justify-center group-hover:scale-105 transition-transform">
                             <Sparkles className="w-4 h-4 text-black" />
@@ -58,7 +58,7 @@ export function Header({
                 </div>
 
                 {/* Center: Desktop nav links */}
-                <nav className="hidden lg:flex flex-1 items-center justify-center space-x-1 whitespace-nowrap overflow-hidden">
+                <nav className="hidden lg:flex flex-none items-center justify-center space-x-1 whitespace-nowrap overflow-hidden">
                     {navLinks.map((link) => (
                         <Link
                             key={link.href}
@@ -75,8 +75,8 @@ export function Header({
                 </nav>
 
                 {/* Right: Actions */}
-                <div className="flex items-center justify-end space-x-2 md:space-x-3 shrink-0 w-[140px] md:w-[180px]">
-                    <LanguageSelector />
+                <div className="flex items-center justify-end space-x-2 md:space-x-3 shrink-0 flex-1">
+                    <LanguageSelector className="hidden lg:flex" />
                     {/* Settings gear → opens AITuningModal (same as Dashboard) */}
                     <button
                         onClick={handleSettingsClick}
@@ -90,13 +90,13 @@ export function Header({
                     {user ? (
                         <button
                             onClick={() => setIsProfileOpen(true)}
-                            className="flex items-center gap-2 pl-2 pr-4 py-1.5 bg-gold/10 border border-gold/30 rounded-full hover:bg-gold/20 hover:border-gold/50 transition-all group shadow-[0_0_10px_rgba(250,204,21,0.08)]"
+                            className="flex items-center gap-2 pl-2 pr-2 xl:pr-4 py-1.5 bg-gold/10 border border-gold/30 rounded-full hover:bg-gold/20 hover:border-gold/50 transition-all group shadow-[0_0_10px_rgba(250,204,21,0.08)]"
                             title="Profile & Plan"
                         >
                             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-gold/60 to-amber-700/60 flex items-center justify-center shrink-0">
                                 <span className="text-[9px] font-black text-black">{user.email.charAt(0).toUpperCase()}</span>
                             </div>
-                            <span className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-gold truncate max-w-[90px] lg:max-w-[140px] pr-1">{user.plan_name || user.premium_tier}</span>
+                            <span className="hidden xl:block text-[10px] font-black uppercase tracking-widest text-gold truncate xl:max-w-[140px] pr-1">{user.plan_name || user.premium_tier}</span>
                         </button>
                     ) : (
                         <button
@@ -145,13 +145,16 @@ export function Header({
                                 {link.name}
                             </Link>
                         ))}
-                        <button
-                            onClick={() => { handleSettingsClick(); setMobileMenuOpen(false); }}
-                            className="flex items-center gap-3 px-4 py-3 min-h-[44px] text-sm text-gray-300 hover:text-gold hover:bg-gold/5 rounded-xl transition-all border-t border-white/5 mt-2 pt-4"
-                        >
-                            <Settings className="w-5 h-5 text-gray-400" />
-                            {t('nav.settings')}
-                        </button>
+                        <div className="flex items-center gap-3 px-4 py-3 pt-4 border-t border-white/5 mt-2 justify-between">
+                            <LanguageSelector />
+                            <button
+                                onClick={() => { handleSettingsClick(); setMobileMenuOpen(false); }}
+                                className="flex items-center gap-2 text-sm text-gray-300 hover:text-gold hover:bg-gold/5 rounded-xl transition-all"
+                            >
+                                <Settings className="w-5 h-5 text-gray-400" />
+                                {t('nav.settings')}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
