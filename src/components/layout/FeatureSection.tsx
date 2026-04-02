@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { useReveal } from '@/hooks/useReveal';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { ThumbsUp, DatabaseZap } from 'lucide-react';
 
 function RevealBlock({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
     const { ref, visible } = useReveal();
@@ -50,9 +51,25 @@ export function FeatureSection() {
                                         {t('landing.oracle.h3_2')}
                                     </span>
                                 </h2>
-                                <p className="text-white/50 text-base max-w-xl leading-relaxed mb-8">
+                                <p className="text-white/50 text-base max-w-xl leading-relaxed mb-6">
                                     {t('landing.oracle.desc')}
                                 </p>
+                                
+                                {/* RLHF Feature Callout */}
+                                <div className="p-4 rounded-xl border border-white/10 bg-gradient-to-r from-emerald-500/5 to-transparent flex items-start gap-4 border-l-2 border-l-emerald-500 mb-8 max-w-xl">
+                                    <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 shrink-0 shadow-[0_0_15px_rgba(52,211,153,0.15)]">
+                                        <ThumbsUp size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-[13px] font-bold text-white mb-1.5 uppercase tracking-wider flex items-center gap-2">
+                                            {t('landing.oracle.rlhf_title') || "RLHF Fine-Tuning Engine"}
+                                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-black tracking-widest border border-emerald-500/30">{t('landing.oracle.rlhf_badge') || "NEW"}</span>
+                                        </h4>
+                                        <p className="text-sm text-white/50 leading-relaxed">
+                                            {t('landing.oracle.rlhf_desc') || "AI liên tục học từ Human Feedback (Thumbs Up/Down) của Pro Players. Dữ liệu Raw JSON được lưu để tự động Fine-tune cho các Model GTO trong tương lai."}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

@@ -118,7 +118,10 @@
       "desc": "Không cần nhập hand lịch sử rườm rà. Bạn chỉ cần gõ đúng tình huống đang gặp. AI sẽ tìm trong hơn 350,000 spot đã solve để hiển thị Chiến Thuật GTO (Pure/Mix), EV, và Range chính xác tới từng %.",
       "sys_query": "system > truy_vấn_gto.exe",
       "mock_result_found": "Đã tìm kiếm trong 356,400 solutions",
-      "mock_analysis_says": "Phân tích GTO khuyên:"
+      "mock_analysis_says": "Phân tích GTO khuyên:",
+      "rlhf_title": "RLHF Fine-Tuning Engine",
+      "rlhf_badge": "MỚI",
+      "rlhf_desc": "AI liên tục học từ Human Feedback (Thumbs Up/Down) của Pro Players. Dữ liệu Raw JSON được lưu để tự động Fine-tune cho các Model GTO trong tương lai."
     },
     "features": {
       "pain_overline": "Pain Point — Nói thẳng, hơi đau nhưng thật",

@@ -119,7 +119,10 @@
       "desc": "No need to input clunky hand histories. Just type your current situation. AI instantly searches through 350,000+ solved spots to show exact GTO Strategy (Pure/Mix), EV, and Range percentages.",
       "sys_query": "system > gto_query.exe",
       "mock_result_found": "Searched 356,400 solutions",
-      "mock_analysis_says": "GTO Analysis output:"
+      "mock_analysis_says": "GTO Analysis output:",
+      "rlhf_title": "RLHF Fine-Tuning Engine",
+      "rlhf_badge": "NEW",
+      "rlhf_desc": "The AI continuously learns from Human Feedback (Thumbs Up/Down) from Pro Players. Raw JSON data is stored to automatically Fine-tune future GTO Models."
     },
     "features": {
       "pain_overline": "Pain Point — Straight truth, hurts a bit",
