@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Menu, X, Sparkles, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Sparkles, LayoutDashboard, MonitorDown } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LanguageSelector } from '@/components/forms/LanguageSelector';
 
@@ -23,11 +23,11 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
     const [clicking, setClicking]              = useState('');
 
     const NAV_LINKS = [
+        { name: t('landing.nav.manifesto') || 'Manifesto',   id: 'manifesto' },
         { name: t('landing.nav.features') || 'Features',     id: 'features' },
-        { name: t('landing.nav.profiles') || 'HUD Profiles', id: 'profiles' },
-        { name: t('landing.nav.roadmap') || 'Roadmap',      id: 'roadmap'  },
-        { name: t('landing.nav.pricing') || 'Pricing',      id: 'pricing'  },
-        { name: t('landing.nav.contact') || 'Contact',      id: 'contact'  },
+        { name: t('landing.nav.roadmap') || 'Roadmap',       id: 'roadmap'  },
+        { name: t('landing.nav.pricing') || 'Pricing',       id: 'pricing'  },
+        { name: t('landing.nav.contact') || 'Contact',       id: 'contact'  },
     ];
 
     // Pill indicator positioning
@@ -139,6 +139,17 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
                     </div>
 
                     <div className="h-4 w-px bg-white/8 mx-3 relative z-10" />
+
+                    <div className="relative z-10 mr-2">
+                        <a
+                            href="https://github.com/justpassingByte/PoNotesFE/releases/download/pokerhud/RobinHood_Setup_v1.1.3.exe"
+                            download
+                            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all text-sm font-bold tracking-tight"
+                        >
+                            <MonitorDown className="w-4 h-4" />
+                            <span className="hidden lg:inline">{t('landing.hero.cta_desktop') || "Tải Desktop App"}</span>
+                        </a>
+                    </div>
 
                     <div className="relative z-10 mr-4">
                         <LanguageSelector />

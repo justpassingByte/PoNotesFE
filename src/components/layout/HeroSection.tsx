@@ -34,7 +34,7 @@ export function HeroSection() {
                     {/* Headline — nổi nhất */}
                     <h1
                         ref={headline.ref as React.RefObject<HTMLHeadingElement>}
-                        className={`reveal text-5xl sm:text-7xl font-black text-white leading-[1.05] tracking-tight mb-6 ${headline.visible ? 'is-visible' : ''}`}
+                        className={`reveal text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-6 ${headline.visible ? 'is-visible' : ''}`}
                         style={{ transitionDelay: '80ms' }}
                     >
                         {t('landing.hero.h1_prefix') || "Giữ Tiền."}{' '}
@@ -69,36 +69,28 @@ export function HeroSection() {
                     {/* CTAs */}
                     <div
                         ref={ctas.ref as React.RefObject<HTMLDivElement>}
-                        className={`reveal flex flex-col sm:flex-row gap-3 justify-center lg:justify-start ${ctas.visible ? 'is-visible' : ''}`}
+                        className={`reveal flex flex-col sm:flex-row flex-wrap gap-4 justify-center lg:justify-start ${ctas.visible ? 'is-visible' : ''}`}
                         style={{ transitionDelay: '240ms' }}
                     >
                         <Link
                             href="/dashboard"
-                            className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl font-black text-black text-sm transition-all duration-200 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
+                            className="inline-flex items-center justify-center min-w-[160px] w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-black text-sm transition-all duration-200 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
                             style={{ background: 'linear-gradient(135deg, #ffc400, #ffdd55)' }}
                         >
                             {t('landing.hero.cta_main') || "Vào Dashboard"}
                         </Link>
                         <Link
-                            href="#pricing"
+                            href="#manifesto"
                             onClick={(e) => {
                                 e.preventDefault();
-                                const el = document.getElementById('pricing');
+                                const el = document.getElementById('manifesto');
                                 if (!el) return;
                                 window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
                             }}
-                            className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl font-bold text-white/50 text-sm bg-white/4 border border-white/10 hover:bg-white/8 hover:text-white/80 transition-all duration-200"
+                            className="inline-flex items-center justify-center min-w-[160px] w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-white/50 text-sm bg-white/4 border border-white/10 hover:bg-white/8 hover:text-white/80 transition-all duration-200"
                         >
-                            {t('landing.hero.cta_sub') || "Xem Giá"}
+                            {t('landing.hero.cta_sub') || "Đọc Manifesto"}
                         </Link>
-                        <a
-                            href="https://github.com/justpassingByte/PoNotesFE/releases/download/pokerhud/RobinHood_Setup_v1.1.3.exe"
-                            download
-                            className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-400/40 hover:text-emerald-300 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] transition-all duration-300"
-                        >
-                            <MonitorDown className="w-5 h-5 group-hover:animate-bounce" strokeWidth={2.2} />
-                            {t('landing.hero.cta_desktop') || "Tải Desktop App"}
-                        </a>
                     </div>
 
                     {/* Trust line — chìm */}

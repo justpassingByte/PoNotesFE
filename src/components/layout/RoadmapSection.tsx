@@ -3,7 +3,7 @@
 import React from 'react';
 import { useReveal } from '@/hooks/useReveal';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Sparkles, BrainCircuit, Rocket, ShieldCheck, Smartphone } from 'lucide-react';
+import { Sparkles, BrainCircuit, Rocket, Smartphone } from 'lucide-react';
 
 function RevealBlock({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
     const { ref, visible } = useReveal();
@@ -124,18 +124,6 @@ export function RoadmapSection() {
                         })}
                     </div>
                 </div>
-
-                <RevealBlock delay={500}>
-                    <div className="max-w-3xl mx-auto mt-20 p-8 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent text-center">
-                        <ShieldCheck className="w-8 h-8 text-yellow-500/80 mx-auto mb-4" />
-                        <h4 className="text-white/90 font-bold mb-2 text-lg">
-                            {t('landing.roadmap.philosophy.title') || 'Tại sao lại Subscription?'}
-                        </h4>
-                        <p className="text-sm text-white/50 leading-relaxed">
-                            {t('landing.roadmap.philosophy.desc') || 'Duy trì server siêu mạnh, chống spam và có nguồn lực build tiếp roadmap này. Sự ủng hộ của anh em là viên gạch xây nên hệ thống thống trị bàn chơi.'}
-                        </p>
-                    </div>
-                </RevealBlock>
             </div>
         </section>
     );

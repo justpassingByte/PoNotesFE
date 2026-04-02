@@ -57,12 +57,16 @@ export function AntiDetectSection() {
                     </div>
 
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-5"
-                        dangerouslySetInnerHTML={{ __html: t('landing.anti_detect.h2') || 'Thiết Kế <span class="text-red-500">An Toàn</span> Từ Nền Tảng.' }}
+                        dangerouslySetInnerHTML={{ __html: t('landing.anti_detect.h2') || 'Desktop App — Thiết Kế <span class="text-red-500">An Toàn</span> Từ Nền Tảng.' }}
                     />
                     
-                    <p className="text-white/50 text-sm max-w-2xl mx-auto leading-relaxed">
-                        {t('landing.anti_detect.sub') || 'RobinHUD được xây dựng với nguyên tắc zero-intrusion: không inject, không hook, không tự động. Mọi thao tác đều do bạn chủ động kích hoạt, với timing tự nhiên như khi bạn tự ghi chép bằng tay.'}
+                    <p className="text-white/50 text-sm max-w-2xl mx-auto leading-relaxed mb-4">
+                        {t('landing.anti_detect.sub') || 'RobinHUD Desktop được xây dựng với nguyên tắc zero-intrusion: không inject, không hook, không tự động. Mọi thao tác đều do bạn chủ động kích hoạt, với timing tự nhiên như khi bạn tự ghi chép bằng tay.'}
                     </p>
+
+                    <p className="text-white/30 text-xs max-w-xl mx-auto leading-relaxed italic"
+                        dangerouslySetInnerHTML={{ __html: t('landing.anti_detect.web_alt') || 'Nếu vẫn lo ngại? <span class="text-white/50 font-semibold not-italic">Dùng bản Web</span> — toàn bộ AI phân tích, hand review, player notes đều dùng được trên trình duyệt. Không cần cài gì, không risk gì.' }}
+                    />
                 </div>
 
                 <div

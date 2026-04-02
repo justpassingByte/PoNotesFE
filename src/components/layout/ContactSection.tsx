@@ -6,72 +6,13 @@ import { useReveal } from '@/hooks/useReveal';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 export function ContactSection() {
-    const head = useReveal();
-    const compare = useReveal();
     const finale = useReveal();
     const { t } = useLanguage();
-
-    const COMPARISON = [
-        { losing: t('landing.contact.losing1') || 'Chơi bằng cảm giác',    winning: t('landing.contact.winning1') || 'Quyết định theo tần suất' },
-        { losing: t('landing.contact.losing2') || 'Donate cho reg mỗi ngày', winning: t('landing.contact.winning2') || 'Exploit whale, né reg' },
-        { losing: t('landing.contact.losing3') || 'Tự hỏi "sao mình xui"', winning: t('landing.contact.winning3') || 'Thoải mái tư tưởng' },
-        { losing: t('landing.contact.losing4') || 'Học GTO xong quên',      winning: t('landing.contact.winning4') || 'Vault nhắc bạn mỗi ngày' },
-    ];
 
     return (
         <>
             <section id="contact" className="relative py-20">
                 <div className="max-w-5xl mx-auto px-6">
-
-                    {/* Comparison */}
-                    <div className="mb-16">
-                        <div
-                            ref={head.ref as React.RefObject<HTMLDivElement>}
-                            className={`reveal mb-10 ${head.visible ? 'is-visible' : ''}`}
-                        >
-                            <p className="text-white/25 text-xs font-bold uppercase tracking-[0.28em] mb-3">
-                                {t('landing.contact.compare_overline') || "Chốt — hơi ngông nhưng đúng"}
-                            </p>
-                            <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
-                                {t('landing.contact.compare_h2') || "Bạn có 2 đường."}
-                            </h2>
-                        </div>
-
-                        <div
-                            ref={compare.ref as React.RefObject<HTMLDivElement>}
-                            className={`reveal grid sm:grid-cols-2 gap-4 ${compare.visible ? 'is-visible' : ''}`}
-                        >
-                            {/* Losing — màu nhạt/tối hơn, header đỏ nhẹ */}
-                            <div className="rounded-xl border border-white/6 bg-white/[0.02] p-7">
-                                <h3 className="text-xs font-black text-rose-400/50 uppercase tracking-widest mb-5">
-                                    ✕ &nbsp; {t('landing.contact.path1') || "Đường 1 — Tự Troll Mình"}
-                                </h3>
-                                <ul className="space-y-3">
-                                    {COMPARISON.map((c, i) => (
-                                        <li key={i} className="flex items-start gap-3">
-                                            <span className="text-rose-500/30 mt-0.5 shrink-0 text-xs font-bold">—</span>
-                                            <span className="text-white/30 text-sm line-through decoration-white/15">{c.losing}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {/* Winning — xanh lá = giải pháp */}
-                            <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.03] p-7">
-                                <h3 className="text-xs font-black text-emerald-400/60 uppercase tracking-widest mb-5">
-                                    ✓ &nbsp; {t('landing.contact.path2') || "Đường 2 — Đưa Tiền Cho Vault"}
-                                </h3>
-                                <ul className="space-y-3">
-                                    {COMPARISON.map((c, i) => (
-                                        <li key={i} className="flex items-start gap-3">
-                                            <span className="text-emerald-400/50 mt-0.5 shrink-0 text-xs font-bold">✓</span>
-                                            <span className="text-white/65 text-sm font-medium">{c.winning}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Final CTA */}
                     <div

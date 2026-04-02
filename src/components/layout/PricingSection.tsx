@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Check } from 'lucide-react';
+import { Check, ShieldCheck } from 'lucide-react';
 import { useReveal } from '@/hooks/useReveal';
 import { useLanguage } from '@/i18n/LanguageContext';
 
@@ -161,6 +161,19 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                                 <p className="text-white/25 text-xs leading-relaxed">{item.a}</p>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* Why Subscription */}
+                {!isDashboard && (
+                    <div className="max-w-2xl mx-auto mt-14 p-7 rounded-2xl border border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent text-center">
+                        <ShieldCheck className="w-7 h-7 text-yellow-500/80 mx-auto mb-3" />
+                        <h4 className="text-white/90 font-bold mb-2 text-base">
+                            {t('landing.roadmap.philosophy.title') || 'Tại sao lại Subscription?'}
+                        </h4>
+                        <p className="text-xs text-white/45 leading-relaxed">
+                            {t('landing.roadmap.philosophy.desc') || 'Duy trì server siêu mạnh, chống spam và có nguồn lực build tiếp roadmap này. Sự ủng hộ của anh em là viên gạch xây nên hệ thống thống trị bàn chơi.'}
+                        </p>
                     </div>
                 )}
             </div>

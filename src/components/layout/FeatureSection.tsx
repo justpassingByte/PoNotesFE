@@ -19,76 +19,17 @@ function RevealBlock({ children, delay = 0 }: { children: React.ReactNode; delay
 }
 
 export function FeatureSection() {
-    const painHead = useReveal();
-    const painGrid = useReveal();
     const uxHead = useReveal();
     const hudHead = useReveal();
     const featureHead = useReveal();
-    const featureGrid = useReveal();
     const { t } = useLanguage();
     const [lightbox, setLightbox] = useState<string | null>(null);
 
-    const PAIN_POINTS = [
-        { text: t('landing.features.p1_text') || '"Chắc nó bluff" → call → mất tiền', fix: t('landing.features.p1_fix') || 'Vault tính xác suất cho bạn' },
-        { text: t('landing.features.p2_text') || 'Học GTO xong vào bàn vẫn đánh tâm linh', fix: t('landing.features.p2_fix') || 'Review tự động sau mỗi hand' },
-        { text: t('landing.features.p3_text') || 'Không biết thằng nào là ATM, thằng nào là CHỐT', fix: t('landing.features.p3_fix') || 'Phân loại đối thủ tức thì (Whale/Reg)' },
-        { text: t('landing.features.p4_text') || 'Thấy đánh "sai sai" nhưng không biết note thế nào', fix: t('landing.features.p4_fix') || 'Viết tự do, AI tự động tóm tắt' },
-        { text: t('landing.features.p5_text') || 'Ghi chú đống lúc vào trận không kịp dùng', fix: t('landing.features.p5_fix') || 'Tự động gắn note vào kế hoạch đánh Real-time' },
-        { text: t('landing.features.p6_text') || 'HUD tung rổ số liệu bắt tự suy nghĩ', fix: t('landing.features.p6_fix') || 'Điểm mặt ĐIỂM YẾU thẳng luôn' },
-    ];
-    
-    const FEATURES = [
-        { title: t('landing.features.f1_title') || 'Quyết Định < 100ms',          desc: t('landing.features.f1_desc') || 'Crop ảnh bàn chơi → paste → nhận Call/Fold + range + plan chi tiết. Không cần căng não.' },
-        { title: t('landing.features.f2_title') || 'HUD "Bóc Bài" Đối Thủ',        desc: t('landing.features.f2_desc') || 'Panel riêng: Whale, Reg, hay bạn tự troll mình. Gợi ý exploit cụ thể, không "tùy tình huống".' },
-        { title: t('landing.features.f3_title') || 'AI Tuning (Tính Năng Mới)',      desc: t('landing.features.f3_desc') || 'Tùy biến AI hoàn toàn. Ép AI trả lời kiểu bảo thủ (GTO) hay điên cuồng (Max Exploit) theo ý bạn bằng các prompt cực mạnh.' },
-        { title: t('landing.features.f4_title') || 'Team AI Có Cá Tính Riêng',      desc: t('landing.features.f4_desc') || 'Không phải 1 AI nhàm chán. Là team pro mỗi thằng mỗi tính cách — không biết tilt, không biết mệt.' },
-        { title: t('landing.features.f5_title') || 'Giảm Leak, Không Đốt Chip Ngu', desc: t('landing.features.f5_desc') || 'System sửa bạn mỗi ngày — không toxic nhưng cũng không nương tay.' },
-        { title: t('landing.features.f6_title') || 'GTO Baseline + Exploit HYBRID', desc: t('landing.features.f6_desc') || 'GTO cho khung, exploit để hốt tiền, memory để không quên thằng nào ngu.' },
-    ];
-
     return (
         <>
-            {/* ─── Pain Point ─── */}
+            {/* ─── Hand Analyzer + UX Demo ─── */}
             <section id="features" className="relative py-20">
                 <div className="max-w-7xl mx-auto px-6">
-                    <div
-                        ref={painHead.ref as React.RefObject<HTMLDivElement>}
-                        className={`reveal mb-12 ${painHead.visible ? 'is-visible' : ''}`}
-                    >
-                        {/* Overline — chìm */}
-                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.28em] mb-3">
-                            {t('landing.features.pain_overline') || "Pain Point — Nói thẳng, hơi đau nhưng thật"}
-                        </p>
-                        {/* H2 — nổi */}
-                        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight"
-                            dangerouslySetInnerHTML={{ __html: t('landing.features.pain_h2') || "Bạn đang gamble mà <span className=\"text-yellow-400\">không có edge</span>." }}
-                        />
-                        {/* Sub — đọc được */}
-                        <p className="text-white/50 mt-3 max-w-lg text-sm leading-relaxed">
-                            {t('landing.features.pain_sub') || "Donate đều mỗi ngày, đuối dần và tilt. Thay vì ném tiền cho cá, hãy đưa vào két sắt này."}
-                        </p>
-                    </div>
-
-                    <div
-                        ref={painGrid.ref as React.RefObject<HTMLDivElement>}
-                        className={`reveal grid gap-3 sm:grid-cols-3 mb-20 ${painGrid.visible ? 'is-visible' : ''}`}
-                    >
-                        {PAIN_POINTS.map((p, i) => (
-                            <div
-                                key={i}
-                                className="rounded-xl border border-white/6 bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-colors duration-300"
-                                style={{ transitionDelay: `${i * 80}ms` }}
-                            >
-                                {/* Mistake — màu amber nhẹ để gợi cảm giác "sai" */}
-                                <p className="text-amber-200/70 text-sm mb-3 leading-snug">{p.text}</p>
-                                <div className="flex items-center gap-2 text-xs font-semibold pt-3 border-t border-white/5">
-                                    {/* Fix — xanh lá = giải pháp */}
-                                    <span className="text-emerald-400/70">+</span>
-                                    <span className="text-emerald-400/60">{p.fix}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
 
                     {/* ─── UX Demo ─── */}
                     <div className="flex flex-col lg:flex-row items-center gap-14 py-4">
@@ -295,25 +236,59 @@ export function FeatureSection() {
                            dangerouslySetInnerHTML={{ __html: t('landing.what_is.sub') || "Không phải tool. Không phải solver. Không phải HUD VPIP/PFR rối não. <span class=\"text-white font-semibold\">2026 rồi</span> — là két sắt + bộ não + team toàn pro không biết tilt." }}
                         />
                     </div>
-                    <div
-                        ref={featureGrid.ref as React.RefObject<HTMLDivElement>}
-                        className={`reveal grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${featureGrid.visible ? 'is-visible' : ''}`}
-                    >
-                        {FEATURES.map((f, i) => (
-                            <div
-                                key={i}
-                                className="rounded-xl border border-white/6 bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-yellow-500/15 transition-all duration-300 group"
-                                style={{ transitionDelay: `${i * 60}ms` }}
-                            >
-                                {/* Số thứ tự mờ — đạo cụ */}
-                                <span className="text-[10px] font-black text-white/15 mb-2 block tabular-nums">{String(i + 1).padStart(2, '0')}</span>
-                                {/* Title — vàng nhẹ khi hover */}
-                                <h3 className="text-sm font-black mb-1.5 text-white/80 group-hover:text-yellow-300 transition-colors duration-200">{f.title}</h3>
-                                {/* Desc — đọc được */}
-                                <p className="text-xs text-white/40 leading-relaxed">{f.desc}</p>
+
+                    {/* ─── Identity Pillars ─── */}
+                    <RevealBlock delay={80}>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16">
+                            {/* Step 1 — Memory Retrieval */}
+                            <div className="rounded-2xl border border-yellow-500/15 bg-gradient-to-b from-yellow-500/[0.04] to-transparent p-6 group hover:border-yellow-500/25 transition-all duration-400 relative">
+                                <div className="text-[10px] font-black text-yellow-500/50 uppercase tracking-widest mb-3">Step 1</div>
+                                <h4 className="text-sm font-black text-white mb-2">
+                                    {t('landing.what_is.pillar1_title') || '① Truy Xuất Memory Theo Spot'}
+                                </h4>
+                                <p className="text-xs text-white/40 leading-relaxed">
+                                    {t('landing.what_is.pillar1_desc') || 'Khi bạn gặp một spot — system tự tìm lại tất cả hand tương tự bạn từng chơi, note bạn từng ghi, pattern đối thủ trong cùng vị trí. Không quên, không bỏ sót.'}
+                                </p>
+                                {/* Arrow connector (desktop only) */}
+                                <div className="hidden sm:block absolute -right-5 top-1/2 -translate-y-1/2 text-white/15 text-xl z-10">→</div>
                             </div>
-                        ))}
-                    </div>
+
+                            {/* Step 2 — GTO Cross-Reference */}
+                            <div className="rounded-2xl border border-cyan-500/15 bg-gradient-to-b from-cyan-500/[0.04] to-transparent p-6 group hover:border-cyan-500/25 transition-all duration-400 relative">
+                                <div className="text-[10px] font-black text-cyan-500/50 uppercase tracking-widest mb-3">Step 2</div>
+                                <h4 className="text-sm font-black text-white mb-2">
+                                    {t('landing.what_is.pillar2_title') || '② Đối Chiếu Lý Thuyết GTO'}
+                                </h4>
+                                <p className="text-xs text-white/40 leading-relaxed">
+                                    {t('landing.what_is.pillar2_desc') || 'Data truy xuất được đưa vào AI cùng với nền tảng GTO — range, frequency, sizing. Hệ thống so sánh hành vi thực tế của đối thủ với GTO baseline để tìm chỗ lệch.'}
+                                </p>
+                                <div className="hidden sm:block absolute -right-5 top-1/2 -translate-y-1/2 text-white/15 text-xl z-10">→</div>
+                            </div>
+
+                            {/* Step 3 — Exploit Decision */}
+                            <div className="rounded-2xl border border-emerald-500/15 bg-gradient-to-b from-emerald-500/[0.04] to-transparent p-6 group hover:border-emerald-500/25 transition-all duration-400">
+                                <div className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest mb-3">Step 3</div>
+                                <h4 className="text-sm font-black text-white mb-2">
+                                    {t('landing.what_is.pillar3_title') || '③ Ra Quyết Định Exploit'}
+                                </h4>
+                                <p className="text-xs text-white/40 leading-relaxed">
+                                    {t('landing.what_is.pillar3_desc') || 'AI tổng hợp: memory cá nhân + GTO framework + leak đối thủ → ra chiến thuật exploit cụ thể. Không phải chung chung, mà dựa trên data riêng của BẠN.'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Pro Tip Note */}
+                        <div className="mt-8 flex gap-4 p-5 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm group hover:bg-white/[0.03] transition-all duration-300 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/50 group-hover:bg-emerald-400 transition-colors"></div>
+                            <div className="text-xl shrink-0">💡</div>
+                            <div className="flex-1">
+                                <h5 className="text-sm font-bold text-white mb-1.5">{t('landing.what_is.note_title') || 'Tối đa hóa sức mạnh hệ thống'}</h5>
+                                <p className="text-xs text-white/50 leading-relaxed" dangerouslySetInnerHTML={{ 
+                                    __html: t('landing.what_is.note_body') || 'Để phát huy 100% sức mạnh của tiến trình này, hãy dùng kết hợp với <span class="text-emerald-400 font-bold">Desktop App</span>. Desktop HUD sẽ tự động note từng action siêu nhỏ của đối phương. Bù lại, nếu chỉ dùng bản <b>Web</b> (upload hand thủ công + note cơ bản) — ngần đó cốt lõi cũng đã đủ để bạn bỏ xa phần lớn player ngoài kia.' 
+                                }} />
+                            </div>
+                        </div>
+                    </RevealBlock>
                 </div>
             </section>
 
