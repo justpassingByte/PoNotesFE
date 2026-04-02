@@ -172,7 +172,7 @@ function PlayingCard({ card, size = "md" }: { card: string, size?: "md" | "lg" }
     const suit = card[card.length - 1].toLowerCase();
     let rank = card.slice(0, -1).toUpperCase();
     if (rank === "T") rank = "10";
-    
+
     // Standard 2-color deck matching user screenshot (Spades/Clubs=Black, Hearts/Diamonds=Red)
     const isRed = suit === "h" || suit === "d";
     const suitData: Record<string, string> = {
@@ -180,7 +180,7 @@ function PlayingCard({ card, size = "md" }: { card: string, size?: "md" | "lg" }
     };
     const sIcon = suitData[suit] || suit;
     const textColor = isRed ? "text-[#e61919]" : "text-[#1a1c23]";
-    
+
     // Match the exact dimensions and text sizes from the reference image
     const dims = size === 'lg' ? "w-12 h-[72px]" : "w-10 h-[56px]";
     const textSz = size === 'lg' ? "text-2xl" : "text-lg";
@@ -443,13 +443,13 @@ export function GtoOracle() {
             {/* ─── RESULTS ─── */}
             {parsed && data && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 items-start">
-                    
+
                     {/* LEFT COLUMN: Situation & Details */}
                     <div className="space-y-5">
                         {/* Unified Situation Card */}
                         <div className="bg-[#111827] border border-[#2a3654] rounded-xl p-5 relative overflow-hidden">
                             <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-gold via-emerald-500 to-gold" />
-                            
+
                             <div className="flex items-start justify-between mb-4">
                                 <div>
                                     <h3 className="text-[10px] font-semibold uppercase tracking-[2px] text-gold/70 flex items-center gap-2 mb-2">
@@ -463,7 +463,7 @@ export function GtoOracle() {
                                         </p>
                                     )}
                                 </div>
-                                
+
                                 {/* Metadata Badges */}
                                 <div className="flex flex-col items-end gap-1">
                                     <span className="text-[10px] bg-[#1a2236] border border-[#2a3654] px-2 py-0.5 rounded text-slate-400 capitalize">
@@ -526,14 +526,14 @@ export function GtoOracle() {
                                 ];
                                 const best = actions.reduce((a, b) => a.value > b.value ? a : b);
                                 const isMixed = actions.filter(a => a.value >= 0.25).length >= 2;
-                                
+
                                 return (
                                     <div>
                                         {/* Action recommendation text */}
                                         <div className="flex items-center gap-2 mb-3">
                                             <Target size={16} className={best.color} />
                                             <span className="text-sm text-slate-200">
-                                                {isMixed 
+                                                {isMixed
                                                     ? <span>{t('oracle_tool.gto_recommends_mix') || "Phân tích GTO khuyên "}<strong className={best.color}>{t('oracle_tool.mix_strategy') || "Mix Strategy"}</strong>: {actions.filter(a => a.value >= 0.1).map(a => `${a.label} (${pct(a.value)})`).join(" / ")}</span>
                                                     : <span>{t('oracle_tool.optimal_action') || "Hành động tối ưu nhất là "}<strong className={best.color}>{best.label}</strong> ({pct(best.value)}).</span>
                                                 }
@@ -630,76 +630,10 @@ export function GtoOracle() {
 
                     {/* RIGHT COLUMN: Strategy & Breakdown */}
                     <div className="space-y-4">
-                        
-                        {/* RLHF Feedback Widget (Moved here) */}
-                        {data && data.log_id && feedbackStatus !== 'submitted' && (
-                            <div className="bg-gradient-to-r from-[#1a2c3a] to-[#0a1219] border border-blue-500/30 rounded-xl p-4 shadow-lg animate-in fade-in duration-500">
-                                {feedbackStatus === 'none' && (
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <Sparkles size={16} className="text-blue-400" />
-                                            <span className="text-sm font-semibold text-blue-100 flex-1">
-                                                {t('oracle_tool.feedback_ask') || "Đánh giá chất lượng của Oracle?"}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 bg-black/40 px-1 py-1 rounded-full border border-white/5">
-                                            <button 
-                                                onClick={() => handleFeedbackSubmit(true)}
-                                                className="p-1.5 rounded-full bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-[0_0_10px_rgba(16,185,129,0.2)]"
-                                                title="Helpful"
-                                            >
-                                                <ThumbsUp size={16} />
-                                            </button>
-                                            <button 
-                                                onClick={() => setFeedbackStatus('disliked')}
-                                                className="p-1.5 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)]"
-                                                title="Not Helpful"
-                                            >
-                                                <ThumbsDown size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
 
-                                {feedbackStatus === 'disliked' && (
-                                    <div className="flex flex-col gap-3">
-                                        <label className="text-xs font-bold text-red-300">How can we improve this answer?</label>
-                                        <textarea
-                                            value={feedbackReason}
-                                            onChange={(e) => setFeedbackReason(e.target.value)}
-                                            placeholder="Góp ý để cải thiện Oracle..."
-                                            className="bg-[#0d1117] border border-red-500/30 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 resize-none focus:outline-none focus:border-red-500/60 h-20"
-                                        />
-                                        <div className="flex gap-2 justify-end">
-                                            <button 
-                                                onClick={() => setFeedbackStatus('none')}
-                                                className="px-3 py-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-wider"
-                                            >
-                                                Hide
-                                            </button>
-                                            <button 
-                                                onClick={() => {
-                                                    handleFeedbackSubmit(false, feedbackReason);
-                                                    setFeedbackStatus('submitted');
-                                                }}
-                                                disabled={submittingFeedback || !feedbackReason.trim()}
-                                                className="px-4 py-1.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded text-xs font-bold uppercase tracking-wider disabled:opacity-50 flex items-center gap-2 shadow-lg"
-                                            >
-                                                {submittingFeedback ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                                Send
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                        
-                        {/* Thank you feedback display */}
-                        {feedbackStatus === 'submitted' && (
-                            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg animate-in fade-in duration-500">
-                                <Sparkles size={14} /> Feedback received. Thank you for training VillainVault!
-                            </div>
-                        )}
+                        {/* Strategy and Breakdown section begins */}
+
+
                         {/* Hand class breakdown */}
                         <div className="bg-[#0f1523] border border-[#2a3654] rounded-xl p-5 shadow-lg relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-slate-800/10 rounded-full blur-[60px] pointer-events-none" />
@@ -772,7 +706,80 @@ export function GtoOracle() {
                     </div>
                 </div>
             )}
-            
+
+            {/* Floating RLHF Feedback Widget */}
+            {data && data.log_id && (
+                <div className="fixed top-[120px] right-6 xl:right-12 z-50 w-80 lg:w-96 animate-in slide-in-from-right-8 fade-in duration-500 shadow-2xl">
+                    {feedbackStatus !== 'submitted' ? (
+                        <div className="bg-gradient-to-br from-[#121c27] to-[#0a0f18] border-2 border-blue-500/40 rounded-xl p-4 shadow-xl backdrop-blur-xl">
+                            {feedbackStatus === 'none' && (
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-start gap-2 pt-0.5">
+                                        <Sparkles size={16} className="text-blue-400 shrink-0 mt-0.5" />
+                                        <span className="text-sm font-semibold text-blue-100 flex-1 leading-snug">
+                                            {t('oracle_tool.feedback_ask') || "Đánh giá chất lượng của Oracle?"}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 bg-black/60 px-1 py-1 rounded-full border border-white/10 shrink-0">
+                                        <button
+                                            onClick={() => handleFeedbackSubmit(true)}
+                                            className="p-1.5 rounded-full bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                                            title={t('common.helpful') || "Giúp ích"}
+                                        >
+                                            <ThumbsUp size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => setFeedbackStatus('disliked')}
+                                            className="p-1.5 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                                            title={t('common.not_helpful') || "Không hữu ích"}
+                                        >
+                                            <ThumbsDown size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {feedbackStatus === 'disliked' && (
+                                <div className="flex flex-col gap-3">
+                                    <label className="text-[13px] font-bold text-red-400">
+                                        {t('oracle_tool.feedback_improve') || "Làm sao để chúng tôi cải thiện kết quả này?"}
+                                    </label>
+                                    <textarea
+                                        value={feedbackReason}
+                                        onChange={(e) => setFeedbackReason(e.target.value)}
+                                        placeholder={t('oracle_tool.feedback_placeholder') || "Góp ý để cải thiện Oracle..."}
+                                        className="bg-[#0b0e14] border border-red-500/30 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 resize-none focus:outline-none focus:border-red-500/70 h-24 transition-colors"
+                                    />
+                                    <div className="flex gap-2 justify-end mt-1">
+                                        <button
+                                            onClick={() => setFeedbackStatus('none')}
+                                            className="px-3 py-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-wider"
+                                        >
+                                            {t('common.hide') || "Đóng"}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                handleFeedbackSubmit(false, feedbackReason);
+                                                setFeedbackStatus('submitted');
+                                            }}
+                                            disabled={submittingFeedback || !feedbackReason.trim()}
+                                            className="px-4 py-1.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded text-xs font-bold uppercase tracking-wider disabled:opacity-50 flex items-center gap-2 shadow-lg"
+                                        >
+                                            {submittingFeedback ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                            {t('common.send') || "Gửi"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="bg-[#0a2e1d] border-2 border-emerald-500/40 text-emerald-400 text-[13px] font-bold px-4 py-3.5 rounded-xl flex items-start gap-3 shadow-xl backdrop-blur-md">
+                            <Sparkles size={18} className="mt-0.5 shrink-0" />
+                            <span className="leading-snug">{t('oracle_tool.feedback_thanks') || "Đã nhận được đánh giá. Cảm ơn bạn đã đóng góp cho VillainVault!"}</span>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
