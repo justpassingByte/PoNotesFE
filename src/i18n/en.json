@@ -112,6 +112,15 @@
       "cta_desktop": "Download Now",
       "scroll": "Explore"
     },
+    "oracle": {
+      "overline": "GTO Oracle — Ultimate Strategy QA",
+      "h3_1": "ASK IN NATURAL LANGUAGE.",
+      "h3_2": "RETURNS EXACT STRATEGY.",
+      "desc": "No need to input clunky hand histories. Just type your current situation. AI instantly searches through 350,000+ solved spots to show exact GTO Strategy (Pure/Mix), EV, and Range percentages.",
+      "sys_query": "system > gto_query.exe",
+      "mock_result_found": "Searched 356,400 solutions",
+      "mock_analysis_says": "GTO Analysis output:"
+    },
     "features": {
       "pain_overline": "Pain Point — Straight truth, hurts a bit",
       "pain_h2": "You are gambling <span className=\"text-yellow-400\">without an edge</span>.",
@@ -134,8 +143,8 @@
       "f1_desc": "Crop the table → paste → get Call/Fold + range + detailed plan instantly. No brain damage.",
       "f2_title": "\"X-Ray\" Opponent HUD",
       "f2_desc": "Dedicated panel: Whale, Reg, or yourself. Get specific exploit suggestions.",
-      "f3_title": "AI Tuning (New Feature)",
-      "f3_desc": "Fully customize your AI. Force it to answer conservatively (GTO) or aggressively (Max Exploit) using powerful overriding prompts.",
+      "f3_title": "Train Your Own Personal AI Model",
+      "f3_desc": "Every hand you upload, every GTO query, and every feedback you give is aggregated. Once you pass the threshold, the system Fine-Tunes a custom Enterprise model that perfectly mimics and enhances your specific poker mind.",
       "f4_title": "Multi-Persona AI Team",
       "f4_desc": "Not just one boring AI. It's a team of pros with distinct personalities — no fatigue, no tilt.",
       "f5_title": "Auto Leak Reduction",
@@ -237,9 +246,9 @@
       "tier2_desc": "For pros destroying limits.",
       "tier2_price": "$49.99",
       "tier2_f1": "Everything in Grinder",
-      "tier2_f2": "Deep Exploit Engine",
-      "tier2_f3": "Max GTO/Exploit Tuning AI",
-      "tier2_f4": "GTO + Population reads",
+      "tier2_f2": "Private Custom Fine-Tuned AI Model",
+      "tier2_f3": "GTO & Hand History Feedback Loop Learning",
+      "tier2_f4": "Population reads + Max Exploit",
       "tier2_f5": "5 devices",
       "tier2_f6": "1-on-1 Onboarding",
       "tier2_f7": "Early access tính năng mới",
@@ -362,20 +371,20 @@
       "title": "Poker Hybrid <span className=\"text-yellow-400\">System</span>.",
       "subtitle": "RobinHUD is not just a HUD. It's an ecosystem where decisions are driven by data, context, AI, and real-time scaling.",
       "phase1": {
-        "title": "Phase 1 (Live Now): Villiant Vault + RobinHUD Desktop App V1",
-        "badge": "Live Now",
+        "title": "Phase 1 (Completed): Villiant Vault + RobinHUD Desktop App V1",
+        "badge": "Completed",
         "desc": "Fast and accessible experience. A sharp tool for hand reviews and direct opponent exploitation.",
         "pt1": "Web-based app: Upload hands for quick AI review, leak extraction & Exploit tips",
         "pt2": "Desktop App V1: Smooth desktop experience, fully synced with the web platform",
-        "pt3": "Building trust, community & data collection for scaling"
+        "pt3": "Base data collection and proof of concept established"
       },
       "phase2": {
-        "title": "Phase 2 - Core Upgrade",
-        "badge": "Upcoming",
-        "desc": "Memory + GTO Pipeline. We stop looking at isolated hands. Current hand + Opponent History + GTO Baseline = Strategy.",
-        "pt1": "Hand → Exploit → Update Note",
-        "pt2": "Playing against specific people, context-aware",
-        "pt3": "Mapped tightly with GTO fundamentals"
+        "title": "Phase 2 (Live Now): RAG GTO Engine + AI Memory",
+        "badge": "Live Now",
+        "desc": "Long-term leak storage via Pattern Engine. Pulling mathematical baselines from a custom GTO Database for objective AI analysis.",
+        "pt1": "Long-term Memory (Player Tendencies & Stats)",
+        "pt2": "GTO Hand Context Enricher (Auto Spot Lookup)",
+        "pt3": "Smart Exploit Suggestion & Rich Note Generation"
       },
       "phase3": {
         "title": "Phase 3: Desktop App V2 (Final/Auto-Scale)",
@@ -708,5 +717,37 @@
     "no_ai_analysis": "No AI analysis available for this hand yet.",
     "notes": "Note",
     "general": "General"
+  },
+  "oracle_tool": {
+    "title": "GTO Oracle",
+    "subtitle": "Ask any poker situation in natural language",
+    "solutions_badge": "356,400 GTO SOLUTIONS",
+    "srp_badge": "SRP ONLY (100BB)",
+    "input_label": "Ask GTO Oracle",
+    "input_placeholder": "Example: Board As 7d 2c, I am in BB holding 7h 5h, BTN cbets 33% pot, what should I do?",
+    "ask_btn": "Ask",
+    "llm_parsing": "🧠 LLM is parsing your question...",
+    "your_situation": "Your Situation",
+    "hero_hand": "Hero Hand",
+    "no_hand_specified": "No exact hand specified",
+    "board": "Board",
+    "gto_recommends_mix": "GTO Analysis recommends ",
+    "mix_strategy": "Mix Strategy",
+    "optimal_action": "The most optimal action is ",
+    "specify_hand_tip": "Use natural language to specify your exact hand (e.g. \"holding AcKd\") for specific action advice.",
+    "future_runouts": "Expected Future Streets Database",
+    "runout_type": "Runout Type",
+    "llm_parse_details": "LLM Parse Details",
+    "oop_strategy": "OOP Strategy",
+    "ip_strategy": "IP Strategy",
+    "range": "Range",
+    "class": "Class",
+    "examples": [
+      "Board As 7d 2c, I am BB with AcKd, BTN cbets 33% pot, what should I do?",
+      "Flop Ks 8s 3c, I am BB with Ts9s, BTN bets 75%. Flush draw, call or raise?",
+      "Board 8s 4d 2c, I am BB with QQ, BTN c-bets 33%, how to play overpair?",
+      "Board Ts 9d 8c, BTN vs BB, I have Jc7c (straight), bet big or slowplay?",
+      "Monotone board As 7s 2s, BB has Ks8s flush, BTN checks, what size to bet?"
+    ]
   }
 }

@@ -72,10 +72,10 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                         ref={head.ref as React.RefObject<HTMLDivElement>}
                         className={`reveal mb-16 ${head.visible ? 'is-visible' : ''}`}
                     >
-                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.28em] mb-3">
+                        <p className="text-white/25 text-xs font-mono font-bold uppercase tracking-[0.28em] mb-3">
                             {t('landing.pricing_section.overline') || "Giá — Rõ, Không Úp Mở"}
                         </p>
-                        <h2 className="text-3xl sm:text-5xl font-black text-white mb-3"
+                        <h2 className="text-3xl sm:text-5xl font-mono uppercase tracking-tight font-black text-white mb-3"
                             dangerouslySetInnerHTML={{ __html: t('landing.pricing_section.h2') || "Chọn <span class=\"text-yellow-400\">Edge Của Bạn</span>" }}
                         />
                         <p className="text-white/30 max-w-xl text-sm">
@@ -107,7 +107,7 @@ export function PricingSection({ isDashboard = false }: { isDashboard?: boolean 
                                 )}
 
                                 <div className="mb-7">
-                                    <h3 className={`text-base font-black mb-0.5 ${isPopular ? 'text-yellow-400' : 'text-white/60 group-hover:text-white/80 transition-colors duration-200'}`}>
+                                    <h3 className={`text-base font-mono uppercase tracking-tight font-black mb-0.5 ${isPopular ? 'text-yellow-400' : 'text-white/60 group-hover:text-white/80 transition-colors duration-200'}`}>
                                         {plan.name}
                                     </h3>
                                     <p className="text-xs text-white/20 italic mb-4">{plan.tagline}</p>

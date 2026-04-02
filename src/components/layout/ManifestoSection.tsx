@@ -46,7 +46,7 @@ export function ManifestoSection() {
                         </span>
                     </div>
 
-                    <h2 className="text-3xl sm:text-5xl font-black text-white leading-[1.1] mb-6"
+                    <h2 className="text-3xl sm:text-5xl font-mono uppercase tracking-tight font-black text-white leading-[1.1] mb-6"
                         dangerouslySetInnerHTML={{
                             __html: t('landing.manifesto.h2') || 'Có <span class="text-yellow-400">Bộ Não</span> rồi.<br/>Nhưng chưa có <span class="text-cyan-400">Mắt</span>.'
                         }}
@@ -70,7 +70,7 @@ export function ManifestoSection() {
                                     <div className="inline-flex p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 mb-5">
                                         <Brain className="w-7 h-7 text-purple-400" />
                                     </div>
-                                    <h3 className="text-xl font-black text-white mb-2">
+                                    <h3 className="text-xl font-mono uppercase tracking-tight font-black text-white mb-2">
                                         {t('landing.manifesto.brain_title') || '🧠 Bộ Não — LLM'}
                                     </h3>
                                     <p className="text-white/40 text-sm leading-relaxed mb-5">
@@ -106,7 +106,7 @@ export function ManifestoSection() {
                                     <div className="inline-flex p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 mb-5">
                                         <Eye className="w-7 h-7 text-cyan-400" />
                                     </div>
-                                    <h3 className="text-xl font-black text-white mb-2">
+                                    <h3 className="text-xl font-mono uppercase tracking-tight font-black text-white mb-2">
                                         {t('landing.manifesto.eyes_title') || '👁 Đôi Mắt — Data của Bạn'}
                                     </h3>
                                     <p className="text-white/40 text-sm leading-relaxed mb-5">
@@ -151,7 +151,7 @@ export function ManifestoSection() {
                             <p className="text-white/20 text-xs font-bold uppercase tracking-[0.28em] mb-3">
                                 {t('landing.manifesto.pipeline_overline') || 'Cách Chúng Tôi Scale'}
                             </p>
-                            <h3 className="text-2xl sm:text-3xl font-black text-white mb-3"
+                            <h3 className="text-2xl sm:text-3xl font-mono uppercase tracking-tight font-black text-white mb-3"
                                 dangerouslySetInnerHTML={{
                                     __html: t('landing.manifesto.pipeline_h3') || 'Vector DB + <span class="text-emerald-400">Augmented LLM</span> Workflow'
                                 }}
@@ -242,7 +242,7 @@ export function ManifestoSection() {
                                 </p>
 
                                 {/* Main quote */}
-                                <blockquote className="text-xl sm:text-2xl font-black text-white/90 leading-snug mb-8"
+                                <blockquote className="text-xl sm:text-2xl font-mono uppercase tracking-tight font-black text-white/90 leading-snug mb-8"
                                     dangerouslySetInnerHTML={{
                                         __html: t('landing.manifesto.realtalk_quote') || 'Vài năm nữa, game sẽ <span class="text-amber-400">khó gấp bội</span>.<br/>Liệu bạn vẫn chơi kiểu cũ <span class="text-white/40">được bao lâu</span>?'
                                     }}

@@ -56,7 +56,7 @@ export function AntiDetectSection() {
                         </span>
                     </div>
 
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-5"
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-mono uppercase tracking-tight font-black text-white leading-tight mb-5"
                         dangerouslySetInnerHTML={{ __html: t('landing.anti_detect.h2') || 'Desktop App — Thiết Kế <span class="text-red-500">An Toàn</span> Từ Nền Tảng.' }}
                     />
                     
@@ -83,7 +83,7 @@ export function AntiDetectSection() {
                             <div className={`mb-6 p-4 rounded-xl inline-flex border border-white/5 bg-white/5 ${feat.color}`}>
                                 <feat.icon className="w-6 h-6" />
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-3">
+                            <h3 className="text-lg font-mono uppercase tracking-tight font-black text-white mb-3">
                                 {feat.title}
                             </h3>
                             <p className="text-sm text-white/40 leading-relaxed">
@@ -105,7 +105,7 @@ export function AntiDetectSection() {
                             <Github className="w-6 h-6 text-white/80" />
                         </div>
                         
-                        <h3 className="text-xl font-bold text-white mb-3">
+                        <h3 className="text-xl font-mono uppercase tracking-tight font-black text-white mb-3">
                             {t('landing.anti_detect.github_title') || 'Mã Nguồn Mở & Minh Bạch'}
                         </h3>
                         

@@ -1,0 +1,748 @@
+"use client";
+
+import { useState } from "react";
+import {
+    Sparkles, Send, ChevronDown, ChevronUp,
+    Target, BarChart3, Layers, AlertCircle, Loader2, DatabaseZap,
+    ThumbsUp, ThumbsDown
+} from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
+
+// ─── CONFIG ─────────────────────────────────────────────────────
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const USE_MOCK = false; // Toggled to false per requirement
+
+// ─── MOCK DATA ──────────────────────────────────────────────────
+const MOCK_RESPONSE = {
+    parsed: {
+        position: "BTN_vs_BB",
+        board_bucket: "A_dry",
+        street: "flop",
+        action_line: null,
+        turn_type: null,
+        river_type: null,
+        hero_hand: "AcKd",
+        hero_position: "oop",
+        board_cards: "As,7d,2c",
+        situation_summary: "BB facing BTN cbet 33% on A-dry flop with top pair"
+    },
+    spot: {
+        id: "mock-spot-1",
+        position: "BTN_vs_BB",
+        board_bucket: "A_dry",
+        street: "flop",
+        action_line: null,
+        turn_type: null,
+        river_type: null,
+        board: "As,7d,2c",
+        pot: 5.5,
+        eff_stack: 100,
+    },
+    strategy: {
+        oop: { check: 0.62, bet_small: 0.21, bet_big: 0.17 },
+        ip: { check: 0.45, bet_small: 0.32, bet_big: 0.23 },
+    },
+    hero: {
+        hand: "AcKd",
+        hand_class: "top_pair",
+        check: 0.35,
+        bet_small: 0.40,
+        bet_big: 0.25,
+    },
+    by_hand_class: {
+        oop: {
+            set: { count: 8, avg_check: 0.15, avg_bet_small: 0.25, avg_bet_big: 0.60 },
+            two_pair: { count: 14, avg_check: 0.20, avg_bet_small: 0.35, avg_bet_big: 0.45 },
+            overpair: { count: 12, avg_check: 0.30, avg_bet_small: 0.40, avg_bet_big: 0.30 },
+            top_pair: { count: 48, avg_check: 0.35, avg_bet_small: 0.40, avg_bet_big: 0.25 },
+            second_pair: { count: 32, avg_check: 0.70, avg_bet_small: 0.20, avg_bet_big: 0.10 },
+            low_pair: { count: 20, avg_check: 0.85, avg_bet_small: 0.10, avg_bet_big: 0.05 },
+            underpair: { count: 30, avg_check: 0.75, avg_bet_small: 0.15, avg_bet_big: 0.10 },
+            flush_draw: { count: 24, avg_check: 0.45, avg_bet_small: 0.30, avg_bet_big: 0.25 },
+            straight_draw: { count: 18, avg_check: 0.55, avg_bet_small: 0.25, avg_bet_big: 0.20 },
+            overcards: { count: 40, avg_check: 0.80, avg_bet_small: 0.12, avg_bet_big: 0.08 },
+            ace_high: { count: 22, avg_check: 0.90, avg_bet_small: 0.07, avg_bet_big: 0.03 },
+            air: { count: 60, avg_check: 0.70, avg_bet_small: 0.15, avg_bet_big: 0.15 },
+        },
+        ip: {},
+    },
+    hands: { oop: {}, ip: {} },
+    future_runouts: [
+        { action_line: "cbet33_call", runout_type: "blank", board: "As 7d 2c 3h", check: 0.65, bet_small: 0.25, bet_big: 0.10 },
+        { action_line: "cbet33_call", runout_type: "overcard", board: "As 7d 2c Kh", check: 0.85, bet_small: 0.10, bet_big: 0.05 },
+        { action_line: "cbet33_call", runout_type: "board_pair", board: "As 7d 2c 7h", check: 0.40, bet_small: 0.45, bet_big: 0.15 },
+        { action_line: "cbet33_call", runout_type: "flush_card", board: "As 7d 2c 8c", check: 0.95, bet_small: 0.05, bet_big: 0.00 },
+        { action_line: "cbet33_call", runout_type: "straight_card", board: "As 7d 2c 5h", check: 0.50, bet_small: 0.35, bet_big: 0.15 },
+    ]
+};
+
+// Examples translated inline using the translation hook in rendering
+
+const CLASS_ORDER = [
+    "straight_flush", "quads", "full_house", "flush", "straight",
+    "set", "trips", "two_pair", "overpair",
+    "top_pair", "second_pair", "low_pair", "underpair",
+    "flush_draw", "straight_draw",
+    "overcards", "ace_high", "air"
+];
+
+const CLASS_COLORS: Record<string, string> = {
+    straight_flush: "text-yellow-300", quads: "text-yellow-400",
+    full_house: "text-amber-400", flush: "text-blue-400",
+    straight: "text-purple-400", set: "text-emerald-400",
+    trips: "text-emerald-300", two_pair: "text-teal-400",
+    overpair: "text-green-400", top_pair: "text-green-300",
+    second_pair: "text-lime-400", low_pair: "text-lime-300",
+    underpair: "text-orange-300",
+    flush_draw: "text-sky-400", straight_draw: "text-indigo-400",
+    overcards: "text-slate-300", ace_high: "text-slate-400",
+    air: "text-slate-500"
+};
+
+// ─── TYPES ──────────────────────────────────────────────────────
+interface ParsedQuery {
+    position: string;
+    board_bucket: string;
+    street: string;
+    action_line: string | null;
+    turn_type: string | null;
+    river_type: string | null;
+    hero_hand: string | null;
+    hero_position: string;
+    board_cards: string;
+    situation_summary: string;
+}
+
+interface GtoStrategy {
+    check: number;
+    bet_small: number;
+    bet_big: number;
+}
+
+interface HandData {
+    hand: string;
+    hand_class: string;
+    check: number;
+    bet_small: number;
+    bet_big: number;
+}
+
+interface ClassSummary {
+    count: number;
+    avg_check: number;
+    avg_bet_small: number;
+    avg_bet_big: number;
+}
+
+interface GtoResponse {
+    log_id?: string;
+    parsed: ParsedQuery;
+    spot: {
+        id: string;
+        position: string;
+        board_bucket: string;
+        street: string;
+        action_line: string | null;
+        turn_type: string | null;
+        river_type: string | null;
+        board: string;
+        pot: number;
+        eff_stack: number;
+    };
+    strategy: {
+        oop: GtoStrategy;
+        ip: GtoStrategy;
+    };
+    hero: HandData | null;
+    by_hand_class: Record<string, Record<string, ClassSummary>>;
+    hands: Record<string, Record<string, HandData[]>>;
+    future_runouts?: {
+        action_line?: string;
+        runout_type: string;
+        board: string;
+        check: number;
+        bet_small: number;
+        bet_big: number;
+    }[];
+}
+
+// ─── HELPERS ────────────────────────────────────────────────────
+function formatCard(card: string) {
+    if (!card || card.length < 2) return card;
+    const suit = card[card.length - 1];
+    const rank = card.slice(0, -1);
+    const suitMap: Record<string, string> = { s: "♠", h: "♥", d: "♦", c: "♣" };
+    const isRed = suit === "h" || suit === "d";
+    return (
+        <span className={isRed ? "text-red-400" : "text-slate-100"}>
+            {rank}{suitMap[suit] || suit}
+        </span>
+    );
+}
+
+function pct(v: number) {
+    return `${(v * 100).toFixed(1)}%`;
+}
+
+// ─── API ────────────────────────────────────────────────────────
+async function askGTO(question: string, language: string): Promise<GtoResponse> {
+    if (USE_MOCK) {
+        await new Promise(r => setTimeout(r, 1200)); // Simulate latency
+        return MOCK_RESPONSE as GtoResponse;
+    }
+
+    const resp = await fetch(`${API_URL}/api/gto/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, language }),
+    });
+
+    if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || `API error: ${resp.status}`);
+    }
+    return resp.json();
+}
+
+// ─── SUB-COMPONENTS ─────────────────────────────────────────────
+
+function ActionBar({ label, value, color }: { label: string; value: number; color: string }) {
+    const w = Math.max(value * 100, 0);
+    return (
+        <div className="flex items-center gap-3">
+            <span className="w-20 text-xs font-mono text-slate-400 shrink-0">{label}</span>
+            <div className="flex-1 h-7 bg-black/40 rounded overflow-hidden border border-white/5">
+                <div
+                    className={`h-full rounded transition-all duration-700 ease-out flex items-center justify-end pr-2 text-[11px] font-bold font-mono text-white ${color}`}
+                    style={{ width: `${w}%`, minWidth: w > 0 ? "36px" : "0" }}
+                >
+                    {w > 5 ? pct(value) : ""}
+                </div>
+            </div>
+            <span className="w-14 text-right text-xs font-mono text-slate-200 font-semibold">{pct(value)}</span>
+        </div>
+    );
+}
+
+function StrategyPanel({ title, strategy, accentBorder, accentText }: {
+    title: string; strategy: GtoStrategy; accentBorder: string; accentText: string;
+}) {
+    return (
+        <div className="bg-[#141a24] border border-[#2a3654] rounded-xl p-5 relative overflow-hidden">
+            <div className={`absolute top-0 inset-x-0 h-0.5 ${accentBorder}`} />
+            <h4 className={`font-mono text-sm font-semibold mb-4 flex items-center gap-2 ${accentText}`}>
+                <BarChart3 size={14} />
+                {title}
+            </h4>
+            <div className="flex flex-col gap-3">
+                <ActionBar label="Check" value={strategy.check} color="bg-emerald-600" />
+                <ActionBar label="Bet 33%" value={strategy.bet_small} color="bg-amber-600" />
+                <ActionBar label="Bet 75%" value={strategy.bet_big} color="bg-red-600" />
+            </div>
+        </div>
+    );
+}
+
+// ─── MAIN COMPONENT ─────────────────────────────────────────────
+export function GtoOracle() {
+    const { t, language } = useLanguage();
+    const [question, setQuestion] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [loadingStep, setLoadingStep] = useState("");
+    const [error, setError] = useState("");
+    const [data, setData] = useState<GtoResponse | null>(null);
+    const [isMockData, setIsMockData] = useState(false);
+    const [showClassBreakdown, setShowClassBreakdown] = useState(true);
+
+    const [feedbackStatus, setFeedbackStatus] = useState<'none' | 'liked' | 'disliked' | 'submitted'>('none');
+    const [feedbackReason, setFeedbackReason] = useState("");
+    const [submittingFeedback, setSubmittingFeedback] = useState(false);
+
+    async function handleAsk() {
+        if (!question.trim() || loading) return;
+        setLoading(true);
+        setError("");
+        setData(null);
+        setFeedbackStatus('none');
+        setFeedbackReason("");
+
+        try {
+            setIsMockData(false);
+            setLoadingStep(t('oracle_tool.llm_parsing') || "🧠 LLM đang parse câu hỏi...");
+            const result = await askGTO(question, language);
+            setData(result);
+        } catch (err: unknown) {
+            console.error("Fetch API failed, falling back to mock data", err);
+            setError(t('oracle_tool.mock_fallback_error') || "Không kết nối được tới Server. Tự động hiển thị Dữ Liệu Mẫu (Mock Fallback).");
+            setData(MOCK_RESPONSE as unknown as GtoResponse);
+            setIsMockData(true);
+        } finally {
+            setLoading(false);
+            setLoadingStep("");
+        }
+    }
+
+    async function handleFeedbackSubmit(isHelpful: boolean, reason: string = "") {
+        if (!data?.log_id) return;
+        setSubmittingFeedback(true);
+        try {
+            await fetch(`${API_URL}/api/gto/feedback`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ log_id: data.log_id, is_helpful: isHelpful, feedback_reason: reason })
+            });
+            if (isHelpful) setFeedbackStatus('submitted');
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setSubmittingFeedback(false);
+        }
+    }
+
+    const parsed = data?.parsed;
+    const hero = data?.hero;
+    const classData = data
+        ? Object.entries(data.by_hand_class[parsed?.hero_position || "oop"] || {}).sort(
+            (a, b) => {
+                const ia = CLASS_ORDER.indexOf(a[0]);
+                const ib = CLASS_ORDER.indexOf(b[0]);
+                return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+            }
+        )
+        : [];
+
+    return (
+        <div className="max-w-6xl mx-auto w-full px-4">
+            {/* Header */}
+            <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 mb-3">
+                    <Sparkles className="text-gold" size={28} />
+                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                        {t('oracle_tool.title')?.split(' ')[0] || "GTO"} <span className="text-gold">{t('oracle_tool.title')?.split(' ')[1] || 'Oracle'}</span>
+                    </h1>
+                </div>
+                <p className="text-slate-400 text-sm">
+                    {t('oracle_tool.subtitle') || "Hỏi bất kỳ tình huống poker nào bằng ngôn ngữ tự nhiên"}
+                </p>
+                <div className="flex flex-col items-center gap-2 mt-4">
+                    <div className="flex items-center gap-2">
+                        <span className="inline-block px-3 py-1 text-[10px] font-mono text-gold/80 border border-gold/20 rounded-full bg-gold/5 tracking-wider">
+                            {t('oracle_tool.solutions_badge') || "356,400 GTO SOLUTIONS"}
+                        </span>
+                        <span className="inline-block px-3 py-1 text-[10px] font-mono text-emerald-400/80 border border-emerald-400/20 rounded-full bg-emerald-400/5 tracking-wider">
+                            {t('oracle_tool.srp_badge') || "SRP ONLY (100BB)"}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="inline-block px-2 py-0.5 text-[9px] font-mono text-slate-400 border border-slate-700/50 rounded bg-slate-800/30 tracking-wider">BTN vs BB</span>
+                        <span className="inline-block px-2 py-0.5 text-[9px] font-mono text-slate-400 border border-slate-700/50 rounded bg-slate-800/30 tracking-wider">SB vs BB</span>
+                        <span className="inline-block px-2 py-0.5 text-[9px] font-mono text-slate-400 border border-slate-700/50 rounded bg-slate-800/30 tracking-wider">CO vs BTN</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Input */}
+            <div className="bg-[#111827] border border-[#2a3654] rounded-xl p-5 mb-5 relative overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500" />
+
+                <label className="block text-[10px] font-semibold uppercase tracking-[2px] text-slate-500 mb-3">
+                    {t('oracle_tool.input_label') || "Hỏi GTO Oracle"}
+                </label>
+
+                <div className="flex gap-3">
+                    <textarea
+                        className="flex-1 bg-[#0d1117] border border-[#2a3654] rounded-lg px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 resize-none focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold/30 transition-all h-20"
+                        placeholder={t('oracle_tool.input_placeholder') || "Ví dụ: Board As 7d 2c, tôi ngồi BB cầm 7h 5h, BTN cbet 33% pot, tôi nên làm gì?"}
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleAsk();
+                            }
+                        }}
+                    />
+                    <button
+                        onClick={handleAsk}
+                        disabled={loading || !question.trim()}
+                        className="self-end bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 h-12 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 shrink-0"
+                    >
+                        {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                        {loading ? "..." : (t('oracle_tool.ask_btn') || "Hỏi")}
+                    </button>
+                </div>
+
+                {/* Examples */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                    {[0, 1, 2, 3, 4].map((i) => {
+                        // Cast to any since we know this is an array mapping
+                        const exArray = t('oracle_tool.examples') as any;
+                        const defaultExamples = [
+                            "Board As 7d 2c, tôi ngồi BB cầm 7h 5h, BTN cbet 33% pot, tôi nên làm gì?",
+                            "Flop Ks 8s 3c, tôi BB cầm Ts9s, BTN bet 75%. Flush draw nên call hay raise?",
+                            "Board 8s 4d 2c, tôi BB cầm QQ, BTN c-bet 33%, overpair nên xử lý sao?",
+                            "Board Ts 9d 8c, BTN vs BB, tôi cầm Jc7c straight rồi, bet big hay slowplay?",
+                            "Board monotone As 7s 2s, BB cầm Ks8s flush, BTN check tôi nên bet size nào?"
+                        ];
+                        const ex = Array.isArray(exArray) ? exArray[i] : defaultExamples[i];
+                        if (!ex) return null;
+                        return (
+                            <button
+                                key={i}
+                                onClick={() => setQuestion(ex)}
+                                className="px-2.5 py-1 text-[11px] bg-[#1a2236] border border-[#2a3654] rounded text-slate-400 hover:text-gold hover:border-gold/30 hover:bg-gold/5 transition-all"
+                            >
+                                {ex.slice(0, 40)}...
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Loading */}
+            {loading && (
+                <div className="text-center py-10">
+                    <Loader2 size={32} className="animate-spin text-gold mx-auto mb-3" />
+                    <p className="text-slate-400 text-sm">{loadingStep}</p>
+                </div>
+            )}
+
+            {/* Error */}
+            {error && (
+                <div className="bg-red-900/40 border border-red-700/50 rounded-xl p-4 mb-5 flex items-start gap-3">
+                    <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
+                    <p className="text-red-300 text-sm">{error}</p>
+                </div>
+            )}
+
+            {/* ─── RESULTS ─── */}
+            {parsed && data && !loading && (
+                <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 items-start">
+                    
+                    {/* LEFT COLUMN: Situation & Details */}
+                    <div className="space-y-5">
+                        {/* Unified Situation Card */}
+                        <div className="bg-[#111827] border border-[#2a3654] rounded-xl p-5 relative overflow-hidden">
+                            <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-gold via-emerald-500 to-gold" />
+                            
+                            <div className="flex items-start justify-between mb-4">
+                                <div>
+                                    <h3 className="text-[10px] font-semibold uppercase tracking-[2px] text-gold/70 flex items-center gap-2 mb-2">
+                                        <Sparkles size={14} className="text-gold" />
+                                        {t('oracle_tool.your_situation') || "Your Situation"}
+                                        {isMockData && <span className="ml-2 bg-red-900/60 text-red-300 px-1.5 py-0.5 rounded text-[8px] tracking-wider border border-red-700/50">MOCK FALLBACK</span>}
+                                    </h3>
+                                    {parsed.situation_summary && (
+                                        <p className="text-sm text-slate-300">
+                                            {parsed.situation_summary}
+                                        </p>
+                                    )}
+                                </div>
+                                
+                                {/* Metadata Badges */}
+                                <div className="flex flex-col items-end gap-1">
+                                    <span className="text-[10px] bg-[#1a2236] border border-[#2a3654] px-2 py-0.5 rounded text-slate-400 capitalize">
+                                        {parsed.position.replace(/_/g, ' ')}
+                                    </span>
+                                    {(data.spot.action_line || Object.keys(data.strategy[parsed.hero_position as 'oop' | 'ip'] || {}).length > 0) && (
+                                        <span className="text-[10px] bg-[#1a2236] border border-[#2a3654] px-2 py-0.5 rounded text-slate-400 capitalize">
+                                            Pot: {data.spot.pot}bb
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Hand & Board Viz */}
+                            <div className="bg-[#0a0e17] border border-[#1a2236] rounded-lg p-4 mb-5 flex flex-wrap items-center gap-x-6 gap-y-4">
+                                {hero ? (
+                                    <div>
+                                        <span className="block text-[10px] text-slate-500 uppercase tracking-wider mb-2">{t('oracle_tool.hero_hand') || "Hero Hand"}</span>
+                                        <div className="text-2xl font-bold font-mono flex items-center gap-1.5">
+                                            {formatCard(hero.hand.slice(0, 2))}
+                                            {formatCard(hero.hand.slice(2, 4))}
+                                        </div>
+                                        <span className={`block mt-1 text-[10px] font-semibold uppercase tracking-wider ${CLASS_COLORS[hero.hand_class] || "text-slate-400"}`}>
+                                            {hero.hand_class.replace(/_/g, " ")}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <span className="block text-[10px] text-slate-500 uppercase tracking-wider mb-2">{t('oracle_tool.hero_hand') || "Hero Hand"}</span>
+                                        <span className="text-sm text-slate-500 italic">{t('oracle_tool.no_hand_specified') || "No exact hand specified"}</span>
+                                    </div>
+                                )}
+
+                                {/* Separator */}
+                                <div className="w-px h-10 bg-[#2a3654] hidden sm:block"></div>
+
+                                {parsed.board_cards && (
+                                    <div>
+                                        <span className="block text-[10px] text-slate-500 uppercase tracking-wider mb-2">
+                                            {t('oracle_tool.board') || "Board"} ({parsed.street})
+                                        </span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {parsed.board_cards.split(",").map((c: string, i: number) => (
+                                                <span key={i} className="px-2.5 py-1 bg-[#1a2236] border border-[#2a3654] rounded text-lg font-mono font-bold">
+                                                    {formatCard(c.trim())}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <span className="block mt-1 text-[10px] text-slate-500 uppercase tracking-wider">
+                                            {parsed.board_bucket}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* GTO Recommendation & Actions */}
+                            {hero ? (() => {
+                                const actions = [
+                                    { label: "Check", value: hero.check, color: "text-emerald-400" },
+                                    { label: "Bet 33%", value: hero.bet_small, color: "text-amber-400" },
+                                    { label: "Bet 75%", value: hero.bet_big, color: "text-red-400" },
+                                ];
+                                const best = actions.reduce((a, b) => a.value > b.value ? a : b);
+                                const isMixed = actions.filter(a => a.value >= 0.25).length >= 2;
+                                
+                                return (
+                                    <div>
+                                        {/* Action recommendation text */}
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Target size={16} className={best.color} />
+                                            <span className="text-sm text-slate-200">
+                                                {isMixed 
+                                                    ? <span>{t('oracle_tool.gto_recommends_mix') || "Phân tích GTO khuyên "}<strong className={best.color}>{t('oracle_tool.mix_strategy') || "Mix Strategy"}</strong>: {actions.filter(a => a.value >= 0.1).map(a => `${a.label} (${pct(a.value)})`).join(" / ")}</span>
+                                                    : <span>{t('oracle_tool.optimal_action') || "Hành động tối ưu nhất là "}<strong className={best.color}>{best.label}</strong> ({pct(best.value)}).</span>
+                                                }
+                                            </span>
+                                        </div>
+
+                                        {/* Action frequency bars */}
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <div className="bg-[#1a2236]/50 border border-[#2a3654] rounded-lg p-3 text-center">
+                                                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Check</div>
+                                                <div className={`text-xl font-bold font-mono ${hero.check === best.value ? "text-emerald-400" : "text-emerald-400/50"}`}>{pct(hero.check)}</div>
+                                            </div>
+                                            <div className="bg-[#1a2236]/50 border border-[#2a3654] rounded-lg p-3 text-center">
+                                                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Bet 33%</div>
+                                                <div className={`text-xl font-bold font-mono ${hero.bet_small === best.value ? "text-amber-400" : "text-amber-400/50"}`}>{pct(hero.bet_small)}</div>
+                                            </div>
+                                            <div className="bg-[#1a2236]/50 border border-[#2a3654] rounded-lg p-3 text-center">
+                                                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Bet 75%</div>
+                                                <div className={`text-xl font-bold font-mono ${hero.bet_big === best.value ? "text-red-400" : "text-red-400/50"}`}>{pct(hero.bet_big)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })() : (
+                                <div className="text-center py-4 bg-[#1a2236]/30 rounded-lg border border-[#2a3654]/50">
+                                    <p className="text-sm text-slate-400">{t('oracle_tool.specify_hand_tip') || "Dùng ngôn ngữ tự nhiên thêm hand cụ thể vào câu hỏi (VD: \"cầm AcKd\") để xem lời khuyên hành động."}</p>
+                                </div>
+                            )}
+
+                            {/* Future Runouts Database Query */}
+                            {data.future_runouts && data.future_runouts.length > 0 && (
+                                <div className="mt-5 p-4 bg-emerald-950/20 border border-emerald-900/50 rounded-lg overflow-x-auto">
+                                    <h4 className="text-[10px] font-semibold uppercase tracking-[2px] text-emerald-500 mb-3 flex items-center gap-2">
+                                        <DatabaseZap size={12} />
+                                        {t('oracle_tool.future_runouts') || "Expected Future Streets Database"}
+                                    </h4>
+                                    <table className="w-full text-left text-xs whitespace-nowrap">
+                                        <thead>
+                                            <tr className="border-b border-[#2a3654]/50 text-slate-500">
+                                                <th className="pb-2 font-medium">{t('oracle_tool.runout_type') || "Runout Type"}</th>
+                                                <th className="pb-2 font-medium">CHK</th>
+                                                <th className="pb-2 font-medium">B 33</th>
+                                                <th className="pb-2 font-medium">B 75</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-[#2a3654]/30 text-slate-300 font-mono">
+                                            {data.future_runouts.map((runout, i) => (
+                                                <tr key={i} className="hover:bg-white/5 transition-colors">
+                                                    <td className="py-2.5">
+                                                        <span className="text-emerald-400/80 mr-2">{runout.runout_type.replace('_', ' ')}</span>
+                                                    </td>
+                                                    <td className={`py-2.5 ${runout.check >= 0.5 ? "text-emerald-400" : ""}`}>{pct(runout.check)}</td>
+                                                    <td className={`py-2.5 ${runout.bet_small >= 0.3 ? "text-amber-400" : ""}`}>{pct(runout.bet_small)}</td>
+                                                    <td className={`py-2.5 ${runout.bet_big >= 0.3 ? "text-red-400" : ""}`}>{pct(runout.bet_big)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Parse tags (collapsed) */}
+                        <details className="bg-[#111827] border border-[#2a3654] rounded-xl">
+                            <summary className="cursor-pointer px-4 py-3 text-[10px] font-semibold uppercase tracking-[2px] text-slate-500 flex items-center gap-2 select-none hover:text-slate-400 transition-colors">
+                                <span className="w-2 h-2 rounded-full bg-slate-600" />
+                                {t('oracle_tool.llm_parse_details') || "LLM Parse Details"}
+                                <ChevronDown size={12} className="ml-auto" />
+                            </summary>
+                            <div className="px-4 pb-4">
+                                <div className="flex flex-wrap gap-2">
+                                    {Object.entries(parsed)
+                                        .filter(([k, v]) => v !== null && v !== undefined && k !== 'situation_summary')
+                                        .map(([k, v]) => (
+                                            <span key={k} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a2236] border border-[#2a3654] rounded text-xs">
+                                                <span className="text-slate-500 text-[10px]">{k}</span>
+                                                <span className="text-slate-300 font-mono font-semibold">{String(v)}</span>
+                                            </span>
+                                        ))}
+                                </div>
+                            </div>
+                        </details>
+
+                        {/* Spot metadata */}
+                        <div className="text-center py-2 lg:text-left">
+                            <p className="text-[10px] font-mono text-slate-600">
+                                Spot ID: {data.spot.position} / {data.spot.board_bucket} / {data.spot.street}
+                                {data.spot.action_line && ` / ${data.spot.action_line}`}
+                                {data.spot.turn_type && ` / ${data.spot.turn_type}`}
+                                {USE_MOCK && " | ⚠️ MOCK DATA"}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: Strategy & Breakdown */}
+                    <div className="space-y-4">
+                        {/* Hand class breakdown */}
+                        <div className="bg-[#111827] border border-[#2a3654] rounded-xl p-4">
+                            <button
+                                onClick={() => setShowClassBreakdown(!showClassBreakdown)}
+                                className="w-full flex items-center justify-between mb-2"
+                            >
+                                <h3 className="text-[10px] font-semibold uppercase tracking-[2px] text-slate-500 flex items-center gap-2">
+                                    <Layers size={14} />
+                                    {t('oracle_tool.range') || "Range"} {parsed.hero_position?.toUpperCase() || "OOP"}
+                                </h3>
+                                {showClassBreakdown
+                                    ? <ChevronUp size={14} className="text-slate-500" />
+                                    : <ChevronDown size={14} className="text-slate-500" />
+                                }
+                            </button>
+
+                            {showClassBreakdown && (
+                                <div className="overflow-x-auto -mx-2">
+                                    <table className="w-full text-xs">
+                                        <thead>
+                                            <tr className="border-b border-[#2a3654]">
+                                                <th className="text-left text-[9px] font-mono uppercase text-slate-500 py-1.5 px-2 tracking-wider">{t('oracle_tool.class') || "Class"}</th>
+                                                <th className="text-right text-[9px] font-mono uppercase text-slate-500 py-1.5 px-2" title="Số lượng combos">Cb</th>
+                                                <th className="text-right text-[9px] font-mono uppercase text-emerald-600 py-1.5 px-2">Chk</th>
+                                                <th className="text-right text-[9px] font-mono uppercase text-amber-600 py-1.5 px-2">B 33</th>
+                                                <th className="text-right text-[9px] font-mono uppercase text-red-600 py-1.5 px-2">B 75</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {classData.map(([cls, stats]) => (
+                                                <tr
+                                                    key={cls}
+                                                    className={`border-b border-[#1a2236] hover:bg-[#1a2236] transition-colors ${hero?.hand_class === cls ? "bg-emerald-950/30" : ""}`}
+                                                >
+                                                    <td className={`py-2 px-2 font-mono font-semibold text-[11px] ${CLASS_COLORS[cls] || "text-slate-400"}`}>
+                                                        {hero?.hand_class === cls && "→ "}
+                                                        {cls.replace(/_/g, ' ')}
+                                                    </td>
+                                                    <td className="text-right py-2 px-2 font-mono text-[10px] text-slate-500">{stats.count}</td>
+                                                    <td className="text-right py-2 px-2 font-mono text-[11px] text-emerald-400/80">{pct(stats.avg_check)}</td>
+                                                    <td className="text-right py-2 px-2 font-mono text-[11px] text-amber-400/80">{pct(stats.avg_bet_small)}</td>
+                                                    <td className="text-right py-2 px-2 font-mono text-[11px] text-red-400/80">{pct(stats.avg_bet_big)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Overall strategy */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <StrategyPanel
+                                title={t('oracle_tool.oop_strategy') || "OOP Strategy"}
+                                strategy={data.strategy.oop}
+                                accentBorder="bg-blue-500"
+                                accentText="text-blue-400"
+                            />
+                            <StrategyPanel
+                                title={t('oracle_tool.ip_strategy') || "IP Strategy"}
+                                strategy={data.strategy.ip}
+                                accentBorder="bg-red-500"
+                                accentText="text-red-400"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* RLHF Feedback Widget */}
+            {data && data.log_id && feedbackStatus !== 'submitted' && (
+                <div className="mt-6 flex flex-col items-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    {feedbackStatus === 'none' && (
+                        <div className="bg-[#111827] border border-[#2a3654] rounded-full px-6 py-3 flex items-center justify-center gap-6 shadow-xl">
+                            <span className="text-xs font-semibold text-slate-400 capitalize tracking-wide">
+                                Was this response helpful?
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={() => handleFeedbackSubmit(true)}
+                                    className="p-2 rounded-full hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-500 transition-colors"
+                                >
+                                    <ThumbsUp size={18} />
+                                </button>
+                                <div className="w-px h-6 bg-[#2a3654]"></div>
+                                <button 
+                                    onClick={() => setFeedbackStatus('disliked')}
+                                    className="p-2 rounded-full hover:bg-red-500/20 hover:text-red-400 text-slate-500 transition-colors"
+                                >
+                                    <ThumbsDown size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {feedbackStatus === 'disliked' && (
+                        <div className="bg-[#111827] border border-red-500/30 rounded-xl p-5 w-full max-w-md shadow-xl flex flex-col gap-3">
+                            <label className="text-xs font-bold text-red-200">How can we improve this answer?</label>
+                            <textarea
+                                value={feedbackReason}
+                                onChange={(e) => setFeedbackReason(e.target.value)}
+                                placeholder="E.g., The suggested bet sizing seems off for this exact board texture..."
+                                className="bg-[#0d1117] border border-[#2a3654] rounded-lg px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 resize-none focus:outline-none focus:border-red-500/50 h-24"
+                            />
+                            <div className="flex gap-3 justify-end mt-2">
+                                <button 
+                                    onClick={() => setFeedbackStatus('none')}
+                                    className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-wider"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        handleFeedbackSubmit(false, feedbackReason);
+                                        setFeedbackStatus('submitted');
+                                    }}
+                                    disabled={submittingFeedback || !feedbackReason.trim()}
+                                    className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {submittingFeedback ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                    Send Feedback
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+            
+            {/* Thank you feedback display */}
+            {feedbackStatus === 'submitted' && (
+                <div className="mt-6 flex justify-center animate-in fade-in duration-500">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold px-6 py-3 rounded-full flex items-center gap-2 shadow-lg shadow-emerald-500/5">
+                        <Sparkles size={14} /> Feedback received. Thank you for training VillainVault!
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

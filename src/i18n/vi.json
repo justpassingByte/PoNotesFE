@@ -111,6 +111,15 @@
       "cta_desktop": "Tải Ngay",
       "scroll": "Khám phá"
     },
+    "oracle": {
+      "overline": "GTO Oracle — Hệ Thống Hỏi Đáp Đỉnh Cao",
+      "h3_1": "HỎI BẰNG NGÔN NGỮ TỰ NHIÊN.",
+      "h3_2": "TRẢ VỀ ĐÚNG CHIẾN THUẬT.",
+      "desc": "Không cần nhập hand lịch sử rườm rà. Bạn chỉ cần gõ đúng tình huống đang gặp. AI sẽ tìm trong hơn 350,000 spot đã solve để hiển thị Chiến Thuật GTO (Pure/Mix), EV, và Range chính xác tới từng %.",
+      "sys_query": "system > truy_vấn_gto.exe",
+      "mock_result_found": "Đã tìm kiếm trong 356,400 solutions",
+      "mock_analysis_says": "Phân tích GTO khuyên:"
+    },
     "features": {
       "pain_overline": "Pain Point — Nói thẳng, hơi đau nhưng thật",
       "pain_h2": "Bạn đang gamble mà <span className=\"text-yellow-400\">không có edge</span>.",
@@ -133,8 +142,8 @@
       "f1_desc": "Crop ảnh bàn chơi → paste → nhận Call/Fold + range + plan chi tiết. Không cần căng não.",
       "f2_title": "HUD \"Bóc Bài\"",
       "f2_desc": "Panel riêng: Whale, Reg, hay bạn tự troll mình. Gợi ý exploit cụ thể.",
-      "f3_title": "AI Tuning (Tính Năng Mới)",
-      "f3_desc": "Tùy biến AI hoàn toàn. Ép AI trả lời kiểu bảo thủ (GTO) hay điên cuồng (Max Exploit) theo ý bạn bằng các prompt cực mạnh.",
+      "f3_title": "Huấn luyện Model AI Của Riêng Bạn",
+      "f3_desc": "Mọi ván đấu (hand history) bạn tải lên, mọi câu hỏi GTO và mọi feedback đều được lưu lại. Hệ thống sẽ gom lượng data này để Fine-Tune thành một Model độc quyền sao chép hoàn hảo tư duy của bạn (Độc quyền Enterprise).",
       "f4_title": "Team AI Đa Nhân Cách",
       "f4_desc": "Là một team pro mỗi thằng một tính cách — không biết tilt, không biết mệt.",
       "f5_title": "Giảm Leak Auto",
@@ -236,9 +245,9 @@
       "tier2_desc": "Dành cho việc nghiền nát limit.",
       "tier2_price": "$89",
       "tier2_f1": "Mọi thứ của Grinder",
-      "tier2_f2": "Engine Exploit Sâu",
-      "tier2_f3": "Max GTO/Exploit Tuning AI",
-      "tier2_f4": "GTO + Population reads",
+      "tier2_f2": "Huấn luyện AI thành Model độc quyền của bạn",
+      "tier2_f3": "GTO Feedback Loop: AI học từ cách bạn chơi",
+      "tier2_f4": "Population reads + Max Exploit",
       "tier2_f5": "3 thiết bị",
       "tier2_f6": "Onboarding 1-on-1",
       "tier2_btn": "Lên High Roller",
@@ -358,20 +367,20 @@
       "title": "Poker Hybrid <span className=\"text-yellow-400\">System</span>.",
       "subtitle": "RobinHUD không chỉ là HUD. Nó là một hệ sinh thái nơi decision dựa vào data + context + AI + exploit thực chiến.",
       "phase1": {
-        "title": "Phase 1 (Đang Live): Villiant Vault + RobinHUD Desktop App V1",
-        "badge": "Đang chạy",
+        "title": "Phase 1 (Hoàn Thành): Villiant Vault + RobinHUD Desktop App V1",
+        "badge": "Hoàn Thành",
         "desc": "Trải nghiệm nhanh, dễ tiếp cận. Công cụ sắc bén để review hand và exploit đối thủ trực tiếp.",
         "pt1": "Web-based app: Tải hand lên review nhanh, AI tự bóc tách leak và gợi ý Exploit",
         "pt2": "Desktop App V1: Trải nghiệm mượt mà trên máy tính, đồng bộ hoàn toàn với web",
-        "pt3": "Build trust, cộng đồng & thu thập data để scale"
+        "pt3": "Đã thu thập data mẫu và chứng minh thực tế"
       },
       "phase2": {
-        "title": "Phase 2 - Core Upgrade",
-        "badge": "Sắp tới",
-        "desc": "Memory + GTO Pipeline. Không xử lý hand độc lập. Hand hiện tại + Lịch sử + GTO baseline = Optimize strategy.",
-        "pt1": "Hand → Exploit → Update Note",
-        "pt2": "Đánh với đúng người, có lịch sử",
-        "pt3": "Map chặt chẽ với GTO baseline"
+        "title": "Phase 2 (Đang Live): RAG GTO Engine + AI Memory",
+        "badge": "Đang chạy",
+        "desc": "Lưu trữ định dạng Leak dài hạn vào Pattern Engine. Kéo Data toán học từ RAG GTO Database để làm base phân tích.",
+        "pt1": "Long-term Memory (Player Tendencies & Stats)",
+        "pt2": "GTO Hand Context Enricher (Tự động lookup chuẩn Spot)",
+        "pt3": "Smart Exploit Suggestion & Rich Note Generation"
       },
       "phase3": {
         "title": "Phase 3: Desktop App V2 (Final/Auto-Scale)",
@@ -704,5 +713,37 @@
     "no_ai_analysis": "Chưa có phân tích AI cho ván bài này.",
     "notes": "Ghi chú",
     "general": "Chung"
+  },
+  "oracle_tool": {
+    "title": "GTO Oracle",
+    "subtitle": "Hỏi bất kỳ tình huống poker nào bằng ngôn ngữ tự nhiên",
+    "solutions_badge": "356,400 TÌNH HUỐNG GTO",
+    "srp_badge": "CHỈ SRP (100BB)",
+    "input_label": "Hỏi GTO Oracle",
+    "input_placeholder": "Ví dụ: Board As 7d 2c, tôi ngồi BB cầm 7h 5h, BTN cbet 33% pot, tôi nên làm gì?",
+    "ask_btn": "Hỏi",
+    "llm_parsing": "🧠 LLM đang parse câu hỏi...",
+    "your_situation": "Tình Huống Của Bạn",
+    "hero_hand": "Bài Của Bạn (Hero)",
+    "no_hand_specified": "Chưa chỉ định hand cụ thể",
+    "board": "Mặt Bài (Board)",
+    "gto_recommends_mix": "Phân tích GTO khuyên ",
+    "mix_strategy": "Chiến Thuật Mix",
+    "optimal_action": "Hành động tối ưu nhất là ",
+    "specify_hand_tip": "Dùng ngôn ngữ tự nhiên thêm hand cụ thể vào câu hỏi (VD: \"cầm AcKd\") để nhận được lời khuyên hành động chi tiết.",
+    "future_runouts": "Dữ Liệu Dự Báo Vòng Kế (Turn/River)",
+    "runout_type": "Loại Bài (Runout)",
+    "llm_parse_details": "Chi Tiết LLM Phân Tích",
+    "oop_strategy": "Chiến Thuật OOP",
+    "ip_strategy": "Chiến Thuật IP",
+    "range": "Khoảng Bài (Range)",
+    "class": "Loại Bài",
+    "examples": [
+      "Board As 7d 2c, tôi ngồi BB cầm AcKd, BTN cbet 33% pot, tôi nên làm gì?",
+      "Flop Ks 8s 3c, tôi BB cầm Ts9s, BTN bet 75%. Flush draw nên call hay raise?",
+      "Board 8s 4d 2c, tôi BB cầm QQ, BTN c-bet 33%, overpair nên xử lý sao?",
+      "Board Ts 9d 8c, BTN vs BB, tôi cầm Jc7c straight rồi, bet big hay slowplay?",
+      "Board monotone As 7s 2s, BB cầm Ks8s flush, BTN check tôi nên bet size nào?"
+    ]
   }
 }

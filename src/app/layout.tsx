@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin", "vietnamese"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "700"],
 });
-
 export const metadata: Metadata = {
   title: "VillainVault | Elite AI Poker Analysis & Opponent Database",
   description: "Dumbfound your opponents with Tier-1 AI player profiling, shorthand note parsing, and professional exploitative strategies. The definitive poker database for serious grinders.",
@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased text-foreground min-h-screen relative`}
+        className={`${spaceGrotesk.variable} ${spaceMono.variable} antialiased text-foreground min-h-screen relative`}
       >
         {/* Fixed background image */}
         <div

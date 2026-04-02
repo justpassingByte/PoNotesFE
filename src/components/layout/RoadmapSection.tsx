@@ -63,7 +63,7 @@ export function RoadmapSection() {
                     <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">
                         {t('landing.roadmap.overline') || 'Tầm Nhìn — Đường Dài'}
                     </p>
-                    <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4"
+                    <h2 className="text-3xl sm:text-4xl font-mono uppercase tracking-tight font-black text-white leading-tight mb-4"
                         dangerouslySetInnerHTML={{ __html: t('landing.roadmap.title') || 'Poker Hybrid <span class="text-yellow-400">System</span>.' }}
                     />
                     <p className="text-white/50 text-sm max-w-2xl mx-auto leading-relaxed">
@@ -86,7 +86,7 @@ export function RoadmapSection() {
                                         <div className="w-full md:w-1/2 flex justify-center md:justify-start">
                                             <div className={`w-full max-w-[420px] p-6 rounded-2xl border ${phase.border} bg-white/[0.02] backdrop-blur-sm hover:bg-white/[0.04] transition duration-300 relative ${isEven ? 'md:ml-auto md:mr-8 lg:mr-10' : 'md:mr-auto md:ml-8 lg:ml-10'}`}>
                                                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
-                                                    <h3 className="text-lg font-bold text-white/90 leading-snug">{t(`landing.roadmap.${phase.id}.title`)}</h3>
+                                                    <h3 className="text-lg font-mono uppercase tracking-tight font-black text-white/90 leading-snug">{t(`landing.roadmap.${phase.id}.title`)}</h3>
                                                     <span className={`self-start text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 sm:mt-1 ${phase.bg} ${phase.color}`}>
                                                         {t(`landing.roadmap.${phase.id}.badge`)}
                                                     </span>

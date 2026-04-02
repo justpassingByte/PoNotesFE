@@ -26,29 +26,29 @@ export function HeroSection() {
                     {/* Overline — chìm */}
                     <p
                         ref={badge.ref as React.RefObject<HTMLParagraphElement>}
-                        className={`reveal text-white/30 text-xs font-bold uppercase tracking-[0.28em] mb-7 ${badge.visible ? 'is-visible' : ''}`}
+                        className={`reveal text-white/30 text-xs font-mono font-bold uppercase tracking-[0.28em] mb-7 ${badge.visible ? 'is-visible' : ''}`}
                     >
-                        {t('landing.hero.badge') || "Két Sắt Poker Đầu Tiên của Bạn"}
+                        {t('landing.hero.badge') || "> Hệ_thống_Két_sắt_Khởi_chạy"}
                     </p>
 
                     {/* Headline — nổi nhất */}
                     <h1
                         ref={headline.ref as React.RefObject<HTMLHeadingElement>}
-                        className={`reveal text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-6 ${headline.visible ? 'is-visible' : ''}`}
+                        className={`reveal text-4xl sm:text-5xl lg:text-6xl font-mono font-bold text-white leading-[1.1] tracking-tight uppercase mb-6 ${headline.visible ? 'is-visible' : ''}`}
                         style={{ transitionDelay: '80ms' }}
                     >
-                        {t('landing.hero.h1_prefix') || "Giữ Tiền."}{' '}
+                        {t('landing.hero.h1_prefix') || "GIỮ TIỀN."}{' '}
                         <br className="hidden sm:block" />
-                        <span style={{
-                            background: 'linear-gradient(95deg, #ffc400 0%, #ffe680 50%, #ffc400 100%)',
+                        <span className="font-sans font-black" style={{
+                            background: 'linear-gradient(95deg, #4ade80 0%, #22c55e 50%, #16a34a 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
                         }}>
-                            {t('landing.hero.h1_highlight') || "Tạo Tiền."}
+                            {t('landing.hero.h1_highlight') || "TẠO TIỀN."}
                         </span>
                         <br />
-                        {t('landing.hero.h1_suffix') || "Không Tilt."}
+                        {t('landing.hero.h1_suffix') || "KHÔNG TILT."}
                     </h1>
 
                     <div
@@ -74,10 +74,10 @@ export function HeroSection() {
                     >
                         <Link
                             href="/dashboard"
-                            className="inline-flex items-center justify-center min-w-[160px] w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-black text-sm transition-all duration-200 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
-                            style={{ background: 'linear-gradient(135deg, #ffc400, #ffdd55)' }}
+                            className="inline-flex items-center justify-center min-w-[160px] w-full sm:w-auto px-6 py-3.5 rounded-none font-mono font-bold text-black text-sm transition-all duration-200 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
+                            style={{ background: '#4ade80' }}
                         >
-                            {t('landing.hero.cta_main') || "Vào Dashboard"}
+                            {t('landing.hero.cta_main') || "[ BẮT ĐẦU NGAY ]"}
                         </Link>
                         <Link
                             href="#manifesto"
@@ -124,22 +124,25 @@ export function HeroSection() {
                             <div className="flex-1 p-6 flex flex-col gap-4 relative">
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-yellow-400/20 blur-[60px] rounded-full"></div>
                                 {/* Header */}
-                                <div className="flex justify-between items-center z-10">
-                                    <div className="h-6 w-32 bg-white/10 rounded-md"></div>
-                                    <div className="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center text-white/50 text-[10px]">AI</div>
+                                <div className="flex justify-between items-center z-10 font-mono text-[11px] text-white/50">
+                                    <div className="flex items-center gap-2"><span className="text-emerald-400">{'>'}</span> hệ_thống_kết_nối.exe</div>
                                 </div>
                                 {/* Cards */}
-                                <div className="flex-1 rounded-2xl border border-white/10 bg-white/5 p-5 mt-2 flex flex-col gap-5 z-10 backdrop-blur-sm">
-                                    <div className="h-5 w-40 bg-white/10 rounded flex items-center px-2 shadow-inner"></div>
-                                    <div className="h-32 w-full bg-gradient-to-r from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-xl relative overflow-hidden group">
-                                        <div className="absolute top-4 left-4 h-10 w-10 bg-emerald-500/20 rounded-lg border border-emerald-500/30"></div>
-                                        <div className="absolute top-5 left-16 h-3 w-32 bg-emerald-400/50 rounded"></div>
-                                        <div className="absolute top-9 left-16 h-2 w-20 bg-emerald-400/30 rounded"></div>
-                                        <div className="absolute bottom-4 left-4 right-4 h-8 border border-emerald-500/30 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-400/70 text-[10px] font-bold tracking-widest text-shadow">GTO ALIGNED 100%</div>
+                                <div className="flex-1 rounded-sm border border-white/10 bg-black p-5 mt-2 flex flex-col gap-3 z-10 font-mono text-[11px] text-white/70 overflow-hidden">
+                                    <div><span className="text-emerald-400">system{'>'}</span> phân_tích_yêu_cầu --ngành=poker</div>
+                                    <div className="text-emerald-400">[OK] Bắt đầu quét data người chơi...</div>
+                                    <div className="text-emerald-400">[OK] Đã kết nối &gt;350k hand solutions</div>
+                                    <div className="mt-2"><span className="text-emerald-400">system{'>'}</span> ghép_nối_chiến_thuật</div>
+                                    <div className="text-white/40">
+                                        - Đối thủ: Fish/Station<br/>
+                                        - Hand hiện tại: Top Pair<br/>
+                                        - GTO action: Bet 33%
                                     </div>
-                                    <div className="flex gap-3 mt-auto">
-                                        <div className="h-10 flex-1 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-[10px] text-white/30 font-bold">FOLD</div>
-                                        <div className="h-10 flex-[2] bg-yellow-400/20 rounded-lg border border-yellow-400/30 flex items-center justify-center text-[10px] text-yellow-500 font-bold tracking-widest shadow-[0_0_15px_rgba(255,196,0,0.1)]">DOMINATE CALL</div>
+                                    <div className="text-yellow-400 mt-2">Đang tính toán exploit...</div>
+                                    <div className="text-white/30">[====================&gt;] 100%</div>
+                                    <div className="text-emerald-400 flex gap-2 items-center">
+                                        <span className="text-emerald-400">{'>'}</span> Lời khuyên: OVERBET ALL-IN.
+                                        <span className="w-2 h-4 bg-emerald-400 animate-pulse inline-block"></span>
                                     </div>
                                 </div>
                             </div>

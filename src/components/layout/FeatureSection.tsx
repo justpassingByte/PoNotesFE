@@ -19,6 +19,7 @@ function RevealBlock({ children, delay = 0 }: { children: React.ReactNode; delay
 }
 
 export function FeatureSection() {
+    const oracleHead = useReveal();
     const uxHead = useReveal();
     const hudHead = useReveal();
     const featureHead = useReveal();
@@ -27,6 +28,86 @@ export function FeatureSection() {
 
     return (
         <>
+            {/* ─── GTO Oracle ─── */}
+            <section id="gto-oracle-feature" className="relative py-20 border-b border-white/5 bg-gradient-to-b from-transparent to-black/40">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col lg:flex-row items-center gap-14">
+                        {/* Text Content */}
+                        <div className="flex-1 order-1">
+                            <div 
+                                ref={oracleHead.ref as React.RefObject<HTMLDivElement>}
+                                className={`reveal ${oracleHead.visible ? 'is-visible' : ''}`}
+                            >
+                                {/* Overline */}
+                                <p className="text-emerald-400 text-xs font-mono font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                    {t('landing.oracle.overline')}
+                                </p>
+                                {/* H2 */}
+                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-mono font-black text-white mb-6 leading-[1.1] tracking-tight uppercase">
+                                    {t('landing.oracle.h3_1')}<br/>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">
+                                        {t('landing.oracle.h3_2')}
+                                    </span>
+                                </h2>
+                                <p className="text-white/50 text-base max-w-xl leading-relaxed mb-8">
+                                    {t('landing.oracle.desc')}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Interactive-looking Mockup */}
+                        <div className="flex-1 order-2 w-full">
+                            <RevealBlock delay={100}>
+                                <div className="relative rounded-2xl border border-white/10 bg-black/80 backdrop-blur-md p-5 sm:p-7 shadow-[0_0_60px_rgba(74,222,128,0.1)] overflow-hidden font-mono">
+                                    {/* Simulated glow */}
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px]" />
+                                    
+                                    <div className="relative z-10">
+                                        <div className="text-white/30 text-[11px] mb-3 uppercase tracking-widest flex justify-between items-center">
+                                            <span>{t('landing.oracle.sys_query')}</span>
+                                            <span className="text-emerald-400/50 block">v1.2.0</span>
+                                        </div>
+                                        
+                                        {/* Input mock */}
+                                        <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/90 mb-5 flex items-start gap-3 shadow-inner">
+                                            <span className="text-emerald-400 mt-0.5">?</span>
+                                            <p className="leading-relaxed">Board As 7d 2c, tôi ngồi BB cầm AcKd, BTN cbet 33% pot, tôi nên làm gì?</p>
+                                        </div>
+                                        
+                                        <div className="text-emerald-400 text-xs mb-4 flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                            {t('landing.oracle.mock_result_found')} (BTN vs BB / A_dry).
+                                        </div>
+
+                                        {/* Strategy Result Mock */}
+                                        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.02] p-5">
+                                            <div className="text-white/40 text-[10px] uppercase mb-4 tracking-widest">{t('landing.oracle.mock_analysis_says')} <span className="text-yellow-400 font-bold">Mix / Pure Strategy</span></div>
+                                            
+                                            <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-4">
+                                                <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-center transition-transform hover:scale-105">
+                                                    <div className="text-emerald-400/70 text-[10px] sm:text-xs mb-1 font-semibold uppercase">CHECK</div>
+                                                    <div className="text-lg sm:text-xl font-black text-emerald-400">35.0%</div>
+                                                </div>
+                                                <div className="rounded-lg border border-yellow-500/30 bg-yellow-400/15 p-3 text-center shadow-[0_0_15px_rgba(234,179,8,0.15)] transition-transform hover:scale-105 relative">
+                                                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-[8px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap hidden sm:block">CAO NHẤT</div>
+                                                    <div className="text-yellow-400/80 text-[10px] sm:text-xs mb-1 font-semibold uppercase">BET 33%</div>
+                                                    <div className="text-lg sm:text-xl font-black text-yellow-400">40.0%</div>
+                                                </div>
+                                                <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-center border-dashed transition-transform hover:scale-105">
+                                                    <div className="text-rose-400/70 text-[10px] sm:text-xs mb-1 font-semibold uppercase">BET 75%</div>
+                                                    <div className="text-lg sm:text-xl font-black text-rose-400">25.0%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </RevealBlock>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* ─── Hand Analyzer + UX Demo ─── */}
             <section id="features" className="relative py-20">
                 <div className="max-w-7xl mx-auto px-6">
@@ -43,7 +124,7 @@ export function FeatureSection() {
                                     {t('landing.features.ux_overline') || "Hand Analyzer — Review như Pro"}
                                 </p>
                                 {/* H3 */}
-                                <h3 className="text-2xl sm:text-3xl font-black text-white mb-6 leading-tight"
+                                <h3 className="text-2xl sm:text-3xl font-mono uppercase tracking-tight font-black text-white mb-6 leading-tight"
                                     dangerouslySetInnerHTML={{ __html: t('landing.features.ux_h3') || "Upload hand.<br/><span class=\"text-yellow-400\">AI mổ xẻ từng sai lầm.</span>" }}
                                 />
                                 {/* Steps */}
@@ -107,10 +188,10 @@ export function FeatureSection() {
                         ref={hudHead.ref as React.RefObject<HTMLDivElement>}
                         className={`reveal text-center mb-14 ${hudHead.visible ? 'is-visible' : ''}`}
                     >
-                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">
+                        <p className="text-white/25 text-xs font-mono font-bold uppercase tracking-[0.2em] mb-3">
                             {t('landing.hud.overline') || "HUD — Bảng vàng \"bóc bài\""}
                         </p>
-                        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4"
+                        <h2 className="text-3xl sm:text-4xl font-mono uppercase tracking-tight font-black text-white leading-tight mb-4"
                             dangerouslySetInnerHTML={{ __html: t('landing.hud.h3') || "Không nằm trên bàn.<br/><span class=\"text-yellow-400\">Panel riêng, nhìn cái hiểu luôn.</span>" }}
                         />
                         <p className="text-white/50 text-sm max-w-2xl mx-auto leading-relaxed">
@@ -184,10 +265,10 @@ export function FeatureSection() {
             <section className="relative py-20 bg-black/40 border-y border-white/5">
                 <div className="max-w-7xl mx-auto px-6 text-center">
                     <RevealBlock delay={0}>
-                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">
+                        <p className="text-white/25 text-xs font-mono font-bold uppercase tracking-[0.2em] mb-3">
                             {t('landing.dashboard.overline') || "Hệ Thống Quản Lý Mục Tiêu"}
                         </p>
-                        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-6">
+                        <h2 className="text-3xl sm:text-4xl font-mono uppercase tracking-tight font-black text-white leading-tight mb-6">
                             {t('landing.dashboard.h2') || "Dashboard Điều Khiển Sát Thủ"}
                         </h2>
                         <p className="text-white/50 text-sm max-w-2xl mx-auto leading-relaxed mb-12">
@@ -224,11 +305,11 @@ export function FeatureSection() {
                         className={`reveal mb-12 ${featureHead.visible ? 'is-visible' : ''}`}
                     >
                         {/* Overline — chìm */}
-                        <p className="text-white/25 text-xs font-bold uppercase tracking-[0.2em] mb-3">
+                        <p className="text-white/25 text-xs font-mono font-bold uppercase tracking-[0.2em] mb-3">
                             {t('landing.what_is.overline') || "Kho Kiến Thức"}
                         </p>
                         {/* H2 — nổi */}
-                        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
+                        <h2 className="text-3xl sm:text-4xl font-mono uppercase tracking-tight font-black text-white leading-tight">
                             {t('landing.what_is.h2') || "Villiant Vault là gì?"}
                         </h2>
                         {/* Sub — đọc được */}

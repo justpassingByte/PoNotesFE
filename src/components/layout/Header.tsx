@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Settings, Menu, X, Sparkles, Activity, History, CreditCard, LayoutDashboard } from 'lucide-react';
+import { User, Settings, Menu, X, Sparkles, Activity, History, CreditCard, LayoutDashboard, Crosshair } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { TemplateManagerModal } from '@/components/forms/TemplateManagerModal';
 import { ProfileHUDModal } from '@/components/layout/ProfileHUDModal';
@@ -29,6 +29,7 @@ export function Header({
         { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
         { name: t('nav.players'), href: '/players', icon: User },
         { name: t('nav.hands'), href: '/analyzer', icon: Activity },
+        { name: 'GTO Oracle', href: '/gto-oracle', icon: Crosshair },
         { name: t('nav.history'), href: '/history', icon: History },
         { name: t('nav.pricing') || 'Nâng Cấp', href: '/pricing', icon: CreditCard },
     ];
@@ -46,35 +47,35 @@ export function Header({
 
     return (
         <>
-            <header className="fixed top-3 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] sm:w-11/12 max-w-6xl bg-card/40 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-full px-4 sm:px-8 py-2.5 sm:py-2 flex items-center justify-between shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
-                <div className="flex items-center gap-6">
+            <header className="fixed top-3 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] sm:w-11/12 max-w-6xl bg-card/40 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 sm:py-2 flex items-center justify-between shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+                {/* Left: Logo */}
+                <div className="flex items-center shrink-0 w-[140px] md:w-[180px]">
                     <Link href="/" className="flex items-center group">
-                        <div className="w-8 h-8 bg-gradient-to-br from-gold to-yellow-600 rounded flex items-center justify-center mr-2 group-hover:scale-105 transition-transform">
+                        <div className="w-8 h-8 bg-gradient-to-br from-gold to-yellow-600 rounded flex items-center justify-center group-hover:scale-105 transition-transform">
                             <Sparkles className="w-4 h-4 text-black" />
                         </div>
-                        <div className="hidden md:block text-base sm:text-lg font-bold text-white tracking-widest font-serif">
-                            VILLAINVAULT
-                        </div>
                     </Link>
-
-                    {/* Desktop nav links */}
-                    <nav className="hidden lg:flex items-center space-x-1">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                className={`flex items-center whitespace-nowrap gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive(link.href)
-                                    ? "bg-gold text-black shadow-[0_0_15px_rgba(250,204,21,0.3)]"
-                                    : "text-gray-400 hover:text-white hover:bg-white/5"}`}
-                            >
-                                <link.icon className="w-4 h-4" />
-                                {link.name}
-                            </Link>
-                        ))}
-                    </nav>
                 </div>
 
-                <div className="flex items-center space-x-2 md:space-x-3">
+                {/* Center: Desktop nav links */}
+                <nav className="hidden lg:flex flex-1 items-center justify-center space-x-1 whitespace-nowrap overflow-hidden">
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all shrink-0 ${isActive(link.href)
+                                ? "bg-gold text-black shadow-[0_0_15px_rgba(250,204,21,0.3)]"
+                                : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+                        >
+                            <link.icon className="w-4 h-4" />
+                            <span className="hidden xl:inline">{link.name}</span>
+                            <span className="xl:hidden">{link.name.split(' ')[0]}</span>
+                        </Link>
+                    ))}
+                </nav>
+
+                {/* Right: Actions */}
+                <div className="flex items-center justify-end space-x-2 md:space-x-3 shrink-0 w-[140px] md:w-[180px]">
                     <LanguageSelector />
                     {/* Settings gear → opens AITuningModal (same as Dashboard) */}
                     <button

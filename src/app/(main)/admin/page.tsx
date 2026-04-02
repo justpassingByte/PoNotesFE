@@ -21,7 +21,9 @@ import {
     Search,
     Heart,
     Filter,
-    User
+    User,
+    UploadCloud,
+    Save
 } from "lucide-react";
 
 interface Stats {
@@ -56,12 +58,17 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState<Stats | null>(null);
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'plans'>('stats');
+    const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'plans' | 'database'>('stats');
     const [plans, setPlans] = useState<any[]>([]);
     const [editingPlan, setEditingPlan] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [tierFilter, setTierFilter] = useState("ALL");
     const [statusFilter, setStatusFilter] = useState("ALL");
+    
+    // Database tab states
+    const [backupEmail, setBackupEmail] = useState("");
+    const [isSavingEmail, setIsSavingEmail] = useState(false);
+    const [restoreFile, setRestoreFile] = useState<File | null>(null);
 
     const initialPlanState = {
         id: "",
@@ -115,10 +122,19 @@ export default function AdminDashboard() {
         }
     };
 
+    const fetchSettings = async () => {
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${baseUrl}/api/admin/db/settings`, { credentials: "include" });
+            const json = await res.json();
+            if (json.success) setBackupEmail(json.data.email);
+        } catch (err) {}
+    };
+
     useEffect(() => {
         const load = async () => {
             setLoading(true);
-            await Promise.all([fetchStats(), fetchUsers(), fetchPlans()]);
+            await Promise.all([fetchStats(), fetchUsers(), fetchPlans(), fetchSettings()]);
             setLoading(false);
         };
         load();
@@ -176,8 +192,54 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleBackup = () => {
-        alert("Database backup started. A snapshot will be sent to your admin email.");
+    const handleSaveEmail = async () => {
+        setIsSavingEmail(true);
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            await fetch(`${baseUrl}/api/admin/db/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: backupEmail }),
+                credentials: "include"
+            });
+            alert("Backup email saved successfully!");
+        } catch (err) {
+            alert("Error saving email");
+        } finally {
+            setIsSavingEmail(false);
+        }
+    };
+
+    const handleManualBackup = async () => {
+        if (!confirm(`Are you sure you want to trigger a manual backup to ${backupEmail}?`)) return;
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${baseUrl}/api/admin/db/backup`, { method: 'POST', credentials: "include" });
+            const json = await res.json();
+            alert(json.message || "Backup triggered");
+        } catch (err) {}
+    };
+
+    const handleRestoreBackup = async () => {
+        if (!restoreFile) return alert("Please select a file to restore.");
+        if (!confirm("WARNING: This will overwrite the CURRENT database. This action is irreversible. Proceed?")) return;
+        
+        try {
+            const formData = new FormData();
+            formData.append('backup', restoreFile);
+            
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${baseUrl}/api/admin/db/restore`, { 
+                method: 'POST', 
+                body: formData,
+                credentials: "include"
+            });
+            const json = await res.json();
+            alert(json.message || "Restore triggered.");
+            setRestoreFile(null);
+        } catch (err) {
+            alert("Error trying to restore database");
+        }
     };
 
     if (loading) return <div className="flex items-center justify-center min-h-screen text-gold">Loading Admin...</div>;
@@ -201,13 +263,25 @@ export default function AdminDashboard() {
                         </h1>
                         <p className="text-gray-500 mt-1">Intelligence management and revenue tracking</p>
                     </div>
-                    <button 
-                        onClick={handleBackup}
-                        className="bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl border border-white/10 flex items-center gap-2 transition-all"
-                    >
-                        <Database className="w-4 h-4 text-gold" />
-                        Backup Database
-                    </button>
+
+                    {/* System Server Health Global Card */}
+                    <div className="flex items-center gap-4 bg-[#0a0a0a]/80 backdrop-blur-md border border-white/10 rounded-2xl p-3 pl-4 pr-5 shadow-2xl relative overflow-hidden group min-w-fit cursor-default hover:border-emerald-500/30 transition-colors">
+                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                            <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping opacity-30"></div>
+                            <Database className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <div className="relative z-10 flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-black text-white uppercase tracking-wider">System Health</h3>
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest leading-none">Healthy</span>
+                                </div>
+                            </div>
+                            <p className="text-[10px] text-gray-400 font-mono mt-0.5">Automated Cron: Active (Sun 02:00 AM)</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Quick Stats Grid */}
@@ -248,6 +322,7 @@ export default function AdminDashboard() {
                         <TabButton active={activeTab === 'stats'} onClick={() => setActiveTab('stats')} label="Overview" />
                         <TabButton active={activeTab === 'users'} onClick={() => setActiveTab('users')} label="User Management" />
                         <TabButton active={activeTab === 'plans'} onClick={() => setActiveTab('plans')} label="Subscription Plans" />
+                        <TabButton active={activeTab === 'database'} onClick={() => setActiveTab('database')} label="Database" />
                     </div>
                     {activeTab === 'plans' && (
                         <button 
@@ -645,6 +720,135 @@ export default function AdminDashboard() {
                                         <p className="text-xs uppercase font-bold tracking-widest">No recent transactions</p>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Database Management - Premium UI */}
+                {activeTab === 'database' && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Backup Configuration Card */}
+                            <div className="relative p-[1px] rounded-3xl bg-gradient-to-b from-white/10 to-transparent group">
+                                <div className="absolute inset-0 bg-gold/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                                <div className="relative h-full bg-[#050505] rounded-3xl p-8 flex flex-col justify-between overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+                                    
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 shadow-inner">
+                                                <Save className="w-5 h-5 text-gray-300" />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-white">Auto-Backup Vault</h3>
+                                        </div>
+                                        <p className="text-sm text-gray-400 leading-relaxed mb-6">
+                                            Securely configure your remote backup destination. Every week, a full snapshot of the VillainVault database is encrypted and dispatched directly to this secure inbox.
+                                        </p>
+
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest pl-1">
+                                                Destination Inbox
+                                            </label>
+                                            <div className="flex flex-col sm:flex-row gap-3">
+                                                <div className="relative flex-1">
+                                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                        <Shield className="h-4 w-4 text-gold/50" />
+                                                    </div>
+                                                    <input 
+                                                        type="email"
+                                                        value={backupEmail}
+                                                        onChange={(e) => setBackupEmail(e.target.value)}
+                                                        placeholder="admin@villainvault.ai"
+                                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white text-sm outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all font-mono shadow-inner block"
+                                                    />
+                                                </div>
+                                                <button 
+                                                    onClick={handleSaveEmail}
+                                                    disabled={isSavingEmail}
+                                                    className="shrink-0 bg-white/5 hover:bg-gold hover:text-black text-white px-6 py-3 rounded-xl border border-white/10 hover:border-gold transition-all duration-300 flex items-center justify-center gap-2 uppercase text-xs font-black tracking-widest group/btn"
+                                                >
+                                                    {isSavingEmail ? "Saving..." : (
+                                                        <>Set Vault <ArrowUpRight className="w-4 h-4 opacity-50 group-hover/btn:opacity-100" /></>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8 pt-6 border-t border-white/5">
+                                        <button 
+                                            onClick={handleManualBackup}
+                                            className="w-full relative overflow-hidden group/manual"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl opacity-20 group-hover/manual:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                                            <div className="relative bg-[#0a0a0a] border border-blue-500/30 group-hover/manual:border-blue-400 group-hover/manual:bg-blue-900/20 text-blue-400 group-hover/manual:text-white font-black py-4 rounded-xl uppercase text-xs tracking-widest transition-all duration-300 transform group-hover/manual:-translate-y-[1px] flex items-center justify-center gap-3">
+                                                <Zap className="w-4 h-4" />
+                                                Force Immediate Extraction
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Restore Protocol Card */}
+                            <div className="relative p-[1px] rounded-3xl bg-gradient-to-b from-red-500/30 to-transparent group">
+                                <div className="absolute inset-0 bg-red-500/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                                <div className="relative h-full bg-[#050500] rounded-3xl p-8 flex flex-col justify-between overflow-hidden">
+                                    <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 rounded-full blur-[80px]"></div>
+                                    
+                                    <div>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 shadow-inner">
+                                                    <AlertCircle className="w-5 h-5 text-red-500" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-red-100">Disaster Recovery</h3>
+                                            </div>
+                                            <span className="text-[9px] font-black uppercase text-red-500/70 border border-red-500/20 px-2 py-1 rounded bg-red-500/10">High Risk</span>
+                                        </div>
+                                        
+                                        <p className="text-sm text-red-200/50 leading-relaxed mb-6 font-medium">
+                                            Uploading a timeline snapshot will permanently overwrite the current state vector. 
+                                            Only valid <code className="text-red-400 bg-red-950/30 px-1 rounded">.sql</code> or <code className="text-red-400 bg-red-950/30 px-1 rounded">.sql.gz</code> dumps generated by pg_dump are accepted.
+                                        </p>
+
+                                        <div className="relative group/upload">
+                                            <div className="absolute inset-0 bg-red-500/5 rounded-2xl scale-[0.98] group-hover/upload:scale-100 transition-transform duration-300"></div>
+                                            <div className="relative border-2 border-dashed border-red-500/20 group-hover/upload:border-red-500/40 bg-[#0a0000] hover:bg-red-950/20 rounded-2xl p-6 transition-all duration-300 text-center cursor-pointer overflow-hidden">
+                                                <UploadCloud className="w-8 h-8 text-red-500/50 mx-auto mb-3 group-hover/upload:-translate-y-1 transition-transform" />
+                                                <div className="space-y-1">
+                                                    <p className="text-sm font-bold text-red-200 group-hover/upload:text-red-100">
+                                                        {restoreFile ? restoreFile.name : "Select Snapshot Payload"}
+                                                    </p>
+                                                    <p className="text-[10px] text-red-500/50 uppercase tracking-widest font-mono">
+                                                        {restoreFile ? (restoreFile.size / 1024 / 1024).toFixed(2) + " MB" : "Click to browse"}
+                                                    </p>
+                                                </div>
+                                                <input 
+                                                    type="file" 
+                                                    accept=".sql,.gz" 
+                                                    onChange={(e) => setRestoreFile(e.target.files?.[0] || null)}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8 pt-6 border-t border-red-500/10">
+                                        <button 
+                                            onClick={handleRestoreBackup}
+                                            disabled={!restoreFile}
+                                            className="w-full relative overflow-hidden group/restore disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-rose-600 rounded-xl opacity-0 group-hover/restore:opacity-100 transition-opacity duration-300"></div>
+                                            <div className="relative bg-red-500/20 border border-red-500/30 group-hover/restore:border-transparent text-red-200 group-hover/restore:text-white font-black py-4 rounded-xl uppercase text-xs tracking-widest transition-all duration-300 flex items-center justify-center gap-3">
+                                                <Shield className="w-4 h-4" />
+                                                Execute Protocol 0
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

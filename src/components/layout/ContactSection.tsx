@@ -23,7 +23,7 @@ export function ContactSection() {
                             className="absolute inset-0 pointer-events-none"
                             style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(255,196,0,0.04) 0%, transparent 60%)' }}
                         />
-                        <blockquote className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3 relative z-10">
+                        <blockquote className="text-2xl sm:text-3xl font-mono uppercase tracking-tight font-black text-white leading-tight mb-3 relative z-10">
                             {t('landing.contact.bigquote') || "Poker vẫn là gamble."}
                         </blockquote>
                         <p className="text-base text-white/45 leading-relaxed max-w-lg mx-auto mb-2 relative z-10"
