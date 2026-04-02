@@ -206,20 +206,27 @@ async function askGTO(question: string, language: string): Promise<GtoResponse> 
 
 // ─── SUB-COMPONENTS ─────────────────────────────────────────────
 
-function ActionBar({ label, value, color }: { label: string; value: number; color: string }) {
+function ActionBar({ label, value, colorBase }: { label: string; value: number; colorBase: string }) {
     const w = Math.max(value * 100, 0);
+    // We expect colorBase like "emerald", "amber", "red"
     return (
-        <div className="flex items-center gap-3">
-            <span className="w-20 text-xs font-mono text-slate-400 shrink-0">{label}</span>
-            <div className="flex-1 h-7 bg-black/40 rounded overflow-hidden border border-white/5">
+        <div className="mb-3 last:mb-0 group">
+            <div className="flex justify-between items-end mb-1.5 px-0.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-slate-300 transition-colors">
+                    {label}
+                </span>
+                <span className={`text-xs font-mono font-bold text-${colorBase}-400 group-hover:text-${colorBase}-300 transition-colors`}>
+                    {pct(value)}
+                </span>
+            </div>
+            <div className="h-2.5 w-full bg-[#0a0e17] rounded-full overflow-hidden border border-white/5 shadow-inner">
                 <div
-                    className={`h-full rounded transition-all duration-700 ease-out flex items-center justify-end pr-2 text-[11px] font-bold font-mono text-white ${color}`}
-                    style={{ width: `${w}%`, minWidth: w > 0 ? "36px" : "0" }}
+                    className={`h-full rounded-full transition-all duration-1000 ease-out bg-gradient-to-r from-${colorBase}-700 to-${colorBase}-400 relative`}
+                    style={{ width: `${w}%` }}
                 >
-                    {w > 5 ? pct(value) : ""}
+                    {w > 0 && <div className="absolute inset-0 bg-white/20 w-full animate-pulse" />}
                 </div>
             </div>
-            <span className="w-14 text-right text-xs font-mono text-slate-200 font-semibold">{pct(value)}</span>
         </div>
     );
 }
@@ -228,16 +235,16 @@ function StrategyPanel({ title, strategy, accentBorder, accentText }: {
     title: string; strategy: GtoStrategy; accentBorder: string; accentText: string;
 }) {
     return (
-        <div className="bg-[#141a24] border border-[#2a3654] rounded-xl p-5 relative overflow-hidden">
-            <div className={`absolute top-0 inset-x-0 h-0.5 ${accentBorder}`} />
-            <h4 className={`font-mono text-sm font-semibold mb-4 flex items-center gap-2 ${accentText}`}>
+        <div className="bg-gradient-to-b from-[#111827] to-[#0a0e17] border border-[#2a3654] rounded-xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-600/50 transition-colors">
+            <div className={`absolute top-0 inset-x-0 h-1 ${accentBorder} border-t border-t-white/20`} />
+            <h4 className={`font-mono text-xs font-bold uppercase tracking-[2px] mb-5 flex items-center gap-2 ${accentText}`}>
                 <BarChart3 size={14} />
                 {title}
             </h4>
-            <div className="flex flex-col gap-3">
-                <ActionBar label="Check" value={strategy.check} color="bg-emerald-600" />
-                <ActionBar label="Bet 33%" value={strategy.bet_small} color="bg-amber-600" />
-                <ActionBar label="Bet 75%" value={strategy.bet_big} color="bg-red-600" />
+            <div className="flex flex-col">
+                <ActionBar label="Check" value={strategy.check} colorBase="emerald" />
+                <ActionBar label="Bet 33%" value={strategy.bet_small} colorBase="amber" />
+                <ActionBar label="Bet 75%" value={strategy.bet_big} colorBase="red" />
             </div>
         </div>
     );
@@ -574,21 +581,21 @@ export function GtoOracle() {
                         </div>
 
                         {/* Parse tags (collapsed) */}
-                        <details className="bg-[#111827] border border-[#2a3654] rounded-xl">
-                            <summary className="cursor-pointer px-4 py-3 text-[10px] font-semibold uppercase tracking-[2px] text-slate-500 flex items-center gap-2 select-none hover:text-slate-400 transition-colors">
-                                <span className="w-2 h-2 rounded-full bg-slate-600" />
-                                {t('oracle_tool.llm_parse_details') || "LLM Parse Details"}
-                                <ChevronDown size={12} className="ml-auto" />
+                        <details className="bg-[#0f1523] border border-[#2a3654] rounded-xl shadow-md group">
+                            <summary className="cursor-pointer px-5 py-4 text-xs font-bold uppercase tracking-[2px] text-slate-400 flex items-center gap-2 select-none hover:text-blue-400 transition-colors">
+                                <span className="w-2 h-2 rounded-full bg-blue-500/50 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(96,165,250,0.8)] transition-all" />
+                                {t('oracle_tool.llm_parse_details') || "LLM Data Map"}
+                                <ChevronDown size={14} className="ml-auto text-slate-500 group-hover:text-blue-400 transition-colors" />
                             </summary>
-                            <div className="px-4 pb-4">
-                                <div className="flex flex-wrap gap-2">
+                            <div className="px-5 pb-5">
+                                <div className="flex flex-wrap gap-2.5">
                                     {Object.entries(parsed)
                                         .filter(([k, v]) => v !== null && v !== undefined && k !== 'situation_summary')
                                         .map(([k, v]) => (
-                                            <span key={k} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a2236] border border-[#2a3654] rounded text-xs">
-                                                <span className="text-slate-500 text-[10px]">{k}</span>
-                                                <span className="text-slate-300 font-mono font-semibold">{String(v)}</span>
-                                            </span>
+                                            <div key={k} className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-950/20 border border-blue-900/40 rounded-md font-mono text-xs shadow-sm hover:border-blue-500/50 transition-colors">
+                                                <span className="text-blue-400/80 font-medium">{k}:</span>
+                                                <span className="text-emerald-300 font-bold">{String(v)}</span>
+                                            </div>
                                         ))}
                                 </div>
                             </div>
@@ -607,50 +614,124 @@ export function GtoOracle() {
 
                     {/* RIGHT COLUMN: Strategy & Breakdown */}
                     <div className="space-y-4">
+                        
+                        {/* RLHF Feedback Widget (Moved here) */}
+                        {data && data.log_id && feedbackStatus !== 'submitted' && (
+                            <div className="bg-gradient-to-r from-[#1a2c3a] to-[#0a1219] border border-blue-500/30 rounded-xl p-4 shadow-lg animate-in fade-in duration-500">
+                                {feedbackStatus === 'none' && (
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Sparkles size={16} className="text-blue-400" />
+                                            <span className="text-sm font-semibold text-blue-100 flex-1">
+                                                {t('oracle_tool.feedback_ask') || "Đánh giá chất lượng của Oracle?"}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-black/40 px-1 py-1 rounded-full border border-white/5">
+                                            <button 
+                                                onClick={() => handleFeedbackSubmit(true)}
+                                                className="p-1.5 rounded-full bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                                                title="Helpful"
+                                            >
+                                                <ThumbsUp size={16} />
+                                            </button>
+                                            <button 
+                                                onClick={() => setFeedbackStatus('disliked')}
+                                                className="p-1.5 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                                                title="Not Helpful"
+                                            >
+                                                <ThumbsDown size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {feedbackStatus === 'disliked' && (
+                                    <div className="flex flex-col gap-3">
+                                        <label className="text-xs font-bold text-red-300">How can we improve this answer?</label>
+                                        <textarea
+                                            value={feedbackReason}
+                                            onChange={(e) => setFeedbackReason(e.target.value)}
+                                            placeholder="Góp ý để cải thiện Oracle..."
+                                            className="bg-[#0d1117] border border-red-500/30 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 resize-none focus:outline-none focus:border-red-500/60 h-20"
+                                        />
+                                        <div className="flex gap-2 justify-end">
+                                            <button 
+                                                onClick={() => setFeedbackStatus('none')}
+                                                className="px-3 py-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-wider"
+                                            >
+                                                Hide
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    handleFeedbackSubmit(false, feedbackReason);
+                                                    setFeedbackStatus('submitted');
+                                                }}
+                                                disabled={submittingFeedback || !feedbackReason.trim()}
+                                                className="px-4 py-1.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded text-xs font-bold uppercase tracking-wider disabled:opacity-50 flex items-center gap-2 shadow-lg"
+                                            >
+                                                {submittingFeedback ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                                Send
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        
+                        {/* Thank you feedback display */}
+                        {feedbackStatus === 'submitted' && (
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg animate-in fade-in duration-500">
+                                <Sparkles size={14} /> Feedback received. Thank you for training VillainVault!
+                            </div>
+                        )}
                         {/* Hand class breakdown */}
-                        <div className="bg-[#111827] border border-[#2a3654] rounded-xl p-4">
+                        <div className="bg-[#0f1523] border border-[#2a3654] rounded-xl p-5 shadow-lg relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-slate-800/10 rounded-full blur-[60px] pointer-events-none" />
                             <button
                                 onClick={() => setShowClassBreakdown(!showClassBreakdown)}
-                                className="w-full flex items-center justify-between mb-2"
+                                className="w-full flex items-center justify-between mb-4 group relative z-10"
                             >
-                                <h3 className="text-[10px] font-semibold uppercase tracking-[2px] text-slate-500 flex items-center gap-2">
-                                    <Layers size={14} />
-                                    {t('oracle_tool.range') || "Range"} {parsed.hero_position?.toUpperCase() || "OOP"}
+                                <h3 className="text-xs font-bold uppercase tracking-[2px] text-slate-400 flex items-center gap-2 group-hover:text-slate-200 transition-colors">
+                                    <Layers size={16} />
+                                    {t('oracle_tool.range') || "Range Analysis"} ({parsed.hero_position?.toUpperCase() || "OOP"})
                                 </h3>
                                 {showClassBreakdown
-                                    ? <ChevronUp size={14} className="text-slate-500" />
-                                    : <ChevronDown size={14} className="text-slate-500" />
+                                    ? <ChevronUp size={16} className="text-slate-500 group-hover:text-white transition-colors" />
+                                    : <ChevronDown size={16} className="text-slate-500 group-hover:text-white transition-colors" />
                                 }
                             </button>
 
                             {showClassBreakdown && (
-                                <div className="overflow-x-auto -mx-2">
-                                    <table className="w-full text-xs">
+                                <div className="overflow-x-auto -mx-2 px-2 relative z-10">
+                                    <table className="w-full text-sm">
                                         <thead>
-                                            <tr className="border-b border-[#2a3654]">
-                                                <th className="text-left text-[9px] font-mono uppercase text-slate-500 py-1.5 px-2 tracking-wider">{t('oracle_tool.class') || "Class"}</th>
-                                                <th className="text-right text-[9px] font-mono uppercase text-slate-500 py-1.5 px-2" title="Số lượng combos">Cb</th>
-                                                <th className="text-right text-[9px] font-mono uppercase text-emerald-600 py-1.5 px-2">Chk</th>
-                                                <th className="text-right text-[9px] font-mono uppercase text-amber-600 py-1.5 px-2">B 33</th>
-                                                <th className="text-right text-[9px] font-mono uppercase text-red-600 py-1.5 px-2">B 75</th>
+                                            <tr className="border-b-2 border-[#1a2236] pb-2">
+                                                <th className="text-left text-[11px] font-bold uppercase text-slate-500 py-3 px-2 tracking-widest">{t('oracle_tool.class') || "Class"}</th>
+                                                <th className="text-right text-[11px] font-bold uppercase text-slate-500 py-3 px-2 tracking-widest" title="Combos">Cb</th>
+                                                <th className="text-right text-[11px] font-bold uppercase text-emerald-500 py-3 px-2 tracking-widest">Chk</th>
+                                                <th className="text-right text-[11px] font-bold uppercase text-amber-500 py-3 px-2 tracking-widest">B 33</th>
+                                                <th className="text-right text-[11px] font-bold uppercase text-red-500 py-3 px-2 tracking-widest">B 75</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            {classData.map(([cls, stats]) => (
-                                                <tr
-                                                    key={cls}
-                                                    className={`border-b border-[#1a2236] hover:bg-[#1a2236] transition-colors ${hero?.hand_class === cls ? "bg-emerald-950/30" : ""}`}
-                                                >
-                                                    <td className={`py-2 px-2 font-mono font-semibold text-[11px] ${CLASS_COLORS[cls] || "text-slate-400"}`}>
-                                                        {hero?.hand_class === cls && "→ "}
-                                                        {cls.replace(/_/g, ' ')}
-                                                    </td>
-                                                    <td className="text-right py-2 px-2 font-mono text-[10px] text-slate-500">{stats.count}</td>
-                                                    <td className="text-right py-2 px-2 font-mono text-[11px] text-emerald-400/80">{pct(stats.avg_check)}</td>
-                                                    <td className="text-right py-2 px-2 font-mono text-[11px] text-amber-400/80">{pct(stats.avg_bet_small)}</td>
-                                                    <td className="text-right py-2 px-2 font-mono text-[11px] text-red-400/80">{pct(stats.avg_bet_big)}</td>
-                                                </tr>
-                                            ))}
+                                        <tbody className="divide-y divide-[#1a2236]">
+                                            {classData.map(([cls, stats]) => {
+                                                const isHeroClass = hero?.hand_class === cls;
+                                                return (
+                                                    <tr
+                                                        key={cls}
+                                                        className={`transition-all duration-200 ${isHeroClass ? "bg-emerald-900/30 shadow-[inset_4px_0_0_rgba(52,211,153,1)]" : "hover:bg-slate-800/30"}`}
+                                                    >
+                                                        <td className={`py-3 px-2 font-mono font-medium text-xs tracking-wide flex items-center gap-2 ${isHeroClass ? 'text-emerald-300 font-bold' : (CLASS_COLORS[cls] || 'text-slate-400')}`}>
+                                                            {isHeroClass && <span className="bg-emerald-500 text-black text-[9px] px-1.5 py-0.5 rounded-sm font-bold tracking-widest mr-1 animate-pulse">HERO</span>}
+                                                            {cls.replace(/_/g, ' ')}
+                                                        </td>
+                                                        <td className={`text-right py-3 px-2 font-mono text-xs ${isHeroClass ? 'text-emerald-200' : 'text-slate-400/80'}`}>{stats.count}</td>
+                                                        <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-emerald-400' : 'text-emerald-400/70'}`}>{pct(stats.avg_check)}</td>
+                                                        <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-amber-400' : 'text-amber-400/70'}`}>{pct(stats.avg_bet_small)}</td>
+                                                        <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-red-400' : 'text-red-400/70'}`}>{pct(stats.avg_bet_big)}</td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
@@ -676,73 +757,6 @@ export function GtoOracle() {
                 </div>
             )}
             
-            {/* RLHF Feedback Widget */}
-            {data && data.log_id && feedbackStatus !== 'submitted' && (
-                <div className="mt-6 flex flex-col items-center animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    {feedbackStatus === 'none' && (
-                        <div className="bg-[#111827] border border-[#2a3654] rounded-full px-6 py-3 flex items-center justify-center gap-6 shadow-xl">
-                            <span className="text-xs font-semibold text-slate-400 capitalize tracking-wide">
-                                Was this response helpful?
-                            </span>
-                            <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={() => handleFeedbackSubmit(true)}
-                                    className="p-2 rounded-full hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-500 transition-colors"
-                                >
-                                    <ThumbsUp size={18} />
-                                </button>
-                                <div className="w-px h-6 bg-[#2a3654]"></div>
-                                <button 
-                                    onClick={() => setFeedbackStatus('disliked')}
-                                    className="p-2 rounded-full hover:bg-red-500/20 hover:text-red-400 text-slate-500 transition-colors"
-                                >
-                                    <ThumbsDown size={18} />
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {feedbackStatus === 'disliked' && (
-                        <div className="bg-[#111827] border border-red-500/30 rounded-xl p-5 w-full max-w-md shadow-xl flex flex-col gap-3">
-                            <label className="text-xs font-bold text-red-200">How can we improve this answer?</label>
-                            <textarea
-                                value={feedbackReason}
-                                onChange={(e) => setFeedbackReason(e.target.value)}
-                                placeholder="E.g., The suggested bet sizing seems off for this exact board texture..."
-                                className="bg-[#0d1117] border border-[#2a3654] rounded-lg px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 resize-none focus:outline-none focus:border-red-500/50 h-24"
-                            />
-                            <div className="flex gap-3 justify-end mt-2">
-                                <button 
-                                    onClick={() => setFeedbackStatus('none')}
-                                    className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-wider"
-                                >
-                                    Cancel
-                                </button>
-                                <button 
-                                    onClick={() => {
-                                        handleFeedbackSubmit(false, feedbackReason);
-                                        setFeedbackStatus('submitted');
-                                    }}
-                                    disabled={submittingFeedback || !feedbackReason.trim()}
-                                    className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-50 flex items-center gap-2"
-                                >
-                                    {submittingFeedback ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                    Send Feedback
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-            
-            {/* Thank you feedback display */}
-            {feedbackStatus === 'submitted' && (
-                <div className="mt-6 flex justify-center animate-in fade-in duration-500">
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold px-6 py-3 rounded-full flex items-center gap-2 shadow-lg shadow-emerald-500/5">
-                        <Sparkles size={14} /> Feedback received. Thank you for training VillainVault!
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
