@@ -352,7 +352,7 @@ export function GtoOracle() {
 
     const parsed = data?.parsed;
     const hero = data?.hero;
-    const isFacingSpot = data?.spot?.action_line?.startsWith('facing_') || (data?.strategy?.oop?.fold !== undefined);
+    const isFacingSpot = data?.spot?.action_line?.includes('facing_') || (data?.strategy?.oop?.fold !== undefined);
     const classData = data
         ? Object.entries(data.by_hand_class[parsed?.hero_position || "oop"] || {}).sort(
             (a, b) => {
