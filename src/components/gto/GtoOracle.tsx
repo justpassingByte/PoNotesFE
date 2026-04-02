@@ -167,16 +167,38 @@ interface GtoResponse {
 }
 
 // ─── HELPERS ────────────────────────────────────────────────────
-function formatCard(card: string) {
-    if (!card || card.length < 2) return card;
-    const suit = card[card.length - 1];
-    const rank = card.slice(0, -1);
-    const suitMap: Record<string, string> = { s: "♠", h: "♥", d: "♦", c: "♣" };
-    const isRed = suit === "h" || suit === "d";
+function PlayingCard({ card, size = "md" }: { card: string, size?: "md" | "lg" }) {
+    if (!card || card.length < 2) return <span className="font-mono text-slate-300">{card}</span>;
+    const suit = card[card.length - 1].toLowerCase();
+    let rank = card.slice(0, -1).toUpperCase();
+    if (rank === "T") rank = "10";
+    
+    // Four color deck (Spades=Black, Hearts=Red, Diamonds=Blue, Clubs=Green)
+    const suitData: Record<string, {icon: string, color: string}> = {
+        s: { icon: "♠", color: "text-slate-900" },
+        h: { icon: "♥", color: "text-red-600" },
+        d: { icon: "♦", color: "text-blue-600" },
+        c: { icon: "♣", color: "text-emerald-700" },
+    };
+    const s = suitData[suit] || { icon: suit, color: "text-slate-900" };
+    
+    const dims = size === 'lg' ? "w-14 h-20" : "w-11 h-16";
+    const textSz = size === 'lg' ? "text-xl" : "text-base";
+    const iconSz = size === 'lg' ? "text-xl" : "text-base";
+
     return (
-        <span className={isRed ? "text-red-400" : "text-slate-100"}>
-            {rank}{suitMap[suit] || suit}
-        </span>
+        <div className={`${dims} shrink-0 bg-white rounded-md border border-slate-300 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.5)] relative overflow-hidden select-none hover:-translate-y-1 hover:shadow-lg transition-all duration-200 cursor-default`}>
+            {/* Top Left */}
+            <div className={`absolute top-0.5 left-1.5 flex flex-col items-center leading-none ${s.color}`}>
+                <span className={`font-bold font-mono tracking-tighter ${textSz}`}>{rank}</span>
+                <span className={`${iconSz}`}>{s.icon}</span>
+            </div>
+            {/* Bottom Right Flipped */}
+            <div className={`absolute bottom-0.5 right-1.5 flex flex-col items-center leading-none rotate-180 ${s.color}`}>
+                <span className={`font-bold font-mono tracking-tighter ${textSz}`}>{rank}</span>
+                <span className={`${iconSz}`}>{s.icon}</span>
+            </div>
+        </div>
     );
 }
 
@@ -464,9 +486,9 @@ export function GtoOracle() {
                                 {hero ? (
                                     <div>
                                         <span className="block text-[10px] text-slate-500 uppercase tracking-wider mb-2">{t('oracle_tool.hero_hand') || "Hero Hand"}</span>
-                                        <div className="text-2xl font-bold font-mono flex items-center gap-1.5">
-                                            {formatCard(hero.hand.slice(0, 2))}
-                                            {formatCard(hero.hand.slice(2, 4))}
+                                        <div className="flex items-center gap-1.5">
+                                            <PlayingCard card={hero.hand.slice(0, 2)} size="lg" />
+                                            <PlayingCard card={hero.hand.slice(2, 4)} size="lg" />
                                         </div>
                                         <span className={`block mt-1 text-[10px] font-semibold uppercase tracking-wider ${CLASS_COLORS[hero.hand_class] || "text-slate-400"}`}>
                                             {hero.hand_class.replace(/_/g, " ")}
@@ -487,11 +509,9 @@ export function GtoOracle() {
                                         <span className="block text-[10px] text-slate-500 uppercase tracking-wider mb-2">
                                             {t('oracle_tool.board') || "Board"} ({parsed.street})
                                         </span>
-                                        <div className="flex flex-wrap gap-1.5">
+                                        <div className="flex flex-wrap gap-2">
                                             {parsed.board_cards.split(",").map((c: string, i: number) => (
-                                                <span key={i} className="px-2.5 py-1 bg-[#1a2236] border border-[#2a3654] rounded text-lg font-mono font-bold">
-                                                    {formatCard(c.trim())}
-                                                </span>
+                                                <PlayingCard key={i} card={c.trim()} size="md" />
                                             ))}
                                         </div>
                                         <span className="block mt-1 text-[10px] text-slate-500 uppercase tracking-wider">
