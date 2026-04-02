@@ -639,12 +639,13 @@ export function HandHistoryList() {
                                                                             )}
                                                                             <br />
                                                                             <span className="text-gray-500">• {t('common.error')}:</span> {mistake.description}
-                                                                            {mistake.better_line && (
-                                                                                <><br /><span className="text-gray-500">• {t('hands.better') || "Better"}:</span> <span className="text-green-400 font-bold">{mistake.better_line}</span></>
-                                                                            )}
-                                                                            {mistake.gto_deviation_reason && (
-                                                                                <><br /><span className="text-purple-400 italic">💡 {mistake.gto_deviation_reason}</span></>
-                                                                            )}
+                                                                            <div className="mt-1 space-y-0.5 border-l-2 border-white/5 pl-2">
+                                                                                {mistake.actual_action && <p className="text-gray-600 text-[11px]">Action: <span className="text-orange-400 font-bold">{mistake.actual_action}</span></p>}
+                                                                                {mistake.gto_action && <p className="text-gray-600 text-[11px]">GTO: <span className="text-blue-400 font-bold">{mistake.gto_action}</span></p>}
+                                                                                {mistake.better_line && <p className="text-gray-600 text-[11px]">{t('hands.better') || "Better"}: <span className="text-green-400 font-bold">{mistake.better_line}</span></p>}
+                                                                                {mistake.gto_deviation_reason && <p className="text-purple-400 text-[11px] italic mt-0.5">💡 {mistake.gto_deviation_reason}</p>}
+                                                                                {mistake.exploit_strategy && <p className="text-purple-400 text-[11px] mt-0.5">🎯 <span className="font-bold">Exploit:</span> {mistake.exploit_strategy}</p>}
+                                                                            </div>
                                                                         </div>
                                                                     ))}
                                                                 </div>

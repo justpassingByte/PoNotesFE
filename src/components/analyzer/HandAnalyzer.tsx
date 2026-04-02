@@ -33,7 +33,19 @@ interface HandAnalysis {
 
     summary?: string; reasoning_trace: string[];
 
-    mistakes: { street: string; player: string; position?: string; description: string; better_line?: string; gto_deviation_reason?: string; severity?: string; }[];
+    mistakes: { 
+        street: string; 
+        player: string; 
+        position?: string; 
+        description: string; 
+        better_line?: string; 
+        gto_deviation_reason?: string; 
+        severity?: string; 
+        actual_action?: string;
+        gto_action?: string;
+        exploit_strategy?: string;
+        hole_cards?: string;
+    }[];
 
     exploit_suggestions: string[];
 
@@ -664,22 +676,23 @@ function buildRichNoteContent(mistake: any, handData: any): string {
     if (mistake.position) header += ` (${mistake.position})`;
     parts.push(header);
 
+    const playerName = (mistake.player || '').toLowerCase();
+    const playerObj = handData?.players?.find((p: any) => p.name?.toLowerCase() === playerName);
+    const holeCards = mistake.hole_cards || playerObj?.hole_cards?.join(' ') || '';
+    if (holeCards) parts.push(`Hole Cards: [${holeCards}]`);
+
     // Find facing action + player action
     const streetActions = handData?.actions?.[streetLow] || [];
-    const playerName = (mistake.player || '').toLowerCase();
     let lastOpponent = '';
     for (const a of streetActions) {
         if ((a.player || '').toLowerCase() === playerName) break;
         const act = (a.action || '').toUpperCase();
         lastOpponent = a.amount != null ? `${act} ${a.amount}` : act;
     }
-    const playerActs = streetActions
-        .filter((a: any) => (a.player || '').toLowerCase() === playerName)
-        .map((a: any) => { const act = (a.action || '').toUpperCase(); return a.amount != null ? `${act} ${a.amount}` : act; })
-        .join(' → ');
-
+    
     if (lastOpponent) parts.push(`Facing: ${lastOpponent}`);
-    if (playerActs) parts.push(`Action: ${playerActs}`);
+    if (mistake.actual_action) parts.push(`Action: ${mistake.actual_action}`);
+    if (mistake.gto_action) parts.push(`GTO: ${mistake.gto_action}`);
 
     // Blunder
     const severity = (mistake.severity || 'minor').toUpperCase();
@@ -690,6 +703,9 @@ function buildRichNoteContent(mistake: any, handData: any): string {
 
     // GTO deviation
     if (mistake.gto_deviation_reason) parts.push(`💡 ${mistake.gto_deviation_reason}`);
+    
+    // Exploit
+    if (mistake.exploit_strategy) parts.push(`🎯 Exploit: ${mistake.exploit_strategy}`);
 
     return parts.join('\n');
 }
@@ -1186,9 +1202,13 @@ return (
 
                                         <p className="text-gray-500">{m.description}</p>
 
-                                        {m.better_line && <p className="text-green-500 text-xs mt-0.5">Better: <span className="text-gray-500 italic">{m.better_line}</span></p>}
-
-                                        {m.gto_deviation_reason && <p className="text-purple-400 text-xs italic mt-0.5">💡 {m.gto_deviation_reason}</p>}
+                                        <div className="mt-1 space-y-0.5 border-l-2 border-white/5 pl-2">
+                                            {m.actual_action && <p className="text-gray-600 text-[11px]">Action: <span className="text-orange-400 font-bold">{m.actual_action}</span></p>}
+                                            {m.gto_action && <p className="text-gray-600 text-[11px]">GTO: <span className="text-blue-400 font-bold">{m.gto_action}</span></p>}
+                                            {m.better_line && <p className="text-gray-600 text-[11px]">Better: <span className="text-green-400 font-bold">{m.better_line}</span></p>}
+                                            {m.gto_deviation_reason && <p className="text-purple-400 text-[11px] italic mt-0.5">💡 {m.gto_deviation_reason}</p>}
+                                            {m.exploit_strategy && <p className="text-purple-400 text-[11px] mt-0.5">🎯 <span className="font-bold">Exploit:</span> {m.exploit_strategy}</p>}
+                                        </div>
 
                                     </div>
 
