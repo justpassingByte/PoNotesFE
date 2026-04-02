@@ -352,6 +352,7 @@ export function GtoOracle() {
 
     const parsed = data?.parsed;
     const hero = data?.hero;
+    const isFacingSpot = data?.spot?.action_line?.startsWith('facing_') || (data?.strategy?.oop?.fold !== undefined);
     const classData = data
         ? Object.entries(data.by_hand_class[parsed?.hero_position || "oop"] || {}).sort(
             (a, b) => {
@@ -684,9 +685,19 @@ export function GtoOracle() {
                                             <tr className="border-b-2 border-[#1a2236] pb-2">
                                                 <th className="text-left text-[11px] font-bold uppercase text-slate-500 py-3 px-2 tracking-widest">{t('oracle_tool.class') || "Class"}</th>
                                                 <th className="text-right text-[11px] font-bold uppercase text-slate-500 py-3 px-2 tracking-widest" title="Combos">Cb</th>
-                                                <th className="text-right text-[11px] font-bold uppercase text-emerald-500 py-3 px-2 tracking-widest">Chk</th>
-                                                <th className="text-right text-[11px] font-bold uppercase text-amber-500 py-3 px-2 tracking-widest">B 33</th>
-                                                <th className="text-right text-[11px] font-bold uppercase text-red-500 py-3 px-2 tracking-widest">B 75</th>
+                                                {isFacingSpot ? (
+                                                    <>
+                                                        <th className="text-right text-[11px] font-bold uppercase text-red-500 py-3 px-2 tracking-widest">Fold</th>
+                                                        <th className="text-right text-[11px] font-bold uppercase text-emerald-500 py-3 px-2 tracking-widest">Call</th>
+                                                        <th className="text-right text-[11px] font-bold uppercase text-amber-500 py-3 px-2 tracking-widest">Raise</th>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <th className="text-right text-[11px] font-bold uppercase text-emerald-500 py-3 px-2 tracking-widest">Chk</th>
+                                                        <th className="text-right text-[11px] font-bold uppercase text-amber-500 py-3 px-2 tracking-widest">B 33</th>
+                                                        <th className="text-right text-[11px] font-bold uppercase text-red-500 py-3 px-2 tracking-widest">B 75</th>
+                                                    </>
+                                                )}
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-[#1a2236]">
@@ -702,9 +713,19 @@ export function GtoOracle() {
                                                             {cls.replace(/_/g, ' ')}
                                                         </td>
                                                         <td className={`text-right py-3 px-2 font-mono text-xs ${isHeroClass ? 'text-emerald-200' : 'text-slate-400/80'}`}>{stats.count}</td>
-                                                        <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-emerald-400' : 'text-emerald-400/70'}`}>{pct(stats.avg_check)}</td>
-                                                        <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-amber-400' : 'text-amber-400/70'}`}>{pct(stats.avg_bet_small)}</td>
-                                                        <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-red-400' : 'text-red-400/70'}`}>{pct(stats.avg_bet_big)}</td>
+                                                        {isFacingSpot ? (
+                                                            <>
+                                                                <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-red-400' : 'text-red-400/70'}`}>{pct(stats.avg_fold)}</td>
+                                                                <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-emerald-400' : 'text-emerald-400/70'}`}>{pct(stats.avg_call)}</td>
+                                                                <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-amber-400' : 'text-amber-400/70'}`}>{pct(stats.avg_raise)}</td>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-emerald-400' : 'text-emerald-400/70'}`}>{pct(stats.avg_check)}</td>
+                                                                <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-amber-400' : 'text-amber-400/70'}`}>{pct(stats.avg_bet_small)}</td>
+                                                                <td className={`text-right py-3 px-2 font-mono text-xs font-semibold ${isHeroClass ? 'text-red-400' : 'text-red-400/70'}`}>{pct(stats.avg_bet_big)}</td>
+                                                            </>
+                                                        )}
                                                     </tr>
                                                 );
                                             })}
@@ -715,19 +736,21 @@ export function GtoOracle() {
                         </div>
 
                         {/* Overall strategy */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className={`grid grid-cols-1 ${isFacingSpot ? '' : 'md:grid-cols-2'} gap-4`}>
                             <StrategyPanel
-                                title={t('oracle_tool.oop_strategy') || "OOP Strategy"}
+                                title={isFacingSpot ? (t('oracle_tool.facing_strategy') || "OOP Facing C-bet") : (t('oracle_tool.oop_strategy') || "OOP Strategy")}
                                 strategy={data.strategy.oop}
                                 accentBorder="bg-blue-500"
                                 accentText="text-blue-400"
                             />
-                            <StrategyPanel
-                                title={t('oracle_tool.ip_strategy') || "IP Strategy"}
-                                strategy={data.strategy.ip}
-                                accentBorder="bg-red-500"
-                                accentText="text-red-400"
-                            />
+                            {!isFacingSpot && (
+                                <StrategyPanel
+                                    title={t('oracle_tool.ip_strategy') || "IP Strategy"}
+                                    strategy={data.strategy.ip}
+                                    accentBorder="bg-red-500"
+                                    accentText="text-red-400"
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
