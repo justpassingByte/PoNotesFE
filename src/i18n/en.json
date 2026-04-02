@@ -725,6 +725,7 @@
     "general": "General"
   },
   "oracle_tool": {
+    "feedback_ask": "Do you agree with this analysis?",
     "title": "GTO Oracle",
     "subtitle": "Ask any poker situation in natural language",
     "solutions_badge": "356,400 GTO SOLUTIONS",

@@ -721,6 +721,7 @@
     "general": "Chung"
   },
   "oracle_tool": {
+    "feedback_ask": "Bạn có đồng ý với phân tích này không?",
     "title": "GTO Oracle",
     "subtitle": "Hỏi bất kỳ tình huống poker nào bằng ngôn ngữ tự nhiên",
     "solutions_badge": "356,400 TÌNH HUỐNG GTO",
