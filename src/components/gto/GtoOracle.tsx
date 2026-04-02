@@ -173,30 +173,26 @@ function PlayingCard({ card, size = "md" }: { card: string, size?: "md" | "lg" }
     let rank = card.slice(0, -1).toUpperCase();
     if (rank === "T") rank = "10";
     
-    // Four color deck (Spades=Black, Hearts=Red, Diamonds=Blue, Clubs=Green)
-    const suitData: Record<string, {icon: string, color: string}> = {
-        s: { icon: "♠", color: "text-slate-900" },
-        h: { icon: "♥", color: "text-red-600" },
-        d: { icon: "♦", color: "text-blue-600" },
-        c: { icon: "♣", color: "text-emerald-700" },
+    // Standard 2-color deck matching user screenshot (Spades/Clubs=Black, Hearts/Diamonds=Red)
+    const isRed = suit === "h" || suit === "d";
+    const suitData: Record<string, string> = {
+        s: "♠", h: "♥", d: "♦", c: "♣"
     };
-    const s = suitData[suit] || { icon: suit, color: "text-slate-900" };
+    const sIcon = suitData[suit] || suit;
+    const textColor = isRed ? "text-[#e61919]" : "text-[#1a1c23]";
     
-    const dims = size === 'lg' ? "w-14 h-20" : "w-11 h-16";
-    const textSz = size === 'lg' ? "text-xl" : "text-base";
-    const iconSz = size === 'lg' ? "text-xl" : "text-base";
+    // Match the exact dimensions and text sizes from the reference image
+    const dims = size === 'lg' ? "w-12 h-[72px]" : "w-10 h-[56px]";
+    const textSz = size === 'lg' ? "text-2xl" : "text-lg";
+    const iconSz = size === 'lg' ? "text-[28px]" : "text-[22px]";
 
     return (
-        <div className={`${dims} shrink-0 bg-white rounded-md border border-slate-300 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.5)] relative overflow-hidden select-none hover:-translate-y-1 hover:shadow-lg transition-all duration-200 cursor-default`}>
-            {/* Top Left */}
-            <div className={`absolute top-0.5 left-1.5 flex flex-col items-center leading-none ${s.color}`}>
-                <span className={`font-bold font-mono tracking-tighter ${textSz}`}>{rank}</span>
-                <span className={`${iconSz}`}>{s.icon}</span>
-            </div>
-            {/* Bottom Right Flipped */}
-            <div className={`absolute bottom-0.5 right-1.5 flex flex-col items-center leading-none rotate-180 ${s.color}`}>
-                <span className={`font-bold font-mono tracking-tighter ${textSz}`}>{rank}</span>
-                <span className={`${iconSz}`}>{s.icon}</span>
+        <div className={`relative ${dims} shrink-0 bg-white rounded-md border-[1.5px] border-slate-200 shadow-sm select-none`}>
+            {/* Rank at Top-Left */}
+            <span className={`absolute top-1 left-1.5 font-bold font-sans tracking-tighter ${textSz} ${textColor} leading-none`}>{rank}</span>
+            {/* Suit at Center (slightly shifted down to balance with rank) */}
+            <div className="absolute inset-0 flex items-center justify-center pt-4">
+                <span className={`${iconSz} ${textColor} leading-none`}>{sIcon}</span>
             </div>
         </div>
     );
@@ -487,8 +483,8 @@ export function GtoOracle() {
                                     <div>
                                         <span className="block text-[10px] text-slate-500 uppercase tracking-wider mb-2">{t('oracle_tool.hero_hand') || "Hero Hand"}</span>
                                         <div className="flex items-center gap-1.5">
-                                            <PlayingCard card={hero.hand.slice(0, 2)} size="lg" />
-                                            <PlayingCard card={hero.hand.slice(2, 4)} size="lg" />
+                                            <PlayingCard card={hero.hand.slice(0, 2)} size="md" />
+                                            <PlayingCard card={hero.hand.slice(2, 4)} size="md" />
                                         </div>
                                         <span className={`block mt-1 text-[10px] font-semibold uppercase tracking-wider ${CLASS_COLORS[hero.hand_class] || "text-slate-400"}`}>
                                             {hero.hand_class.replace(/_/g, " ")}
