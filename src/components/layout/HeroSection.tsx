@@ -131,7 +131,7 @@ export function HeroSection() {
                                 <div className="flex-1 rounded-sm border border-white/10 bg-black p-5 mt-2 flex flex-col gap-3 z-10 font-mono text-[11px] text-white/70 overflow-hidden">
                                     <div><span className="text-emerald-400">system{'>'}</span> phân_tích_yêu_cầu --ngành=poker</div>
                                     <div className="text-emerald-400">[OK] Bắt đầu quét data người chơi...</div>
-                                    <div className="text-emerald-400">[OK] Đã kết nối &gt;350k hand solutions</div>
+                                    <div className="text-emerald-400">[OK] Đã kết nối &gt;1.5M hand solutions</div>
                                     <div className="mt-2"><span className="text-emerald-400">system{'>'}</span> ghép_nối_chiến_thuật</div>
                                     <div className="text-white/40">
                                         - Đối thủ: Fish/Station<br/>

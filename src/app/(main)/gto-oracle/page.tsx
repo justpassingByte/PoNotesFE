@@ -2,7 +2,7 @@ import { GtoOracle } from "@/components/gto/GtoOracle";
 
 export const metadata = {
     title: "GTO Oracle | VillainVault",
-    description: "Ask any poker situation in natural language and get GTO-optimal strategy recommendations powered by 356,400 pre-computed solutions.",
+    description: "Ask any poker situation in natural language and get GTO-optimal strategy recommendations powered by 1,500,000 pre-computed solutions.",
 };
 
 export default function GtoOraclePage() {

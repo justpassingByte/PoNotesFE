@@ -114,24 +114,39 @@ interface ParsedQuery {
 }
 
 interface GtoStrategy {
-    check: number;
-    bet_small: number;
-    bet_big: number;
+    // Root spot: OOP first action
+    check?: number;
+    bet_small?: number;
+    bet_big?: number;
+    // Facing-cbet spot: OOP reaction
+    fold?: number;
+    call?: number;
+    raise?: number;
 }
 
 interface HandData {
     hand: string;
     hand_class: string;
-    check: number;
-    bet_small: number;
-    bet_big: number;
+    // Root
+    check?: number;
+    bet_small?: number;
+    bet_big?: number;
+    // Facing
+    fold?: number;
+    call?: number;
+    raise?: number;
 }
 
 interface ClassSummary {
     count: number;
-    avg_check: number;
-    avg_bet_small: number;
-    avg_bet_big: number;
+    // Root
+    avg_check?: number;
+    avg_bet_small?: number;
+    avg_bet_big?: number;
+    // Facing
+    avg_fold?: number;
+    avg_call?: number;
+    avg_raise?: number;
 }
 
 interface GtoResponse {
@@ -198,8 +213,8 @@ function PlayingCard({ card, size = "md" }: { card: string, size?: "md" | "lg" }
     );
 }
 
-function pct(v: number) {
-    return `${(v * 100).toFixed(1)}%`;
+function pct(v: number | undefined) {
+    return `${((v ?? 0) * 100).toFixed(1)}%`;
 }
 
 // ─── API ────────────────────────────────────────────────────────
@@ -252,6 +267,7 @@ function ActionBar({ label, value, colorBase }: { label: string; value: number; 
 function StrategyPanel({ title, strategy, accentBorder, accentText }: {
     title: string; strategy: GtoStrategy; accentBorder: string; accentText: string;
 }) {
+    const isFacing = strategy.fold !== undefined;
     return (
         <div className="bg-gradient-to-b from-[#111827] to-[#0a0e17] border border-[#2a3654] rounded-xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-600/50 transition-colors">
             <div className={`absolute top-0 inset-x-0 h-1 ${accentBorder} border-t border-t-white/20`} />
@@ -260,9 +276,19 @@ function StrategyPanel({ title, strategy, accentBorder, accentText }: {
                 {title}
             </h4>
             <div className="flex flex-col">
-                <ActionBar label="Check" value={strategy.check} colorBase="emerald" />
-                <ActionBar label="Bet 33%" value={strategy.bet_small} colorBase="amber" />
-                <ActionBar label="Bet 75%" value={strategy.bet_big} colorBase="red" />
+                {isFacing ? (
+                    <>
+                        <ActionBar label="Fold" value={strategy.fold ?? 0} colorBase="red" />
+                        <ActionBar label="Call" value={strategy.call ?? 0} colorBase="emerald" />
+                        <ActionBar label="Raise" value={strategy.raise ?? 0} colorBase="amber" />
+                    </>
+                ) : (
+                    <>
+                        <ActionBar label="Check" value={strategy.check ?? 0} colorBase="emerald" />
+                        <ActionBar label="Bet 33%" value={strategy.bet_small ?? 0} colorBase="amber" />
+                        <ActionBar label="Bet 75%" value={strategy.bet_big ?? 0} colorBase="red" />
+                    </>
+                )}
             </div>
         </div>
     );
@@ -352,7 +378,7 @@ export function GtoOracle() {
                 <div className="flex flex-col items-center gap-2 mt-4">
                     <div className="flex items-center gap-2">
                         <span className="inline-block px-3 py-1 text-[10px] font-mono text-gold/80 border border-gold/20 rounded-full bg-gold/5 tracking-wider">
-                            {t('oracle_tool.solutions_badge') || "356,400 GTO SOLUTIONS"}
+                            {t('oracle_tool.solutions_badge') || "1,500,000 GTO SOLUTIONS"}
                         </span>
                         <span className="inline-block px-3 py-1 text-[10px] font-mono text-emerald-400/80 border border-emerald-400/20 rounded-full bg-emerald-400/5 tracking-wider">
                             {t('oracle_tool.srp_badge') || "SRP ONLY (100BB)"}
@@ -519,10 +545,15 @@ export function GtoOracle() {
 
                             {/* GTO Recommendation & Actions */}
                             {hero ? (() => {
-                                const actions = [
-                                    { label: "Check", value: hero.check, color: "text-emerald-400" },
-                                    { label: "Bet 33%", value: hero.bet_small, color: "text-amber-400" },
-                                    { label: "Bet 75%", value: hero.bet_big, color: "text-red-400" },
+                                const isFacing = hero.fold !== undefined;
+                                const actions = isFacing ? [
+                                    { label: "Fold",  value: hero.fold  ?? 0, color: "text-red-400" },
+                                    { label: "Call",  value: hero.call  ?? 0, color: "text-emerald-400" },
+                                    { label: "Raise", value: hero.raise ?? 0, color: "text-amber-400" },
+                                ] : [
+                                    { label: "Check",   value: hero.check     ?? 0, color: "text-emerald-400" },
+                                    { label: "Bet 33%", value: hero.bet_small ?? 0, color: "text-amber-400" },
+                                    { label: "Bet 75%", value: hero.bet_big   ?? 0, color: "text-red-400" },
                                 ];
                                 const best = actions.reduce((a, b) => a.value > b.value ? a : b);
                                 const isMixed = actions.filter(a => a.value >= 0.25).length >= 2;
@@ -542,22 +573,17 @@ export function GtoOracle() {
 
                                         {/* Action frequency bars */}
                                         <div className="grid grid-cols-3 gap-3">
-                                            <div className="bg-[#1a2236]/50 border border-[#2a3654] rounded-lg p-3 text-center">
-                                                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Check</div>
-                                                <div className={`text-xl font-bold font-mono ${hero.check === best.value ? "text-emerald-400" : "text-emerald-400/50"}`}>{pct(hero.check)}</div>
-                                            </div>
-                                            <div className="bg-[#1a2236]/50 border border-[#2a3654] rounded-lg p-3 text-center">
-                                                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Bet 33%</div>
-                                                <div className={`text-xl font-bold font-mono ${hero.bet_small === best.value ? "text-amber-400" : "text-amber-400/50"}`}>{pct(hero.bet_small)}</div>
-                                            </div>
-                                            <div className="bg-[#1a2236]/50 border border-[#2a3654] rounded-lg p-3 text-center">
-                                                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Bet 75%</div>
-                                                <div className={`text-xl font-bold font-mono ${hero.bet_big === best.value ? "text-red-400" : "text-red-400/50"}`}>{pct(hero.bet_big)}</div>
-                                            </div>
+                                            {actions.map(a => (
+                                                <div key={a.label} className="bg-[#1a2236]/50 border border-[#2a3654] rounded-lg p-3 text-center">
+                                                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">{a.label}</div>
+                                                    <div className={`text-xl font-bold font-mono ${a.value === best.value ? a.color : a.color + '/50'}`}>{pct(a.value)}</div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 );
                             })() : (
+
                                 <div className="text-center py-4 bg-[#1a2236]/30 rounded-lg border border-[#2a3654]/50">
                                     <p className="text-sm text-slate-400">{t('oracle_tool.specify_hand_tip') || "Dùng ngôn ngữ tự nhiên thêm hand cụ thể vào câu hỏi (VD: \"cầm AcKd\") để xem lời khuyên hành động."}</p>
                                 </div>
