@@ -555,55 +555,38 @@ export function PlayerProfileClient({
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="flex justify-between items-start mb-8">
-                                            <div className="flex gap-5">
-                                                {/* Hardcoded Avatar - Balanced Size */}
-                                                <div className="w-16 h-16 rounded-2xl bg-black/40 flex items-center justify-center border border-gray-800 shadow-xl self-start mt-2">
-                                                    <Users className="w-8 h-8 text-gray-700" />
+                                        <div className="flex justify-between items-center mb-3">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="w-10 h-10 rounded-xl bg-black/40 flex items-center justify-center border border-gray-800 shadow-xl shrink-0">
+                                                    <Users className="w-5 h-5 text-gray-700" />
                                                 </div>
-
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-3">
-                                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                                                        <span className="text-xs text-gray-500 font-mono tracking-widest uppercase">{t('player_profile.target_overview')}</span>
-                                                    </div>
-                                                    <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tighter mb-2 truncate max-w-[300px] leading-tight text-white/90">{player.name}</h1>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest bg-[#1a1d24] px-3 py-1 rounded-lg border border-gray-800 shadow-inner">
+                                                <div className="min-w-0">
+                                                    <h1 className="text-2xl font-black text-white tracking-tighter truncate max-w-[220px] leading-tight">{player.name}</h1>
+                                                    <div className="flex items-center gap-1.5 mt-1">
+                                                        <span className="text-[8px] text-gray-500 uppercase font-bold tracking-widest bg-[#1a1d24] px-2 py-0.5 rounded border border-gray-800">
                                                             {player.platform.name}
                                                         </span>
+                                                        {(() => { const tag = getTagStyle(player.playstyle || ''); return (
+                                                        <span className={`px-1.5 py-0.5 text-[8px] font-bold rounded border ${tag.bg} ${tag.text} ${tag.border} uppercase tracking-tight`}>{player.playstyle || '?'}</span>
+                                                        ); })()}
+                                                        <span className="text-[8px] text-gray-400 font-bold">{player.aggression_score}% AGG</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button
-                                                onClick={() => { setEditingPlayer(true); setEditName(player.name); setEditPlaystyle(player.playstyle || 'UNKNOWN'); }}
-                                                className="p-2 bg-black/60 backdrop-blur-md shadow-inner hover:bg-gray-800 rounded-lg border border-gray-700 transition-colors group"
-                                            >
-                                                <Pencil className="w-4 h-4 text-gray-400 group-hover:text-gold transition-colors" />
-                                            </button>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-2 mb-6">
-                                            <div className="p-3 bg-[#1a1d24] rounded-lg border border-gray-800">
-                                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t('player_profile.playstyle') || "Playstyle"}</p>
-                                                {(() => { const tag = getTagStyle(player.playstyle || ''); return (
-                                                <span className={`inline-block px-2 py-0.5 text-xs font-bold rounded border ${tag.bg} ${tag.text} ${tag.border} uppercase tracking-tight`}>{player.playstyle || t('player_profile.no_data')}</span>
-                                                ); })()}
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <button
+                                                    onClick={() => { setEditingPlayer(true); setEditName(player.name); setEditPlaystyle(player.playstyle || 'UNKNOWN'); }}
+                                                    className="p-1.5 bg-black/60 hover:bg-gray-800 rounded-lg border border-gray-700 transition-colors group"
+                                                >
+                                                    <Pencil className="w-3 h-3 text-gray-400 group-hover:text-gold transition-colors" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowDeleteConfirm(true)}
+                                                    className="p-1.5 bg-black/60 hover:bg-gray-800 rounded-lg border border-gray-700 transition-colors group"
+                                                >
+                                                    <Trash2 className="w-3 h-3 text-gray-600 group-hover:text-red-500 transition-colors" />
+                                                </button>
                                             </div>
-                                            <div className="p-3 bg-[#1a1d24] rounded-lg border border-gray-800">
-                                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t('player_profile.aggression') || "Aggression"}</p>
-                                                <p className="text-sm font-bold text-white tracking-tight">{player.aggression_score}%</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between pt-4 border-t border-gray-700/60">
-                                            <div></div>
-                                            <button
-                                                onClick={() => setShowDeleteConfirm(true)}
-                                                className="flex items-center gap-2 text-[10px] text-gray-600 hover:text-red-500 transition-colors uppercase tracking-widest font-black"
-                                            >
-                                                <Trash2 className="w-3 h-3" /> {t('player_profile.delete')}
-                                            </button>
                                         </div>
                                     </>
                                 )}
@@ -622,77 +605,6 @@ export function PlayerProfileClient({
                                     </div>
                                 )}
                             </div>
-
-                            {/* HUD STATS GRID */}
-                            {player.stats && (
-                                <div className="bg-[#111318] border border-gray-800 rounded-xl p-5 relative overflow-hidden">
-                                    <div className="flex items-center justify-between mb-5">
-                                        <div className="flex items-center gap-2">
-                                            <Target className="w-4 h-4 text-gray-400" />
-                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">HUD Statistics</span>
-                                        </div>
-                                        <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                                            {player.stats.total_hands} hands
-                                        </span>
-                                    </div>
-
-                                    {/* Preflop Stats */}
-                                    <div className="mb-4">
-                                        <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2">Preflop</p>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {[
-                                                { label: 'VPIP', value: player.stats.vpip, color: 'text-blue-400' },
-                                                { label: 'PFR', value: player.stats.pfr, color: 'text-cyan-400' },
-                                                { label: '3Bet', value: player.stats.three_bet, color: 'text-amber-400' },
-                                                { label: 'Fold 3Bet', value: player.stats.fold_to_3bet, color: 'text-red-400' },
-                                                { label: 'RFI', value: player.stats.rfi ?? 0, color: 'text-purple-400' },
-                                                { label: 'Steal', value: player.stats.steal, color: 'text-orange-400' },
-                                            ].map((stat) => (
-                                                <div key={stat.label} className="p-2 bg-[#1a1d24] rounded-lg border border-gray-800">
-                                                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-wider">{stat.label}</p>
-                                                    <p className={`text-sm font-black ${stat.color} tracking-tight`}>{stat.value.toFixed(1)}%</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Postflop Stats */}
-                                    <div className="mb-4">
-                                        <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2">Postflop</p>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {[
-                                                { label: 'CBet', value: player.stats.cbet, color: 'text-emerald-400' },
-                                                { label: 'Fold CBet', value: player.stats.fold_to_cbet, color: 'text-red-400' },
-                                                { label: 'Agg%', value: player.stats.aggression_freq, color: 'text-amber-400' },
-                                                { label: 'Check-Raise', value: player.stats.check_raise, color: 'text-pink-400' },
-                                                { label: 'Fold Steal', value: player.stats.fold_to_steal, color: 'text-orange-400' },
-                                                { label: 'Stab', value: player.stats.stab ?? 0, color: 'text-violet-400' },
-                                            ].map((stat) => (
-                                                <div key={stat.label} className="p-2 bg-[#1a1d24] rounded-lg border border-gray-800">
-                                                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-wider">{stat.label}</p>
-                                                    <p className={`text-sm font-black ${stat.color} tracking-tight`}>{stat.value.toFixed(1)}%</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Showdown Stats */}
-                                    <div>
-                                        <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2">Showdown</p>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {[
-                                                { label: 'WTSD', value: player.stats.wtsd, color: 'text-sky-400' },
-                                                { label: 'WSD', value: player.stats.wsd, color: 'text-green-400' },
-                                            ].map((stat) => (
-                                                <div key={stat.label} className="p-2 bg-[#1a1d24] rounded-lg border border-gray-800">
-                                                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-wider">{stat.label}</p>
-                                                    <p className={`text-sm font-black ${stat.color} tracking-tight`}>{stat.value.toFixed(1)}%</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
 
                             {/* NOTES FEED */}
                             <div className="bg-[#111318] border border-gray-800 rounded-xl p-5 overflow-hidden flex flex-col max-h-[600px]">
@@ -782,6 +694,77 @@ export function PlayerProfileClient({
                                     )}
                                 </div>
                             </div>
+
+                            {/* HUD STATS GRID */}
+                            {player.stats && (
+                                <div className="bg-[#111318] border border-gray-800 rounded-xl p-5 relative overflow-hidden">
+                                    <div className="flex items-center justify-between mb-5">
+                                        <div className="flex items-center gap-2">
+                                            <Target className="w-4 h-4 text-gray-400" />
+                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">HUD Statistics</span>
+                                        </div>
+                                        <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                            {player.stats.total_hands} hands
+                                        </span>
+                                    </div>
+
+                                    {/* Preflop Stats */}
+                                    <div className="mb-4">
+                                        <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2">Preflop</p>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[
+                                                { label: 'VPIP', value: player.stats.vpip, color: 'text-blue-400' },
+                                                { label: 'PFR', value: player.stats.pfr, color: 'text-cyan-400' },
+                                                { label: '3Bet', value: player.stats.three_bet, color: 'text-amber-400' },
+                                                { label: 'Fold 3Bet', value: player.stats.fold_to_3bet, color: 'text-red-400' },
+                                                { label: 'RFI', value: player.stats.rfi ?? 0, color: 'text-purple-400' },
+                                                { label: 'Steal', value: player.stats.steal, color: 'text-orange-400' },
+                                            ].map((stat) => (
+                                                <div key={stat.label} className="p-2 bg-[#1a1d24] rounded-lg border border-gray-800">
+                                                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-wider">{stat.label}</p>
+                                                    <p className={`text-sm font-black ${stat.color} tracking-tight`}>{stat.value.toFixed(1)}%</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Postflop Stats */}
+                                    <div className="mb-4">
+                                        <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2">Postflop</p>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[
+                                                { label: 'CBet', value: player.stats.cbet, color: 'text-emerald-400' },
+                                                { label: 'Fold CBet', value: player.stats.fold_to_cbet, color: 'text-red-400' },
+                                                { label: 'Agg%', value: player.stats.aggression_freq, color: 'text-amber-400' },
+                                                { label: 'Check-Raise', value: player.stats.check_raise, color: 'text-pink-400' },
+                                                { label: 'Fold Steal', value: player.stats.fold_to_steal, color: 'text-orange-400' },
+                                                { label: 'Stab', value: player.stats.stab ?? 0, color: 'text-violet-400' },
+                                            ].map((stat) => (
+                                                <div key={stat.label} className="p-2 bg-[#1a1d24] rounded-lg border border-gray-800">
+                                                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-wider">{stat.label}</p>
+                                                    <p className={`text-sm font-black ${stat.color} tracking-tight`}>{stat.value.toFixed(1)}%</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Showdown Stats */}
+                                    <div>
+                                        <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2">Showdown</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {[
+                                                { label: 'WTSD', value: player.stats.wtsd, color: 'text-sky-400' },
+                                                { label: 'WSD', value: player.stats.wsd, color: 'text-green-400' },
+                                            ].map((stat) => (
+                                                <div key={stat.label} className="p-2 bg-[#1a1d24] rounded-lg border border-gray-800">
+                                                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-wider">{stat.label}</p>
+                                                    <p className={`text-sm font-black ${stat.color} tracking-tight`}>{stat.value.toFixed(1)}%</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

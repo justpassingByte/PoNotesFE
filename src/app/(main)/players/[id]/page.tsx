@@ -78,6 +78,27 @@ const MOCK_PLAYER = {
             frequency: '45%',
         },
     ],
+    stats: {
+        vpip: 28.5,
+        pfr: 21.3,
+        three_bet: 8.7,
+        fold_to_3bet: 62.4,
+        cbet: 72.1,
+        fold_to_cbet: 45.8,
+        wtsd: 27.6,
+        wsd: 52.3,
+        aggression_freq: 38.9,
+        steal: 34.2,
+        fold_to_steal: 71.5,
+        check_raise: 9.4,
+        total_hands: 1847,
+        rfi: 19.8,
+        four_bet: 3.2,
+        fold_to_4bet: 58.0,
+        fold_to_check_raise: 55.3,
+        stab: 42.1,
+        float_pct: 18.7,
+    },
 };
 
 export default async function PlayerProfilePage({ params }: PlayerProfilePageProps) {
