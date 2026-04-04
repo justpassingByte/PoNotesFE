@@ -100,6 +100,27 @@ interface PlayerDetails {
         gto_deviation_reason?: string;
     } | null;
     ai_exploit_strategy?: any;
+    stats?: {
+        vpip: number;
+        pfr: number;
+        three_bet: number;
+        fold_to_3bet: number;
+        cbet: number;
+        fold_to_cbet: number;
+        wtsd: number;
+        wsd: number;
+        aggression_freq: number;
+        steal: number;
+        fold_to_steal: number;
+        check_raise: number;
+        total_hands: number;
+        rfi?: number;
+        four_bet?: number;
+        fold_to_4bet?: number;
+        fold_to_check_raise?: number;
+        stab?: number;
+        float_pct?: number;
+    } | null;
     usage?: {
         allowed: boolean;
         used: number;
@@ -601,6 +622,77 @@ export function PlayerProfileClient({
                                     </div>
                                 )}
                             </div>
+
+                            {/* HUD STATS GRID */}
+                            {player.stats && (
+                                <div className="bg-[#111318] border border-gray-800 rounded-xl p-5 relative overflow-hidden">
+                                    <div className="flex items-center justify-between mb-5">
+                                        <div className="flex items-center gap-2">
+                                            <Target className="w-4 h-4 text-gray-400" />
+                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">HUD Statistics</span>
+                                        </div>
+                                        <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                            {player.stats.total_hands} hands
+                                        </span>
+                                    </div>
+
+                                    {/* Preflop Stats */}
+                                    <div className="mb-4">
+                                        <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2">Preflop</p>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[
+                                                { label: 'VPIP', value: player.stats.vpip, color: 'text-blue-400' },
+                                                { label: 'PFR', value: player.stats.pfr, color: 'text-cyan-400' },
+                                                { label: '3Bet', value: player.stats.three_bet, color: 'text-amber-400' },
+                                                { label: 'Fold 3Bet', value: player.stats.fold_to_3bet, color: 'text-red-400' },
+                                                { label: 'RFI', value: player.stats.rfi ?? 0, color: 'text-purple-400' },
+                                                { label: 'Steal', value: player.stats.steal, color: 'text-orange-400' },
+                                            ].map((stat) => (
+                                                <div key={stat.label} className="p-2 bg-[#1a1d24] rounded-lg border border-gray-800">
+                                                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-wider">{stat.label}</p>
+                                                    <p className={`text-sm font-black ${stat.color} tracking-tight`}>{stat.value.toFixed(1)}%</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Postflop Stats */}
+                                    <div className="mb-4">
+                                        <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2">Postflop</p>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[
+                                                { label: 'CBet', value: player.stats.cbet, color: 'text-emerald-400' },
+                                                { label: 'Fold CBet', value: player.stats.fold_to_cbet, color: 'text-red-400' },
+                                                { label: 'Agg%', value: player.stats.aggression_freq, color: 'text-amber-400' },
+                                                { label: 'Check-Raise', value: player.stats.check_raise, color: 'text-pink-400' },
+                                                { label: 'Fold Steal', value: player.stats.fold_to_steal, color: 'text-orange-400' },
+                                                { label: 'Stab', value: player.stats.stab ?? 0, color: 'text-violet-400' },
+                                            ].map((stat) => (
+                                                <div key={stat.label} className="p-2 bg-[#1a1d24] rounded-lg border border-gray-800">
+                                                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-wider">{stat.label}</p>
+                                                    <p className={`text-sm font-black ${stat.color} tracking-tight`}>{stat.value.toFixed(1)}%</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Showdown Stats */}
+                                    <div>
+                                        <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mb-2">Showdown</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {[
+                                                { label: 'WTSD', value: player.stats.wtsd, color: 'text-sky-400' },
+                                                { label: 'WSD', value: player.stats.wsd, color: 'text-green-400' },
+                                            ].map((stat) => (
+                                                <div key={stat.label} className="p-2 bg-[#1a1d24] rounded-lg border border-gray-800">
+                                                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-wider">{stat.label}</p>
+                                                    <p className={`text-sm font-black ${stat.color} tracking-tight`}>{stat.value.toFixed(1)}%</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* NOTES FEED */}
                             <div className="bg-[#111318] border border-gray-800 rounded-xl p-5 overflow-hidden flex flex-col max-h-[600px]">

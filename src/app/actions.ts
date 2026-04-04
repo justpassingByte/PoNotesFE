@@ -187,6 +187,27 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
     ai_action_breakdown?: any;
     ai_profile?: any;
     usage?: any;
+    stats?: {
+        vpip: number;
+        pfr: number;
+        three_bet: number;
+        fold_to_3bet: number;
+        cbet: number;
+        fold_to_cbet: number;
+        wtsd: number;
+        wsd: number;
+        aggression_freq: number;
+        steal: number;
+        fold_to_steal: number;
+        check_raise: number;
+        total_hands: number;
+        rfi?: number;
+        four_bet?: number;
+        fold_to_4bet?: number;
+        fold_to_check_raise?: number;
+        stab?: number;
+        float_pct?: number;
+    } | null;
     notes: { 
         id: string; 
         content: string; 
@@ -234,6 +255,27 @@ export async function fetchPlayerProfile(playerId: string): Promise<{
         ai_action_breakdown: p.ai_action_breakdown || null,
         ai_profile: p.ai_profile || null,
         usage,
+        stats: p.stats ? {
+            vpip: p.stats.vpip ?? 0,
+            pfr: p.stats.pfr ?? 0,
+            three_bet: p.stats.three_bet ?? 0,
+            fold_to_3bet: p.stats.fold_to_3bet ?? 0,
+            cbet: p.stats.cbet ?? 0,
+            fold_to_cbet: p.stats.fold_to_cbet ?? 0,
+            wtsd: p.stats.wtsd ?? 0,
+            wsd: p.stats.wsd ?? 0,
+            aggression_freq: p.stats.aggression_freq ?? 0,
+            steal: p.stats.steal ?? 0,
+            fold_to_steal: p.stats.fold_to_steal ?? 0,
+            check_raise: p.stats.check_raise ?? 0,
+            total_hands: p.stats.total_hands ?? 0,
+            rfi: p.stats.rfi ?? 0,
+            four_bet: p.stats.four_bet ?? 0,
+            fold_to_4bet: p.stats.fold_to_4bet ?? 0,
+            fold_to_check_raise: p.stats.fold_to_check_raise ?? 0,
+            stab: p.stats.stab ?? 0,
+            float_pct: p.stats.float_pct ?? 0,
+        } : null,
         notes: (p.notes || []).map((n: any) => ({
             id: n.id,
             content: n.content,
