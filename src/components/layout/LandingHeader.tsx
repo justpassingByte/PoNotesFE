@@ -17,22 +17,22 @@ function scrollTo(id: string) {
 
 export function LandingHeader({ user }: { user?: { email: string; premium_tier: string } | null }) {
     const { t } = useLanguage();
-    const [isScrolled, setIsScrolled]         = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen]  = useState(false);
-    const [activeSection, setActiveSection]    = useState('');
-    const [clicking, setClicking]              = useState('');
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState('');
+    const [clicking, setClicking] = useState('');
 
     const NAV_LINKS = [
-        { name: t('landing.nav.manifesto') || 'Manifesto',   id: 'manifesto' },
-        { name: t('landing.nav.features') || 'Features',     id: 'features' },
-        { name: t('landing.nav.roadmap') || 'Roadmap',       id: 'roadmap'  },
-        { name: t('landing.nav.pricing') || 'Pricing',       id: 'pricing'  },
-        { name: t('landing.nav.contact') || 'Contact',       id: 'contact'  },
+        { name: t('landing.nav.manifesto') || 'Manifesto', id: 'manifesto' },
+        { name: t('landing.nav.features') || 'Features', id: 'features' },
+        { name: t('landing.nav.roadmap') || 'Roadmap', id: 'roadmap' },
+        { name: t('landing.nav.pricing') || 'Pricing', id: 'pricing' },
+        { name: t('landing.nav.contact') || 'Contact', id: 'contact' },
     ];
 
     // Pill indicator positioning
-    const navRef   = useRef<HTMLDivElement>(null);
-    const btnRefs  = useRef<Record<string, HTMLButtonElement | null>>({});
+    const navRef = useRef<HTMLDivElement>(null);
+    const btnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
 
     // Update pill position whenever active section changes
@@ -75,11 +75,10 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
 
     return (
         <header
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-400 ${
-                isScrolled
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-400 ${isScrolled
                     ? 'bg-black/85 backdrop-blur-xl border-b border-white/8 py-3'
                     : 'bg-transparent py-6'
-            }`}
+                }`}
         >
             <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
                 {/* Logo */}
@@ -96,15 +95,15 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
                     <div
                         className="absolute top-0 h-full rounded-lg bg-white/6 transition-all duration-300 ease-out pointer-events-none"
                         style={{
-                            left:    pillStyle.left,
-                            width:   pillStyle.width,
+                            left: pillStyle.left,
+                            width: pillStyle.width,
                             opacity: pillStyle.opacity,
                         }}
                     />
 
                     <div className="flex items-center space-x-1 relative z-10">
                         {NAV_LINKS.map((link) => {
-                            const isActive  = activeSection === link.id;
+                            const isActive = activeSection === link.id;
                             const isClicked = clicking === link.id;
                             return (
                                 <button
@@ -114,8 +113,8 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
                                     className={`
                                         relative px-4 py-2 text-sm font-medium rounded-lg
                                         transition-all duration-200 cursor-pointer select-none
-                                        ${isActive  ? 'text-white' : 'text-white/40 hover:text-white/70'}
-                                        ${isClicked ? 'scale-95'   : 'scale-100'}
+                                        ${isActive ? 'text-white' : 'text-white/40 hover:text-white/70'}
+                                        ${isClicked ? 'scale-95' : 'scale-100'}
                                     `}
                                     style={{ background: 'none', border: 'none' }}
                                 >
@@ -124,8 +123,8 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
                                     <span
                                         className="absolute bottom-0.5 left-1/2 -translate-x-1/2 rounded-full bg-yellow-400 transition-all duration-300"
                                         style={{
-                                            width:   isActive ? '16px' : '0px',
-                                            height:  '2px',
+                                            width: isActive ? '16px' : '0px',
+                                            height: '2px',
                                             opacity: isActive ? 1 : 0,
                                         }}
                                     />
@@ -142,7 +141,7 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
 
                     <div className="relative z-10 mr-2">
                         <a
-                            href="https://github.com/justpassingByte/PoNotesFE/releases/download/pokerhud/RobinHood_Setup_v1.1.3.exe"
+                            href="https://github.com/justpassingByte/PoNotesFE/releases/download/pokerhud/RobinHood_Setup_v1.1.4.exe"
                             download
                             className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all text-sm font-bold tracking-tight"
                         >
@@ -190,11 +189,10 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
                         <button
                             key={link.id}
                             onClick={() => { handleClick(link.id); setMobileMenuOpen(false); }}
-                            className={`text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                                activeSection === link.id
+                            className={`text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeSection === link.id
                                     ? 'text-white bg-white/6 border-l-2 border-yellow-400/60'
                                     : 'text-white/40 hover:text-white/70 hover:bg-white/4'
-                            }`}
+                                }`}
                             style={{ background: activeSection === link.id ? undefined : 'none', border: activeSection === link.id ? undefined : 'none' }}
                         >
                             {link.name}
