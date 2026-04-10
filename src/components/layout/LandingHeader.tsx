@@ -141,7 +141,7 @@ export function LandingHeader({ user }: { user?: { email: string; premium_tier: 
 
                     <div className="relative z-10 mr-2">
                         <a
-                            href="https://github.com/justpassingByte/PoNotesFE/releases/download/pokerhud/RobinHood_Setup_v1.1.4.exe"
+                            href="/api/download"
                             download
                             className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all text-sm font-bold tracking-tight"
                         >
